@@ -917,6 +917,62 @@ async def delete_all_locations(db=Depends(get_database)):
         )
 
 
+@router.delete("/{location_id}/devices/{device_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_device_from_location(location_id: str, device_id: str, db=Depends(get_database)):
+    """
+    Remove a device from a location by device _id
+    """
+    try:
+        if not ObjectId.is_valid(location_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid location ID format"
+            )
+
+        if not ObjectId.is_valid(device_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid device ID format"
+            )
+
+        location = await db["locations"].find_one({"_id": ObjectId(location_id)})
+        if not location:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Location not found"
+            )
+
+        # Find and remove the device with the provided device_id
+        devices = location.get("devices", [])
+        updated_devices = [device for device in devices if str(device["_id"]) != device_id]
+
+        if len(devices) == len(updated_devices):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Device not found"
+            )
+
+        # Update the location with the new list of devices
+        result = await db["locations"].update_one(
+            {"_id": ObjectId(location_id)},
+            {"$set": {"devices": updated_devices}}
+        )
+
+        if result.matched_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Failed to update location"
+            )
+
+        return {"message": "Device removed successfully"}
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error removing device from location: {str(e)}"
+        )
+
+
 mam taki api/users.py:
 from fastapi import APIRouter, HTTPException, Depends, Request, status
 from typing import List

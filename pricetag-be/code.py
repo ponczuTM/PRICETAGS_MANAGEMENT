@@ -13,7 +13,7 @@ api_location_py = 'api/locations.py'
 api_users_py = 'api/users.py'
 
 # Tworzymy plik tekstowy 'code.txt'
-with open('code.txt', 'w') as output_file:
+with open('aaaaaa.txt', 'w') as output_file:
     output_file.write(f"mam taki {main_py}:\n")
     output_file.write(read_file(main_py))
     output_file.write("\n\n")

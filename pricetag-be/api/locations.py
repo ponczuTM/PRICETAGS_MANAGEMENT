@@ -261,3 +261,39 @@ async def remove_device_from_location(location_id: str, device_id: str, db=Depen
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error removing device from location: {str(e)}"
         )
+
+
+@router.get("/{location_id}/devices", response_model=List[Device])
+async def get_devices_from_location(location_id: str, db=Depends(get_database)):
+    """
+    Get all devices from a specific location by its ID
+    """
+    try:
+        if not ObjectId.is_valid(location_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid location ID format"
+            )
+
+        location = await db["locations"].find_one({"_id": ObjectId(location_id)})
+        if not location:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Location not found"
+            )
+
+        devices = location.get("devices", [])
+
+        # Zamień _id każdego urządzenia na string
+        for device in devices:
+            if "_id" in device and isinstance(device["_id"], ObjectId):
+                device["_id"] = str(device["_id"])
+
+        return devices
+
+    except Exception as e:
+        logger.error(f"Error fetching devices from location: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching devices from location: {str(e)}"
+        )
