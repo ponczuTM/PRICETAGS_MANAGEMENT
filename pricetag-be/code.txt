@@ -1,0 +1,1150 @@
+mam taki main.py:
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from motor.motor_asyncio import AsyncIOMotorClient
+from config import settings
+from api import users, locations
+
+app = FastAPI(
+    title="Location Management API",
+    description="API for managing users and locations with devices",
+    version="1.0.0"
+)
+
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Database connection
+@app.on_event("startup")
+async def startup_db_client():
+    try:
+        app.mongodb_client = AsyncIOMotorClient(settings.MONGODB_URI)
+        app.mongodb = app.mongodb_client[settings.DATABASE_NAME]
+        # Test connection
+        await app.mongodb_client.admin.command('ping')
+        print(f"✅ Connected to MongoDB at {settings.MONGODB_URI}")
+        print(f"📁 Using database: {settings.DATABASE_NAME}")
+    except Exception as e:
+        print(f"❌ Failed to connect to MongoDB: {e}")
+        print(f"🔧 Check your MONGODB_URI in .env: {settings.MONGODB_URI}")
+        raise e
+
+@app.on_event("shutdown")
+async def shutdown_db_client():
+    app.mongodb_client.close()
+
+# Include routers
+app.include_router(users.router, prefix="/api/users", tags=["users"])
+app.include_router(locations.router, prefix="/api/locations", tags=["locations"])
+
+@app.get("/")
+async def root():
+    return {"message": "Location Management API is running"}
+
+@app.get("/health")
+async def health_check():
+    try:
+        # Test database connection
+        await app.mongodb_client.admin.command('ping')
+        return {
+            "status": "healthy",
+            "database": "connected",
+            "mongodb_uri": settings.MONGODB_URI.split('@')[-1] if '@' in settings.MONGODB_URI else settings.MONGODB_URI
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "database": "disconnected",
+            "error": str(e)
+        }
+
+
+
+@app.on_event("startup")
+async def print_routes():
+    print("\n--- Registered Routes ---")
+    for route in app.routes:
+        print(f"Route: {route.path}")
+
+        # ############
+
+from fastapi.responses import JSONResponse
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+from motor.motor_asyncio import AsyncIOMotorClient
+from config import settings
+from api import users, locations
+from bson import json_util
+import json
+
+
+@app.get("/dump", tags=["debug"])
+async def dump_database(request: Request):
+    """
+    Returns the entire database content as JSON.
+    ⚠️ Use only for debugging! Disable in production!
+    """
+    db = request.app.mongodb
+    dump = {}
+    try:
+        collections = await db.list_collection_names()
+        for collection_name in collections:
+            collection = db[collection_name]
+            documents = []
+            async for doc in collection.find():
+                documents.append(doc)
+            dump[collection_name] = documents
+
+        # Use bson.json_util to handle ObjectId and datetime serialization
+        return JSONResponse(content=json.loads(json_util.dumps(dump)))
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error dumping database: {str(e)}"
+        )
+
+
+        # ############
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+
+mam taki models.py:
+from pydantic import BaseModel, Field
+from typing import Optional, List, Dict
+from bson import ObjectId
+from enum import Enum
+
+class PyObjectId(ObjectId):
+    @classmethod
+    def __get_pydantic_core_schema__(
+            cls, _source_type, _handler
+    ):
+        from pydantic_core import core_schema
+        return core_schema.json_or_python_schema(
+            json_schema=core_schema.str_schema(),
+            python_schema=core_schema.union_schema([
+                core_schema.is_instance_schema(ObjectId),
+                core_schema.chain_schema([
+                    core_schema.str_schema(),
+                    core_schema.no_info_plain_validator_function(cls.validate),
+                ])
+            ]),
+            serialization=core_schema.plain_serializer_function_ser_schema(
+                lambda x: str(x)
+            ),
+        )
+
+    @classmethod
+    def validate(cls, v):
+        if isinstance(v, ObjectId):
+            return v
+        if isinstance(v, str):
+            if not ObjectId.is_valid(v):
+                raise ValueError("Invalid ObjectId")
+            return ObjectId(v)
+        raise ValueError("Invalid ObjectId")
+
+
+# Enum to define user types
+class UserType(str, Enum):
+    admin = "admin"
+    user = "user"
+
+
+# Device model
+class Device(BaseModel):
+    clientId: str = Field(..., description="Unique device identifier")
+    clientName: str = Field(..., description="Device name")
+    photo: Optional[str] = Field(None, description="Base64 encoded photo")
+    video: Optional[str] = Field(None, description="Base64 encoded video")
+
+    class Config:
+        json_encoders = {
+            ObjectId: str  # Convert ObjectId to string before returning in response
+        }
+
+
+# LocationData model
+class LocationData(BaseModel):
+    name: str = Field(..., description="Location name")
+    address: str = Field(..., description="Location address")
+    devices: List[Device] = Field(default_factory=list, description="List of devices")
+
+
+# Location model
+class Location(BaseModel):
+    id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias="_id")
+    locations: Dict[str, LocationData]  # A dictionary of location names to LocationData
+
+    class Config:
+        json_encoders = {
+            ObjectId: str  # Convert ObjectId to string before returning in response
+        }
+
+
+# User model
+class User(BaseModel):
+    id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias="_id")
+    login: str = Field(..., min_length=3, max_length=50)
+    password: str = Field(..., min_length=6)
+    user_type: UserType = Field(default=UserType.user)
+
+    class Config:
+        json_encoders = {
+            ObjectId: str
+        }
+
+
+# Model for creating a new User (excluding ID and automatic fields)
+class UserCreate(BaseModel):
+    login: str = Field(..., min_length=3, max_length=50)
+    password: str = Field(..., min_length=6)
+    user_type: UserType = Field(default=UserType.user)
+
+    class Config:
+        json_encoders = {
+            ObjectId: str  # Ensure ObjectId is serialized properly
+        }
+
+
+
+# Response model for User
+class UserResponse(BaseModel):
+    id: str = Field(alias="_id")
+    login: str
+    user_type: UserType
+
+    class Config:
+        json_encoders = {
+            ObjectId: str
+        }
+
+
+# Model for the response when creating a new Location
+class LocationResponse(BaseModel):
+    id: str = Field(alias="_id")
+    name: str
+    address: str
+    devices: List[Device]
+
+    class Config:
+        json_encoders = {
+            ObjectId: str  # Convert ObjectId to string before returning in response
+        }
+
+
+# Model for creating a new Location
+class LocationCreate(BaseModel):
+    name: str
+    address: str
+    devices: List[Device] = []  # Optional, defaults to an empty list
+
+    class Config:
+        json_encoders = {
+            ObjectId: str
+        }
+
+
+from pydantic import BaseModel
+from typing import List
+
+# Model dla ID lokalizacji
+class LocationIdsRequest(BaseModel):
+    location_ids: List[str]
+
+class UserDevicesResponse(BaseModel):
+    user_id: str
+    login: str
+    devices: List[Device]
+
+
+
+
+mam taki api.py:
+
+from fastapi import FastAPI, HTTPException, status, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from typing import List
+from bson import ObjectId
+from datetime import datetime
+
+from models import (
+    UserCreate, UserUpdate, UserResponse, LoginRequest, LoginResponse,
+    LocationCreate, LocationUpdate, LocationResponse, Device, DeviceUpdate
+)
+from config import users_collection, locations_collection
+from utils import hash_password, verify_password, user_helper, location_helper, validate_object_id
+
+# Inicjalizacja FastAPI
+app = FastAPI(
+    title="User & Location Management API",
+    description="API do zarządzania użytkownikami i lokalizacjami z urządzeniami",
+    version="1.0.0"
+)
+
+security = HTTPBearer()
+
+
+# Dependency do weryfikacji tokena (uproszczona wersja)
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Pobiera aktualnego użytkownika na podstawie tokena"""
+    # Tu powinieneś zaimplementować właściwą weryfikację JWT
+    # Na razie zwracamy None - należy to dostosować do swoich potrzeb
+    return None
+
+
+# ==================== ENDPOINTS GŁÓWNE ====================
+
+@app.get("/")
+async def root():
+    """Endpoint główny"""
+    return {"message": "User & Location Management API"}
+
+
+@app.get("/health")
+async def health_check():
+    """Sprawdzenie stanu aplikacji"""
+    return {"status": "healthy"}
+
+
+# ==================== ENDPOINTS UŻYTKOWNIKÓW ====================
+
+@app.post("/users/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+async def create_user(user: UserCreate):
+    """Tworzy nowego użytkownika"""
+    # Sprawdź czy użytkownik już istnieje
+    existing_user = await users_collection.find_one({"login": user.login})
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Użytkownik z tym loginem już istnieje"
+        )
+
+    # Haszuj hasło
+    hashed_password = hash_password(user.password)
+
+    # Przygotuj dane do zapisu
+    user_data = {
+        "login": user.login,
+        "password": hashed_password,
+        "type": user.user_type,
+        "created_at": datetime.utcnow()
+    }
+
+    # Zapisz do bazy
+    result = await users_collection.insert_one(user_data)
+
+    # Pobierz zapisanego użytkownika
+    created_user = await users_collection.find_one({"_id": result.inserted_id})
+
+    return UserResponse(**user_helper(created_user))
+
+
+@app.get("/users/", response_model=List[UserResponse])
+async def get_users():
+    """Pobiera listę wszystkich użytkowników"""
+    users = []
+    async for user in users_collection.find():
+        users.append(UserResponse(**user_helper(user)))
+    return users
+
+
+@app.get("/users/{user_id}", response_model=UserResponse)
+async def get_user(user_id: str):
+    """Pobiera użytkownika po ID"""
+    if not validate_object_id(user_id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Nieprawidłowy format ID"
+        )
+
+    user = await users_collection.find_one({"_id": ObjectId(user_id)})
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Użytkownik nie został znaleziony"
+        )
+
+    return UserResponse(**user_helper(user))
+
+
+@app.put("/users/{user_id}", response_model=UserResponse)
+async def update_user(user_id: str, user_update: UserUpdate):
+    """Aktualizuje użytkownika"""
+    if not validate_object_id(user_id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Nieprawidłowy format ID"
+        )
+
+    # Przygotuj dane do aktualizacji
+    update_data = {}
+    if user_update.login is not None:
+        # Sprawdź czy nowy login nie jest już zajęty
+        existing_user = await users_collection.find_one({
+            "login": user_update.login,
+            "_id": {"$ne": ObjectId(user_id)}
+        })
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Login już zajęty"
+            )
+        update_data["login"] = user_update.login
+
+    if user_update.password is not None:
+        update_data["password"] = hash_password(user_update.password)
+
+    if user_update.user_type is not None:
+        update_data["type"] = user_update.user_type
+
+    if not update_data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Brak danych do aktualizacji"
+        )
+
+    # Aktualizuj użytkownika
+    result = await users_collection.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": update_data}
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Użytkownik nie został znaleziony"
+        )
+
+    # Pobierz zaktualizowanego użytkownika
+    updated_user = await users_collection.find_one({"_id": ObjectId(user_id)})
+    return UserResponse(**user_helper(updated_user))
+
+
+@app.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user(user_id: str):
+    """Usuwa użytkownika"""
+    if not validate_object_id(user_id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Nieprawidłowy format ID"
+        )
+
+    result = await users_collection.delete_one({"_id": ObjectId(user_id)})
+
+    if result.deleted_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Użytkownik nie został znaleziony"
+        )
+
+
+# ==================== ENDPOINTS AUTORYZACJI ====================
+
+@app.post("/login/", response_model=LoginResponse)
+async def login(login_data: LoginRequest):
+    """Loguje użytkownika"""
+    user = await users_collection.find_one({"login": login_data.login})
+    if not user or not verify_password(login_data.password, user["password"]):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Nieprawidłowy login lub hasło"
+        )
+
+    # Tu powinieneś wygenerować JWT token
+    # Na razie zwracamy podstawowe informacje o użytkowniku
+    return LoginResponse(
+        message="Zalogowano pomyślnie",
+        user=UserResponse(**user_helper(user)),
+        token="your_jwt_token_here"  # Zastąp prawdziwym tokenem JWT
+    )
+
+
+# ==================== ENDPOINTS LOKALIZACJI ====================
+
+@app.post("/locations/", response_model=LocationResponse, status_code=status.HTTP_201_CREATED)
+async def create_location(location: LocationCreate):
+    """Tworzy nową lokalizację"""
+    location_data = {
+        "name": location.name,
+        "address": location.address,
+        "devices": [device.dict(by_alias=True) for device in location.devices],
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow()
+    }
+
+    result = await locations_collection.insert_one(location_data)
+    created_location = await locations_collection.find_one({"_id": result.inserted_id})
+
+    return LocationResponse(**location_helper(created_location))
+
+
+@app.get("/locations/", response_model=List[LocationResponse])
+async def get_locations():
+    """Pobiera listę wszystkich lokalizacji"""
+    locations = []
+    async for location in locations_collection.find():
+        locations.append(LocationResponse(**location_helper(location)))
+    return locations
+
+
+@app.get("/locations/{location_id}", response_model=LocationResponse)
+async def get_location(location_id: str):
+    """Pobiera lokalizację po ID"""
+    if not validate_object_id(location_id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Nieprawidłowy format ID"
+        )
+
+    location = await locations_collection.find_one({"_id": ObjectId(location_id)})
+    if not location:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Lokalizacja nie została znaleziona"
+        )
+
+    return LocationResponse(**location_helper(location))
+
+
+@app.put("/locations/{location_id}", response_model=LocationResponse)
+async def update_location(location_id: str, location_update: LocationUpdate):
+    """Aktualizuje lokalizację"""
+    if not validate_object_id(location_id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Nieprawidłowy format ID"
+        )
+
+    update_data = {"updated_at": datetime.utcnow()}
+
+    if location_update.name is not None:
+        update_data["name"] = location_update.name
+
+    if location_update.address is not None:
+        update_data["address"] = location_update.address
+
+    if location_update.devices is not None:
+        update_data["devices"] = [device.dict(by_alias=True) for device in location_update.devices]
+
+    result = await locations_collection.update_one(
+        {"_id": ObjectId(location_id)},
+        {"$set": update_data}
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Lokalizacja nie została znaleziona"
+        )
+
+    updated_location = await locations_collection.find_one({"_id": ObjectId(location_id)})
+    return LocationResponse(**location_helper(updated_location))
+
+
+@app.delete("/locations/{location_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_location(location_id: str):
+    """Usuwa lokalizację"""
+    if not validate_object_id(location_id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Nieprawidłowy format ID"
+        )
+
+    result = await locations_collection.delete_one({"_id": ObjectId(location_id)})
+
+    if result.deleted_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Lokalizacja nie została znaleziona"
+        )
+
+
+# ==================== ENDPOINTS URZĄDZEŃ ====================
+
+@app.post("/locations/{location_id}/devices/", response_model=LocationResponse)
+async def add_device_to_location(location_id: str, device: Device):
+    """Dodaje urządzenie do lokalizacji"""
+    if not validate_object_id(location_id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Nieprawidłowy format ID"
+        )
+
+    location = await locations_collection.find_one({"_id": ObjectId(location_id)})
+    if not location:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Lokalizacja nie została znaleziona"
+        )
+
+    # Sprawdź czy urządzenie o takim client_id już istnieje
+    existing_devices = location.get("devices", [])
+    for existing_device in existing_devices:
+        if existing_device.get("clientId") == device.client_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Urządzenie o takim clientId już istnieje w tej lokalizacji"
+            )
+
+    # Dodaj nowe urządzenie
+    new_device = device.dict(by_alias=True)
+
+    result = await locations_collection.update_one(
+        {"_id": ObjectId(location_id)},
+        {
+            "$push": {"devices": new_device},
+            "$set": {"updated_at": datetime.utcnow()}
+        }
+    )
+
+    updated_location = await locations_collection.find_one({"_id": ObjectId(location_id)})
+    return LocationResponse(**location_helper(updated_location))
+
+
+@app.put("/locations/{location_id}/devices/{client_id}", response_model=LocationResponse)
+async def update_device_in_location(location_id: str, client_id: str, device_update: DeviceUpdate):
+    """Aktualizuje urządzenie w lokalizacji"""
+    if not validate_object_id(location_id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Nieprawidłowy format ID"
+        )
+
+    location = await locations_collection.find_one({"_id": ObjectId(location_id)})
+    if not location:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Lokalizacja nie została znaleziona"
+        )
+
+    # Znajdź i zaktualizuj urządzenie
+    devices = location.get("devices", [])
+    device_found = False
+
+    for i, device in enumerate(devices):
+        if device.get("clientId") == client_id:
+            device_found = True
+            # Aktualizuj tylko te pola, które zostały podane
+            if device_update.client_id is not None:
+                device["clientId"] = device_update.client_id
+            if device_update.client_name is not None:
+                device["clientName"] = device_update.client_name
+            if device_update.photo is not None:
+                device["photo"] = device_update.photo
+            if device_update.video is not None:
+                device["video"] = device_update.video
+            break
+
+    if not device_found:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Urządzenie nie zostało znalezione"
+        )
+
+    # Zapisz zmiany
+    await locations_collection.update_one(
+        {"_id": ObjectId(location_id)},
+        {
+            "$set": {
+                "devices": devices,
+                "updated_at": datetime.utcnow()
+            }
+        }
+    )
+
+    updated_location = await locations_collection.find_one({"_id": ObjectId(location_id)})
+    return LocationResponse(**location_helper(updated_location))
+
+
+@app.delete("/locations/{location_id}/devices/{client_id}", response_model=LocationResponse)
+async def remove_device_from_location(location_id: str, client_id: str):
+    """Usuwa urządzenie z lokalizacji"""
+    if not validate_object_id(location_id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Nieprawidłowy format ID"
+        )
+
+    result = await locations_collection.update_one(
+        {"_id": ObjectId(location_id)},
+        {
+            "$pull": {"devices": {"clientId": client_id}},
+            "$set": {"updated_at": datetime.utcnow()}
+        }
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Lokalizacja nie została znaleziona"
+        )
+
+    updated_location = await locations_collection.find_one({"_id": ObjectId(location_id)})
+    if not updated_location:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Lokalizacja nie została znaleziona"
+        )
+
+    return LocationResponse(**location_helper(updated_location))
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+
+
+mam taki api/locations.py:
+
+from fastapi import APIRouter, HTTPException, Depends, status, Request
+from typing import List
+from models import Location, LocationCreate, LocationResponse, Device
+from bson import ObjectId
+import logging
+
+from fastapi import APIRouter, HTTPException, Depends, status, Request
+from models import Device, LocationCreate, LocationResponse
+from bson import ObjectId
+import logging
+
+
+# Konfiguracja loggera
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+router = APIRouter()
+
+# Function to get the database
+def get_database(request: Request):
+    return request.app.mongodb
+
+# Endpoint to create a new location (single location)
+@router.post("/", response_model=LocationResponse, status_code=status.HTTP_201_CREATED)
+async def create_location(location: LocationCreate, db=Depends(get_database)):
+    """
+    Create a single location document
+    """
+    try:
+        # Prepare location data
+        location_data = {
+            "id": str(ObjectId()),  # Generate unique ID for each location
+            "name": location.name,
+            "address": location.address,
+            "devices": location.devices,
+        }
+
+        # Insert the location document in the locations collection
+        result = await db["locations"].insert_one(location_data)
+
+        # Get the created location
+        created_location = await db["locations"].find_one({"_id": result.inserted_id})
+        created_location["_id"] = str(created_location["_id"])
+
+        return LocationResponse(**created_location)
+
+    except Exception as e:
+        logger.error(f"Error creating location: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error creating location: {str(e)}"
+        )
+
+
+# Function to get the database
+def get_database(request: Request):
+    return request.app.mongodb
+
+# Endpoint to add a device to a location
+# api.py
+
+@router.post("/{location_id}/devices/", status_code=status.HTTP_201_CREATED)
+async def add_device_to_location(location_id: str, device: Device, db=Depends(get_database)):
+    """
+    Add a device to a location
+    """
+    try:
+        if not ObjectId.is_valid(location_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid location ID format"
+            )
+
+        location = await db["locations"].find_one({"_id": ObjectId(location_id)})
+        if not location:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Location not found"
+            )
+
+        # Add unique ID to the device if not already present
+        device_dict = device.dict()
+
+        # Add the "changed" key with the value "false" to the device
+        device_dict["changed"] = "false"
+        
+        # Add unique _id to the device
+        device_dict["_id"] = str(ObjectId())  # Assign a unique ID to the device
+
+        # Check if device already exists
+        for existing_device in location.get("devices", []):
+            if existing_device.get("clientId") == device.clientId:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Device with this clientId already exists in this location"
+                )
+
+        # Add the new device to the list of devices
+        if "devices" not in location:
+            location["devices"] = []
+        
+        location["devices"].append(device_dict)
+
+        # Update the location in the database
+        result = await db["locations"].update_one(
+            {"_id": ObjectId(location_id)},
+            {"$set": {"devices": location["devices"]}}
+        )
+
+        if result.matched_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Failed to update location"
+            )
+
+        # Convert _id and devices' _id to string before returning
+        location["_id"] = str(location["_id"])
+        for device in location["devices"]:
+            device["_id"] = str(device["_id"])
+
+        return {"message": "Device added successfully", "location": location}
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error adding device to location: {str(e)}"
+        )
+
+
+
+
+# Endpoint to get all locations
+@router.get("/", response_model=List[LocationResponse])
+async def get_locations(db=Depends(get_database)):
+    """
+    Get all location documents
+    """
+    try:
+        locations = []
+        async for location in db["locations"].find():
+            locations.append(LocationResponse(**location))
+        return locations
+    except Exception as e:
+        logger.error(f"Error fetching locations: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching locations: {str(e)}"
+        )
+
+# Endpoint to get a specific location by ID
+@router.get("/{location_id}", response_model=LocationResponse)
+async def get_location(location_id: str, db=Depends(get_database)):
+    """
+    Get location by ID
+    """
+    try:
+        # Convert string ID to ObjectId
+        if not ObjectId.is_valid(location_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid location ID format"
+            )
+
+        location = await db["locations"].find_one({"_id": ObjectId(location_id)})
+        if not location:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Location not found"
+            )
+
+        # Convert _id (ObjectId) to string before returning as a response
+        location["_id"] = str(location["_id"])
+
+        return LocationResponse(**location)
+
+    except Exception as e:
+        logger.error(f"Error fetching location: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching location: {str(e)}"
+        )
+
+
+@router.delete("/delete-all", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_all_locations(db=Depends(get_database)):
+    """
+    Usuwa wszystkie lokalizacje z bazy danych
+    """
+    try:
+        # Usuwanie wszystkich dokumentów w kolekcji "locations"
+        result = await db["locations"].delete_many({})
+
+        # Jeśli nie usunięto żadnych dokumentów, zwróć 404
+        if result.deleted_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Brak lokalizacji do usunięcia"
+            )
+
+        return {"message": "Wszystkie lokalizacje zostały usunięte"}
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error deleting all locations: {str(e)}"
+        )
+
+
+mam taki api/users.py:
+from fastapi import APIRouter, HTTPException, Depends, Request, status
+from typing import List
+from models import User, UserCreate, UserResponse, LocationIdsRequest, UserDevicesResponse, Device
+from passlib.context import CryptContext
+from bson import ObjectId
+import logging
+
+router = APIRouter()
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+logger = logging.getLogger(__name__)
+
+# Dependency to get database connection
+def get_database(request: Request):
+    return request.app.mongodb
+
+# Password hashing
+def hash_password(password: str) -> str:
+    return pwd_context.hash(password)
+
+# Create new user
+@router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+async def create_user(user: UserCreate, db=Depends(get_database)):
+    """
+    Create a new user with hashed password
+    """
+    try:
+        # Check if user already exists
+        existing_user = await db["users"].find_one({"login": user.login})
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User with this login already exists"
+            )
+
+        # Hash password and create user
+        hashed_password = hash_password(user.password)
+        user_dict = user.dict()
+        user_dict["password"] = hashed_password
+        user_dict["_id"] = ObjectId()  # Generate new ObjectId
+
+        result = await db["users"].insert_one(user_dict)
+
+        # Get created user and convert _id to string
+        created_user = await db["users"].find_one({"_id": result.inserted_id})
+        created_user["_id"] = str(created_user["_id"])
+
+        return UserResponse(**created_user)
+
+    except Exception as e:
+        logger.error(f"Error creating user: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error creating user: {str(e)}"
+        )
+
+# Get all users
+@router.get("/", response_model=List[UserResponse])
+async def get_users(db=Depends(get_database)):
+    """
+    Get list of all users
+    """
+    try:
+        users = []
+        async for user in db["users"].find():
+            user["_id"] = str(user["_id"])  # Convert ObjectId to string
+            users.append(UserResponse(**user))
+        return users
+    except Exception as e:
+        logger.error(f"Error fetching users: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching users: {str(e)}"
+        )
+
+# Get single user by ID
+@router.get("/{user_id}", response_model=UserResponse)
+async def get_user(user_id: str, db=Depends(get_database)):
+    """
+    Get user by ID
+    """
+    try:
+        if not ObjectId.is_valid(user_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid user ID format"
+            )
+
+        user = await db["users"].find_one({"_id": ObjectId(user_id)})
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+
+        user["_id"] = str(user["_id"])  # Convert ObjectId to string
+        return UserResponse(**user)
+
+    except Exception as e:
+        logger.error(f"Error fetching user: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching user: {str(e)}"
+        )
+
+# Add locations to user
+@router.put("/{user_id}/locations", response_model=UserResponse)
+async def add_locations_to_user(
+    user_id: str, 
+    location_ids_request: LocationIdsRequest, 
+    db=Depends(get_database)
+):
+    """
+    Add locations to a user
+    """
+    try:
+        location_ids = location_ids_request.location_ids
+
+        # Validate user ID
+        if not ObjectId.is_valid(user_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid user ID format"
+            )
+        
+        # Check if user exists
+        user = await db["users"].find_one({"_id": ObjectId(user_id)})
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+
+        # Validate location IDs
+        for location_id in location_ids:
+            if not ObjectId.is_valid(location_id):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Invalid location ID format: {location_id}"
+                )
+            location = await db["locations"].find_one({"_id": ObjectId(location_id)})
+            if not location:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Location with ID {location_id} not found"
+                )
+
+        # Add locations to user
+        result = await db["users"].update_one(
+            {"_id": ObjectId(user_id)},
+            {"$addToSet": {"locations": {"$each": location_ids}}}
+        )
+
+        if result.matched_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found after update attempt"
+            )
+
+        # Return updated user
+        updated_user = await db["users"].find_one({"_id": ObjectId(user_id)})
+        updated_user["_id"] = str(updated_user["_id"])
+        return UserResponse(**updated_user)
+
+    except Exception as e:
+        logger.error(f"Error updating user locations: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error updating user locations: {str(e)}"
+        )
+
+# Get all devices from user's locations
+@router.get("/{user_id}/devices", response_model=UserDevicesResponse)
+async def get_user_devices(user_id: str, db=Depends(get_database)):
+    """
+    Get all devices from all locations assigned to a user
+    """
+    try:
+        # Validate user ID
+        if not ObjectId.is_valid(user_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid user ID format"
+            )
+
+        # Get user document
+        user = await db["users"].find_one({"_id": ObjectId(user_id)})
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+
+        # Get user's location IDs
+        location_ids = user.get("locations", [])
+        if not location_ids:
+            return UserDevicesResponse(
+                user_id=user_id,
+                login=user["login"],
+                devices=[]
+            )
+
+        # Convert string location IDs to ObjectId
+        location_object_ids = [ObjectId(loc_id) for loc_id in location_ids]
+
+        # Find all locations that belong to the user
+        locations_cursor = db["locations"].find({"_id": {"$in": location_object_ids}})
+        locations = await locations_cursor.to_list(length=None)
+
+        # Collect all devices from all locations
+        all_devices = []
+        for location in locations:
+            devices = location.get("devices", [])
+            # Convert device _id to string if it exists
+            for device in devices:
+                if "_id" in device and isinstance(device["_id"], ObjectId):
+                    device["_id"] = str(device["_id"])
+            all_devices.extend(devices)
+
+        return UserDevicesResponse(
+            user_id=user_id,
+            login=user["login"],
+            devices=all_devices
+        )
+
+    except Exception as e:
+        logger.error(f"Error fetching user devices: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching user devices: {str(e)}"
+        )
