@@ -42,15 +42,19 @@ class UserType(str, Enum):
 
 # Device model
 class Device(BaseModel):
+    id: Optional[str] = Field(None, alias="_id", description="Unique ID of the device")
     clientId: str = Field(..., description="Unique device identifier")
     clientName: str = Field(..., description="Device name")
     photo: Optional[str] = Field(None, description="Base64 encoded photo")
     video: Optional[str] = Field(None, description="Base64 encoded video")
+    changed: Optional[str] = Field("false", description="Has device been changed")
 
     class Config:
+        allow_population_by_field_name = True
         json_encoders = {
-            ObjectId: str  # Convert ObjectId to string before returning in response
+            ObjectId: str
         }
+
 
 
 # LocationData model
