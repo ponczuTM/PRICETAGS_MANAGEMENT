@@ -390,3 +390,20 @@ async def clear_device_files(location_id: str, device_id: str, db=Depends(get_da
         "message": "File fields cleared (set to empty string)",
         "device_id": device_id
     }
+
+
+
+@router.put("/{location_id}/devices/{device_id}/changed-true", status_code=200)
+async def set_device_changed_true(location_id: str, device_id: str, db=Depends(get_database)):
+    """
+    Ustawia flagę 'changed' na 'true' dla danego urządzenia
+    """
+    return await _update_device_field(location_id, device_id, {"changed": "true"}, db)
+
+
+@router.put("/{location_id}/devices/{device_id}/changed-false", status_code=200)
+async def set_device_changed_false(location_id: str, device_id: str, db=Depends(get_database)):
+    """
+    Ustawia flagę 'changed' na 'false' dla danego urządzenia
+    """
+    return await _update_device_field(location_id, device_id, {"changed": "false"}, db)
