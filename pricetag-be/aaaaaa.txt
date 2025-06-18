@@ -163,6 +163,7 @@ class UserType(str, Enum):
 
 
 # Device model
+# Device model
 class Device(BaseModel):
     id: Optional[str] = Field(None, alias="_id", description="Unique ID of the device")
     clientId: str = Field(..., description="Unique device identifier")
@@ -176,6 +177,11 @@ class Device(BaseModel):
         json_encoders = {
             ObjectId: str
         }
+
+class DeviceMediaUpdate(BaseModel):
+    photo: Optional[str] = None
+    video: Optional[str] = None
+
 
 
 
@@ -794,7 +800,13 @@ async def add_device_to_location(location_id: str, device: Device, db=Depends(ge
             )
 
         # Add unique ID to the device if not already present
-        device_dict = device.dict()
+        device_dict = {
+            "clientId": device.clientId,
+            "clientName": device.clientName,
+            "changed": "false",
+            "_id": str(ObjectId())
+        }
+
 
         # Add the "changed" key with the value "false" to the device
         device_dict["changed"] = "false"
@@ -1011,6 +1023,93 @@ async def get_devices_from_location(location_id: str, db=Depends(get_database)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error fetching devices from location: {str(e)}"
         )
+
+@router.put("/{location_id}/devices/{device_id}/photo", status_code=200)
+async def update_device_photo(location_id: str, device_id: str, body: dict, db=Depends(get_database)):
+    """
+    Update the photo for a specific device in a location
+    """
+    photo = body.get("photo")
+    if not photo:
+        raise HTTPException(status_code=400, detail="Missing photo")
+
+    return await _update_device_field(location_id, device_id, {"photo": photo}, db)
+
+
+@router.put("/{location_id}/devices/{device_id}/video", status_code=200)
+async def update_device_video(location_id: str, device_id: str, body: dict, db=Depends(get_database)):
+    """
+    Update the video for a specific device in a location
+    """
+    video = body.get("video")
+    if not video:
+        raise HTTPException(status_code=400, detail="Missing video")
+
+    return await _update_device_field(location_id, device_id, {"video": video}, db)
+
+
+async def _update_device_field(location_id: str, device_id: str, update_fields: dict, db):
+    if not ObjectId.is_valid(location_id) or not ObjectId.is_valid(device_id):
+        raise HTTPException(status_code=400, detail="Invalid ID format")
+
+    location = await db["locations"].find_one({"_id": ObjectId(location_id)})
+    if not location:
+        raise HTTPException(status_code=404, detail="Location not found")
+
+    devices = location.get("devices", [])
+    updated = False
+
+    for device in devices:
+        if str(device["_id"]) == device_id:
+            device.update(update_fields)
+            updated = True
+            break
+
+    if not updated:
+        raise HTTPException(status_code=404, detail="Device not found")
+
+    await db["locations"].update_one(
+        {"_id": ObjectId(location_id)},
+        {"$set": {"devices": devices}}
+    )
+
+    return {"message": "Device updated successfully", "updated_fields": update_fields}
+
+
+@router.delete("/{location_id}/devices/{device_id}/delete-files", status_code=200)
+async def clear_device_files(location_id: str, device_id: str, db=Depends(get_database)):
+    """
+    Nadpisuje pola photo i video pustym stringiem dla danego urządzenia
+    """
+    if not ObjectId.is_valid(location_id) or not ObjectId.is_valid(device_id):
+        raise HTTPException(status_code=400, detail="Invalid ID format")
+
+    location = await db["locations"].find_one({"_id": ObjectId(location_id)})
+    if not location:
+        raise HTTPException(status_code=404, detail="Location not found")
+
+    devices = location.get("devices", [])
+    updated = False
+
+    for device in devices:
+        if str(device.get("_id")) == device_id:
+            device["photo"] = ""
+            device["video"] = ""
+            updated = True
+            break
+
+    if not updated:
+        raise HTTPException(status_code=404, detail="Device not found")
+
+    await db["locations"].update_one(
+        {"_id": ObjectId(location_id)},
+        {"$set": {"devices": devices}}
+    )
+
+    return {
+        "message": "File fields cleared (set to empty string)",
+        "device_id": device_id
+    }
 
 
 mam taki api/users.py:

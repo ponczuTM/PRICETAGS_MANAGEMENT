@@ -41,6 +41,7 @@ class UserType(str, Enum):
 
 
 # Device model
+# Device model
 class Device(BaseModel):
     id: Optional[str] = Field(None, alias="_id", description="Unique ID of the device")
     clientId: str = Field(..., description="Unique device identifier")
@@ -54,6 +55,11 @@ class Device(BaseModel):
         json_encoders = {
             ObjectId: str
         }
+
+class DeviceMediaUpdate(BaseModel):
+    photo: Optional[str] = None
+    video: Optional[str] = None
+
 
 
 
