@@ -1,0 +1,466 @@
+/* Container główny */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+  }
+  
+  /* Header */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e2e8f0;
+  }
+  
+  .title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .deviceCount {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  }
+  
+  /* Grid urządzeń */
+  .deviceGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  /* Karta urządzenia */
+  .deviceCard {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .deviceCard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 10px;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+  }
+  
+  .deviceCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+  }
+  
+  .deviceCard:hover::before {
+    transform: scaleX(1);
+  }
+  
+  .deviceCard.selected {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #f0f4ff 0%, #e6f3ff 100%);
+    transform: translateY(-5px);
+    box-shadow: 0 16px 48px rgba(102, 126, 234, 0.2);
+  }
+  
+  .deviceCard.selected::before {
+    transform: scaleX(1);
+  }
+  
+  /* Kontener obrazu urządzenia */
+  .deviceImageContainer {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    position: relative;
+  }
+  
+  .deviceImage {
+    width: 100px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .onlineIndicator {
+    width: 20px;
+    height: 20px;
+    background: #10b981;
+    border-radius: 50%;
+    position: absolute;
+    top: -2px;
+    left: 90px;
+    border: 2px solid white;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+    animation: pulse 2s infinite;
+  }
+  
+  @keyframes pulse {
+    0% { box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4); }
+    50% { box-shadow: 0 2px 8px rgba(16, 185, 129, 0.8), 0 0 0 8px rgba(16, 185, 129, 0.1); }
+    100% { box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4); }
+  }
+  
+  /* Informacje o urządzeniu */
+  .deviceInfo {
+    flex: 1;
+  }
+  
+  .deviceName {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1a202c;
+    margin: 0 0 0.5rem 0;
+  }
+  
+  .deviceId {
+    color: #718096;
+    font-size: 0.9rem;
+    margin: 0 0 1rem 0;
+    font-family: 'Courier New', monospace;
+    background: #f7fafc;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    display: inline-block;
+  }
+
+  /* Przełącznik zakładek */
+.tabSwitcher {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    border-radius: 12px;
+    background: #edf2f7;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+  
+  .tab {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    text-align: center;
+    font-weight: 600;
+    color: #4a5568;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+  }
+  
+  .tab:hover {
+    background: #aeaeae;
+  }
+  
+  .activeTab {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: inset 0 -4px 0 #5a67d8;
+  }
+
+  /* Komunikat o błędzie */
+.errorMessage {
+    background: #fff5f5;
+    color: #e53e3e;
+    border-left: 4px solid #e53e3e;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    margin-top: 1rem;
+    box-shadow: 0 4px 12px rgba(229, 62, 62, 0.1);
+  }
+  
+  
+  /* Informacje o uploadowanym zdjęciu */
+  .uploadedPhotoInfo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #f0fff4;
+    padding: 0.75rem;
+    border-radius: 10px;
+    border-left: 4px solid #10b981;
+    margin-top: 1rem;
+  }
+  
+  .uploadedPhotoPreview {
+    flex-shrink: 0;
+  }
+  
+  .miniPreview {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .photoDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+  }
+  
+  .photoName {
+    font-weight: 500;
+    color: #1a202c;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .photoMeta {
+    font-size: 0.75rem;
+    color: #10b981;
+    font-weight: 500;
+  }
+  
+  /* Modal upload */
+  .uploadModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+  }
+  
+  .modalContent {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    transform: translateY(0);
+    animation: modalSlideIn 0.3s ease;
+  }
+  
+  @keyframes modalSlideIn {
+    from {
+      transform: translateY(-50px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  .modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e2e8f0;
+  }
+  
+  .modalTitle {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin: 0;
+  }
+  
+  .closeButton {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: #a0aec0;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+  
+  .closeButton:hover {
+    color: #e53e3e;
+    background: #fed7d7;
+  }
+  
+  /* Drop Zone */
+  .dropZone {
+    border: 3px dashed #cbd5e0;
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    background: #f7fafc;
+    transition: all 0.3s ease;
+    position: relative;
+    margin-bottom: 1.5rem;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .dropZone:hover {
+    border-color: #667eea;
+    background: #f0f4ff;
+  }
+  
+  .dropZone.hasFile {
+    border-color: #10b981;
+    background: #f0fff4;
+  }
+  
+  .dropZoneContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .uploadIcon {
+    font-size: 3rem;
+    opacity: 0.6;
+  }
+  
+  .dropText {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #4a5568;
+    margin: 0;
+  }
+  
+  .dropSubtext {
+    font-size: 0.9rem;
+    color: #718096;
+    margin: 0;
+  }
+  
+  .fileInput {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+  
+  /* Preview Container */
+  .previewContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+  }
+  
+  .previewImage {
+    max-width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  }
+  
+  .fileInfo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  
+  .fileName {
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 1rem;
+  }
+  
+  .fileSize {
+    color: #718096;
+    font-size: 0.9rem;
+  }
+  
+  /* Akcje modala */
+  .modalActions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+  }
+  
+  .uploadButton {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  }
+  
+  .uploadButton:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  }
+  
+  .uploadButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  
+  .cancelButton {
+    background: #e2e8f0;
+    color: #4a5568;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .cancelButton:hover {
+    background: #cbd5e0;
+    transform: translateY(-2px);
+  }
+  
