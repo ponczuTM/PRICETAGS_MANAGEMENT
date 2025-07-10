@@ -5,7 +5,6 @@ import os
 # Konfiguracja
 LOCATION_ID = "685003cbf071eb1bb4304cd2"
 API_BASE = "http://localhost:8000/api/locations"
-OUTPUT_FILE = "photo_to_upload.png"
 
 # 1. Pobierz wszystkie urządzenia
 response = requests.get(f"{API_BASE}/{LOCATION_ID}/devices")
@@ -13,6 +12,7 @@ devices = response.json()
 
 for device in devices:
     device_id = device.get("_id")
+    client_id = device.get("clientId")
     changed = device.get("changed")
     photo = device.get("photo")
 
@@ -28,11 +28,14 @@ for device in devices:
             if missing_padding:
                 photo += "=" * (4 - missing_padding)
 
-            # 3. Zapisz zdjęcie
+            # 3. Zapisz zdjęcie jako <clientId>.png w bieżącym katalogu
+            filename = f"{client_id}.png"
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            filepath = os.path.join(script_dir, filename)
             photo_data = base64.b64decode(photo)
-            with open(OUTPUT_FILE, "wb") as f:
+            with open(filepath, "wb") as f:
                 f.write(photo_data)
-            print(f"📷 Zapisano zdjęcie urządzenia {device_id} jako {OUTPUT_FILE}")
+            print(f"📷 Zapisano zdjęcie urządzenia {device_id} jako {filename}")
 
             # 4. Usuń pliki photo i video
             delete_url = f"http://0.0.0.0:8000/api/locations/{LOCATION_ID}/devices/{device_id}/delete-files"

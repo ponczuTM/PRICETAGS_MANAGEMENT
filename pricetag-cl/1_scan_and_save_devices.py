@@ -52,12 +52,12 @@ def delete_device_from_location(device_id):
         print(f"❌ Błąd DELETE dla {device_id}: {e}")
 
 # Sprawdzanie jednego IP
-def check_device(ip):
+def check_device(args):
+    index, ip = args
+    print(f"🔍 Próba {index + 1}: Sprawdzam IP {BASE_IP}{ip}")
     url = f"http://{BASE_IP}{ip}/Iotags"
-    print(f"testing number: {number}")
-    number = number+1
     try:
-        response = requests.get(url, timeout=100)
+        response = requests.get(url, timeout=2)
         if response.status_code == 200:
             data = response.json()
             if "STATE" in data and data["STATE"] == "SUCCEED" and "name" in data:
@@ -70,11 +70,14 @@ def check_device(ip):
     except requests.RequestException:
         return None
 
+
 # Skanowanie podsieci
 def scan_network():
+    ip_range = list(range(1, 256))
     with ThreadPoolExecutor(max_workers=20) as executor:
-        results = executor.map(check_device, range(1, 256))
+        results = executor.map(check_device, enumerate(ip_range))
     return [device for device in results if device is not None]
+
 
 # Zapisywanie zdjęcia lub filmu jako <clientId>.png / <clientId>.mp4
 def save_device_media(device):
