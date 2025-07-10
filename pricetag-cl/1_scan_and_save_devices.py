@@ -27,6 +27,7 @@ def add_device_to_location(device):
     device_data = {
         "clientId": device["clientid"],
         "clientName": device["name"],
+        "ip": device["ip"],
         "photo": "",
         "video": ""
     }

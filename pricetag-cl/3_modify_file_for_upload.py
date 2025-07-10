@@ -2,7 +2,7 @@ from PIL import Image, PngImagePlugin
 import os
 
 # Nazwa pliku
-filename = "5477874189A3.png"
+filename = "5477874435FD.png"
 
 # Wczytaj obraz
 image = Image.open(filename)

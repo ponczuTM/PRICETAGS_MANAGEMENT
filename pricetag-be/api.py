@@ -342,6 +342,8 @@ async def add_device_to_location(location_id: str, device: Device):
 @app.put("/locations/{location_id}/devices/{client_id}", response_model=LocationResponse)
 async def update_device_in_location(location_id: str, client_id: str, device_update: DeviceUpdate):
     """Aktualizuje urządzenie w lokalizacji"""
+    if device_update.ip is not None:
+        device["ip"] = device_update.ip
     if not validate_object_id(location_id):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

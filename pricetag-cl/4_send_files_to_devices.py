@@ -42,7 +42,7 @@ def calculate_md5(file_path):
 # Czyszczenie pamięci urządzenia
 def clear_device_space(ip):
     url = f"http://{ip}/control?action=clearspace&sign=sign"
-    response = requests.get(url, timeout=5)
+    response = requests.get(url, timeout=15)
     return response.status_code == 200
 
 # Wysyłanie pliku binarnego z podpisem

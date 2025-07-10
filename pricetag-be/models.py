@@ -46,6 +46,7 @@ class Device(BaseModel):
     id: Optional[str] = Field(None, alias="_id", description="Unique ID of the device")
     clientId: str = Field(..., description="Unique device identifier")
     clientName: str = Field(..., description="Device name")
+    ip: Optional[str] = Field("", description="Device IP address")  # ⬅️ NOWE POLE
     photo: Optional[str] = Field(None, description="Base64 encoded photo")
     video: Optional[str] = Field(None, description="Base64 encoded video")
     changed: Optional[str] = Field("false", description="Has device been changed")
@@ -55,6 +56,14 @@ class Device(BaseModel):
         json_encoders = {
             ObjectId: str
         }
+        
+class DeviceUpdate(BaseModel):
+    client_id: Optional[str] = None
+    client_name: Optional[str] = None
+    photo: Optional[str] = None
+    video: Optional[str] = None
+    ip: Optional[str] = None  # ⬅️ Dodajemy nowe pole IP
+
 
 class DeviceMediaUpdate(BaseModel):
     photo: Optional[str] = None

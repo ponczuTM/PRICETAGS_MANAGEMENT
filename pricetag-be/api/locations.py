@@ -81,11 +81,15 @@ async def add_device_to_location(location_id: str, device: Device, db=Depends(ge
 
         # Add unique ID to the device if not already present
         device_dict = {
+            "_id": str(ObjectId()),
             "clientId": device.clientId,
             "clientName": device.clientName,
-            "changed": "false",
-            "_id": str(ObjectId())
+            "ip": device.ip or "",               # ⬅️ DODAJ
+            "photo": device.photo,
+            "video": device.video,
+            "changed": "false"
         }
+
 
 
         # Add the "changed" key with the value "false" to the device
