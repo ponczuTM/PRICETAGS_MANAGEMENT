@@ -21,6 +21,10 @@ for device in devices:
     if changed == "true":
         try:
             script_dir = os.path.dirname(os.path.abspath(__file__))
+            photo_filename = f"{client_id}.png"
+            video_filename = f"{client_id}.mp4"
+            photo_filepath = os.path.join(script_dir, photo_filename)
+            video_filepath = os.path.join(script_dir, video_filename)
 
             # Zapisz zdjęcie jeśli istnieje
             if photo and photo.strip() != "":
@@ -30,10 +34,11 @@ for device in devices:
                 if missing_padding:
                     photo += "=" * (4 - missing_padding)
                 photo_data = base64.b64decode(photo)
-                photo_filename = f"{client_id}.png"
-                photo_filepath = os.path.join(script_dir, photo_filename)
                 with open(photo_filepath, "wb") as f:
                     f.write(photo_data)
+                
+                if os.path.exists(video_filepath):
+                    os.remove(video_filepath)
                 print(f"📷 Zapisano zdjęcie urządzenia {device_id} jako {photo_filename}")
 
             # Zapisz wideo jeśli istnieje
@@ -44,13 +49,13 @@ for device in devices:
                 if missing_padding:
                     video += "=" * (4 - missing_padding)
                 video_data = base64.b64decode(video)
-                video_filename = f"{client_name}.mp4"
-                video_filepath = os.path.join(script_dir, video_filename)
                 with open(video_filepath, "wb") as f:
                     f.write(video_data)
+                if os.path.exists(photo_filepath):
+                    os.remove(photo_filepath)
                 print(f"🎞️ Zapisano wideo urządzenia {device_id} jako {video_filename}")
 
-            # Usuń pliki photo i video
+            # Usuń pliki photo i video w bazie
             delete_url = f"http://0.0.0.0:8000/api/locations/{LOCATION_ID}/devices/{device_id}/delete-files"
             delete_response = requests.delete(delete_url)
             if delete_response.status_code == 200:

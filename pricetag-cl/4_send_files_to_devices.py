@@ -8,7 +8,7 @@ import time
 # Konfiguracja
 LOCATION_ID = "685003cbf071eb1bb4304cd2"
 API_BASE = "http://localhost:8000/api/locations"
-IMAGE_FOLDER = "."  # Folder z plikami PNG i JS
+IMAGE_FOLDER = "."  # Folder z plikami PNG, MP4 i JS
 
 # Pobierz urządzenia z bazy
 def get_devices_from_database() -> List[dict]:
@@ -35,7 +35,7 @@ def calculate_md5(file_path):
 def clear_device_space(ip):
     url = f"http://{ip}/control?action=clearspace&sign=sign"
     try:
-        response = requests.get(url, timeout=5)
+        response = requests.get(url, timeout=15)
         return response.status_code == 200
     except:
         return False
@@ -74,55 +74,82 @@ def main():
 
     for device in devices:
         clientid = device.get("clientId")
+        clientname = device.get("clientName")
         ip = device.get("ip")
 
-        if not clientid or not ip:
-            print(f"⚠️ Pominięto urządzenie bez IP lub clientId.")
+        if not clientid or not ip or not clientname:
+            print(f"⚠️ Pominięto urządzenie bez IP, clientId lub clientName.")
             continue
 
         png_path = os.path.join(IMAGE_FOLDER, f"{clientid}.png")
+        mp4_path = os.path.join(IMAGE_FOLDER, f"{clientid}.mp4")
         js_path = os.path.join(IMAGE_FOLDER, f"{clientid}.js")
 
-        if not os.path.exists(png_path):
-            print(f"❌ Brak pliku PNG dla {clientid}")
+        has_png = os.path.exists(png_path)
+        has_mp4 = os.path.exists(mp4_path)
+
+        if not has_png and not has_mp4:
+            print(f"❌ Brak plików PNG/MP4 dla {clientid}")
             continue
 
-        # Wyczyść pamięć urządzenia
         if clear_device_space(ip):
             print(f"🧹 Pamięć wyczyszczona dla {clientid} ({ip})")
         else:
             print(f"❌ Nie udało się wyczyścić pamięci dla {clientid} ({ip})")
             continue
 
-        # Generuj plik JS
-        md5_hash = calculate_md5(png_path)
         js_data = {
             "Id": clientid,
             "ItemCode": clientid,
-            "ItemName": clientid,
-            "LabelPicture": {
+            "ItemName": clientid
+        }
+
+        if has_png:
+            png_md5 = calculate_md5(png_path)
+            js_data["LabelPicture"] = {
                 "Height": 1280,
                 "Width": 800,
                 "X": 0,
                 "Y": 0,
                 "PictureName": f"{clientid}.png",
                 "PicturePath": f"files/task/{clientid}.png",
-                "PictureMD5": md5_hash
+                "PictureMD5": png_md5
             }
-        }
+
+        if has_mp4:
+            mp4_md5 = calculate_md5(mp4_path)
+            js_data["LabelVideo"] = {
+                "Height": 1280,
+                "Width": 800,
+                "X": 0,
+                "Y": 0,
+                "VideoList": [{
+                    "VideoNo": 1,
+                    "VideoName": f"{clientid}.mp4",
+                    "VideoPath": f"files/task/{clientid}.mp4",
+                    "VideoMD5": mp4_md5
+                }]
+            }
 
         with open(js_path, "w") as f:
             json.dump(js_data, f, indent=4)
 
-        # Wyślij PNG
-        remote_png_path = f"files/task/{clientid}.png"
-        if upload_file_to_device(ip, png_path, remote_png_path):
-            print(f"✅ PNG wysłany: {clientid}")
-        else:
-            print(f"❌ Błąd wysyłania PNG: {clientid}")
-            continue
+        if has_png:
+            remote_png_path = f"files/task/{clientid}.png"
+            if upload_file_to_device(ip, png_path, remote_png_path):
+                print(f"✅ PNG wysłany: {clientid}")
+            else:
+                print(f"❌ Błąd wysyłania PNG: {clientid}")
+                continue
 
-        # Wyślij JS
+        if has_mp4:
+            remote_mp4_path = f"files/task/{clientid}.mp4"
+            if upload_file_to_device(ip, mp4_path, remote_mp4_path):
+                print(f"✅ MP4 wysłany: {clientid}")
+            else:
+                print(f"❌ Błąd wysyłania MP4: {clientid}")
+                continue
+
         remote_js_path = f"files/task/{clientid}.js"
         if upload_file_to_device(ip, js_path, remote_js_path):
             print(f"✅ JS wysłany: {clientid}")
@@ -130,7 +157,6 @@ def main():
             print(f"❌ Błąd wysyłania JS: {clientid}")
             continue
 
-        # Wywołanie taska
         if trigger_device(ip, f"{clientid}.js"):
             print(f"🚀 Uruchomiono task na {ip}")
             time.sleep(3)
@@ -139,9 +165,12 @@ def main():
                 if os.path.exists(js_path):
                     os.remove(js_path)
                     print(f"🗑️ Usunięto plik JS: {js_path}")
-                if os.path.exists(png_path):
+                if has_png and os.path.exists(png_path):
                     os.remove(png_path)
                     print(f"🗑️ Usunięto plik PNG: {png_path}")
+                if has_mp4 and os.path.exists(mp4_path):
+                    os.remove(mp4_path)
+                    print(f"🗑️ Usunięto plik MP4: {mp4_path}")
             except Exception as e:
                 print(f"⚠️ Błąd usuwania plików: {e}")
         else:
