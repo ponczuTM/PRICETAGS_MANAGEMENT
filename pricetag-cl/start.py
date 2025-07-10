@@ -1,7 +1,9 @@
 import subprocess
 import time
+import os
 while True:
-    subprocess.run(["python3", "downloader.py"])
-    # time.sleep(10)
-    subprocess.run(["python3", "modifier.py"])
-    subprocess.run(["python3", "sender.py"])
+    os.system("clear")
+    subprocess.run(["python3", "2_download_devices_files.py"])
+    subprocess.run(["python3", "3_modify_file_for_upload.py"])
+    subprocess.run(["python3", "4_send_files_to_devices.py"])
+    time.sleep(5)

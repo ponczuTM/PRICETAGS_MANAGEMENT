@@ -1,22 +1,30 @@
 from PIL import Image, PngImagePlugin
 import os
 
-# Nazwa pliku
-filename = "5477874435FD.png"
+# Docelowy rozmiar
+TARGET_SIZE = (720, 1280)
 
-# Wczytaj obraz
-image = Image.open(filename)
+# Przetwarzanie wszystkich plików .png w bieżącym katalogu
+for filename in os.listdir("."):
+    if filename.lower().endswith(".png"):
+        try:
+            image = Image.open(filename)
 
-# Konwersja do RGBA jeśli potrzebne
-if image.mode != "RGBA":
-    image = image.convert("RGBA")
+            # Konwersja do RGBA jeśli potrzebne
+            if image.mode != "RGBA":
+                image = image.convert("RGBA")
 
-# Dodaj metadane (tEXt chunk)
-meta = PngImagePlugin.PngInfo()
-meta.add_text("Author", "ConvertedByScript")
-meta.add_text("Comment", "Fixed RGBA and metadata for compatibility.")
+            # Skalowanie
+            image = image.resize(TARGET_SIZE)
 
-# Zapisz obraz, nadpisując oryginał
-image.save(filename, pnginfo=meta)
+            # Dodanie metadanych
+            meta = PngImagePlugin.PngInfo()
+            meta.add_text("Author", "EXON")
+            meta.add_text("Comment", "Fixed RGBA and metadata for compatibility.")
 
-print(f"✅ Plik '{filename}' został zmodyfikowany: RGBA + metadane dodane.")
+            # Zapis nadpisujący plik
+            image.save(filename, pnginfo=meta)
+
+            print(f"✅ Przetworzono: {filename}")
+        except Exception as e:
+            print(f"❌ Błąd przetwarzania {filename}: {e}")
