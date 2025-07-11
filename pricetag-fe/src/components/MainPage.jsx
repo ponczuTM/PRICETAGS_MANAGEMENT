@@ -383,15 +383,20 @@ function MainPage() {
             onClick={() => setSelectedDevice(device)}
           >
             <div className={styles.deviceImageContainer}>
-            <img
-              src={
-                device.thumbnail
-                  ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}/thumbnail`
-                  : "/src/assets/images/device.png"
-              }
-              alt="Device"
-              className={styles.deviceImage}
-            />
+              <div className={styles.hangingWrapper}>
+              <div className={styles.hangerBar}></div>
+              <div className={styles.stick + " " + styles.left}></div>
+              <div className={styles.stick + " " + styles.right}></div>
+              <img
+                src={
+                  device.thumbnail
+                    ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}/thumbnail`
+                    : "/src/assets/images/device.png"
+                }
+                alt="Device"
+                className={styles.deviceImage}
+              />
+            </div>
 
 
               <div className={styles.onlineIndicator}></div>
