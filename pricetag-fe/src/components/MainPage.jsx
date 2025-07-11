@@ -389,10 +389,13 @@ function MainPage() {
               <div className={styles.stick + " " + styles.right}></div>
               <img
                 src={
-                  device.thumbnail
-                    ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}/thumbnail`
-                    : "/src/assets/images/device.png"
+                  device.video
+                    ? `${API_BASE_URL}/${locationId}/files/${device.video}/thumbnail`
+                    : device.photo
+                      ? `${API_BASE_URL}/${locationId}/files/${device.photo}/thumbnail`
+                      : "/src/assets/images/device.png"
                 }
+                
                 alt="Device"
                 className={styles.deviceImage}
               />
