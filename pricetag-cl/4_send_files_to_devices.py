@@ -108,7 +108,7 @@ def main():
             png_md5 = calculate_md5(png_path)
             js_data["LabelPicture"] = {
                 "Height": 1280,
-                "Width": 800,
+                "Width": 720,
                 "X": 0,
                 "Y": 0,
                 "PictureName": f"{clientid}.png",
@@ -120,7 +120,7 @@ def main():
             mp4_md5 = calculate_md5(mp4_path)
             js_data["LabelVideo"] = {
                 "Height": 1280,
-                "Width": 800,
+                "Width": 720,
                 "X": 0,
                 "Y": 0,
                 "VideoList": [{
@@ -149,7 +149,7 @@ def main():
             else:
                 print(f"❌ Błąd wysyłania MP4: {clientid}")
                 continue
-
+        time.sleep(1)
         remote_js_path = f"files/task/{clientid}.js"
         if upload_file_to_device(ip, js_path, remote_js_path):
             print(f"✅ JS wysłany: {clientid}")
