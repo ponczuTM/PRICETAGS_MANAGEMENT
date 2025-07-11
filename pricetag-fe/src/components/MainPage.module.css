@@ -1,507 +1,508 @@
-/* Container główny */
+/* MainPage.module.css */
+
+/* --- Container główny --- */
 .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    min-height: 100vh;
-  }
-  
-  /* Header */
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid #e2e8f0;
-  }
-  
-  .title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #2d3748;
-    margin: 0;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  
-  .deviceCount {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-  }
-  
-  /* Grid urządzeń */
-  .deviceGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-  }
-  
-  /* Karta urządzenia */
-  .deviceCard {
-    background: white;
-    border-radius: 16px;
-    padding: 1.5rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .deviceCard::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 10px;
-    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-    transform: scaleX(0);
-    transition: transform 0.3s ease;
-  }
-  
-  .deviceCard:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
-  }
-  
-  .deviceCard:hover::before {
-    transform: scaleX(1);
-  }
-  
-  .deviceCard.selected {
-    border-color: #667eea;
-    background: linear-gradient(135deg, #f0f4ff 0%, #e6f3ff 100%);
-    transform: translateY(-5px);
-    box-shadow: 0 16px 48px rgba(102, 126, 234, 0.2);
-  }
-  
-  .deviceCard.selected::before {
-    transform: scaleX(1);
-  }
-  
-  /* Kontener obrazu urządzenia */
-  .deviceImageContainer {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    margin-top: 10px;
-    position: relative;
-  }
-  
-  .hangingWrapper {
-    position: relative;
-    width: auto;
-  }
-  
-  .deviceImage {
-    width: 117px;
-    height: 192px;
-    object-fit: cover;
-    border: #000 solid 6px;
-    position: relative; /* <- ZMIANA z absolute */
-  }
-  
-  .hangerBar {
-    position: absolute;
-    top: -15px; /* <- ZMIANA z -30px */
-    left: 0;
-    width: 100%;
-    height: 6px;
-    background-color: black;
-  }
-  
-  .stick {
-    position: absolute;
-    width: 6px;
-    height: 15px; /* <- ZMIANA z 30px */
-    background-color: black;
-    top: -15px; /* <- ZMIANA z -30px */
-  }
-  
-  .left {
-    left: 15%;
-  }
-  
-  .right {
-    right: 15%;
-  }
-  
-  
-  .onlineIndicator {
-    width: 20px;
-    height: 20px;
-    background: #10b981;
-    border-radius: 50%;
-    position: absolute;
-    top: -2px;
-    left: 110px;
-    border: 2px solid white;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
-    animation: pulse 2s infinite;
-  }
-  
-  @keyframes pulse {
-    0% { box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4); }
-    50% { box-shadow: 0 2px 8px rgba(16, 185, 129, 0.8), 0 0 0 8px rgba(16, 185, 129, 0.1); }
-    100% { box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4); }
-  }
-  
-  /* Informacje o urządzeniu */
-  .deviceInfo {
-    flex: 1;
-  }
-  
-  .deviceName {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #1a202c;
-    margin: 0 0 0.5rem 0;
-  }
-  
-  .deviceId {
-    color: #718096;
-    font-size: 0.9rem;
-    margin: 0 0 1rem 0;
-    font-family: 'Courier New', monospace;
-    background: #f7fafc;
-    padding: 0.25rem 0.5rem;
-    border-radius: 6px;
-    display: inline-block;
-  }
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  /* min-height: 100vh; */
+  display: flex; /* Dodane dla układu ze stopką */
+  flex-direction: column; /* Dodane dla układu ze stopką */
+  margin-bottom: 100px;
 
-  /* Przełącznik zakładek */
+}
+
+/* --- Header --- */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.deviceCount {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+/* --- Grid urządzeń --- */
+.deviceGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  flex-grow: 1; /* Pozwala gridowi na rozciąganie */
+}
+
+/* --- Karta urządzenia --- */
+.deviceCard {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.deviceCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.deviceCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+}
+
+.deviceCard:hover::before {
+  transform: scaleX(1);
+}
+
+.deviceCard.selected {
+  border-color: #667eea;
+  background: linear-gradient(135deg, #f0f4ff 0%, #e6f3ff 100%);
+  transform: translateY(-5px);
+  box-shadow: 0 16px 48px rgba(102, 126, 234, 0.2);
+}
+
+.deviceCard.selected::before {
+  transform: scaleX(1);
+}
+
+/* --- Kontener obrazu urządzenia --- */
+.deviceImageContainer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  margin-top: 10px;
+  position: relative;
+}
+
+.hangingWrapper {
+  position: relative;
+  width: auto;
+}
+
+.deviceImage {
+  width: 117px;
+  height: 192px;
+  object-fit: cover;
+  border: #000 solid 6px;
+  position: relative;
+}
+
+.hangerBar {
+  position: absolute;
+  top: -15px;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  background-color: black;
+}
+
+.stick {
+  position: absolute;
+  width: 6px;
+  height: 15px;
+  background-color: black;
+  top: -15px;
+}
+
+.left {
+  left: 15%;
+}
+
+.right {
+  right: 15%;
+}
+
+
+.onlineIndicator {
+  width: 20px;
+  height: 20px;
+  background: #10b981;
+  border-radius: 50%;
+  position: absolute;
+  top: -2px;
+  left: 110px;
+  border: 2px solid white;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4); }
+  50% { box-shadow: 0 2px 8px rgba(16, 185, 129, 0.8), 0 0 0 8px rgba(16, 185, 129, 0.1); }
+  100% { box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4); }
+}
+
+/* --- Informacje o urządzeniu --- */
+.deviceInfo {
+  flex: 1;
+}
+
+.deviceName {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0 0 0.5rem 0;
+}
+
+.deviceId {
+  color: #718096;
+  font-size: 0.9rem;
+  margin: 0 0 1rem 0;
+  font-family: 'Courier New', monospace;
+  background: #f7fafc;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+/* --- Przełącznik zakładek --- */
 .tabSwitcher {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 1.5rem;
-    border-radius: 12px;
-    background: #edf2f7;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  }
-  
-  .tab {
-    flex: 1;
-    padding: 0.75rem 1rem;
-    text-align: center;
-    font-weight: 600;
-    color: #4a5568;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 1rem;
-  }
-  
-  .tab:hover {
-    background: #aeaeae;
-  }
-  
-  .activeTab {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    box-shadow: inset 0 -4px 0 #5a67d8;
-  }
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  border-radius: 12px;
+  background: #edf2f7;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
 
-  /* Komunikat o błędzie */
+.tab {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  text-align: center;
+  font-weight: 600;
+  color: #4a5568;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+}
+
+.tab:hover {
+  background: #aeaeae;
+}
+
+.activeTab {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: inset 0 -4px 0 #5a67d8;
+}
+
+/* --- Komunikat o błędzie --- */
 .errorMessage {
-    background: #fff5f5;
-    color: #e53e3e;
-    border-left: 4px solid #e53e3e;
-    padding: 0.75rem 1rem;
-    border-radius: 10px;
-    font-weight: 500;
-    font-size: 0.95rem;
-    margin-top: 1rem;
-    box-shadow: 0 4px 12px rgba(229, 62, 62, 0.1);
-  }
-  
-  
-  /* Informacje o uploadowanym zdjęciu */
-  .uploadedPhotoInfo {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    background: #f0fff4;
-    padding: 0.75rem;
-    border-radius: 10px;
-    border-left: 4px solid #10b981;
-    margin-top: 1rem;
-  }
-  
-  .uploadedPhotoPreview {
-    flex-shrink: 0;
-  }
-  
-  .miniPreview {
-    width: 40px;
-    height: 40px;
-    object-fit: cover;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .photoDetails {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    min-width: 0;
-  }
-  
-  .photoName {
-    font-weight: 500;
-    color: #1a202c;
-    font-size: 0.9rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  
-  .photoMeta {
-    font-size: 0.75rem;
-    color: #10b981;
-    font-weight: 500;
-  }
-  
-  /* Modal upload */
-  .uploadModal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    backdrop-filter: blur(5px);
-  }
-  
-  .modalContent {
-    background: white;
-    border-radius: 20px;
-    padding: 2rem;
-    max-width: 500px;
-    width: 90%;
-    max-height: 80vh;
-    overflow-y: auto;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-    transform: translateY(0);
-    animation: modalSlideIn 0.3s ease;
-  }
-  
-  @keyframes modalSlideIn {
-    from {
+  background: #fff5f5;
+  color: #e53e3e;
+  border-left: 4px solid #e53e3e;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  margin-top: 1rem;
+  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.1);
+}
+
+/* --- Informacje o uploadowanym zdjęciu (przeedytowane, bo znikają w kodzie, ale dla pewności zostawiam) --- */
+.uploadedPhotoInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #f0fff4;
+  padding: 0.75rem;
+  border-radius: 10px;
+  border-left: 4px solid #10b981;
+  margin-top: 1rem;
+}
+
+.uploadedPhotoPreview {
+  flex-shrink: 0;
+}
+
+.miniPreview {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.photoDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.photoName {
+  font-weight: 500;
+  color: #1a202c;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.photoMeta {
+  font-size: 0.75rem;
+  color: #10b981;
+  font-weight: 500;
+}
+
+/* --- Modal upload --- */
+.uploadModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.modalContent {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+  transform: translateY(0);
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
       transform: translateY(-50px);
       opacity: 0;
-    }
-    to {
+  }
+  to {
       transform: translateY(0);
       opacity: 1;
-    }
   }
-  
-  .modalHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid #e2e8f0;
-  }
-  
-  .modalTitle {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #2d3748;
-    margin: 0;
-  }
-  
-  .closeButton {
-    background: none;
-    border: none;
-    font-size: 2rem;
-    color: #a0aec0;
-    cursor: pointer;
-    transition: color 0.2s ease;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-  }
-  
-  .closeButton:hover {
-    color: #e53e3e;
-    background: #fed7d7;
-  }
-  
-  /* Drop Zone */
-  .dropZone {
-    border: 3px dashed #cbd5e0;
-    border-radius: 16px;
-    padding: 2rem;
-    text-align: center;
-    background: #f7fafc;
-    transition: all 0.3s ease;
-    position: relative;
-    margin-bottom: 1.5rem;
-    min-height: 200px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .dropZone:hover {
-    border-color: #667eea;
-    background: #f0f4ff;
-  }
-  
-  .dropZone.hasFile {
-    border-color: #10b981;
-    background: #f0fff4;
-  }
-  
-  .dropZoneContent {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-  }
-  
-  .uploadIcon {
-    font-size: 3rem;
-    opacity: 0.6;
-  }
-  
-  .dropText {
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: #4a5568;
-    margin: 0;
-  }
-  
-  .dropSubtext {
-    font-size: 0.9rem;
-    color: #718096;
-    margin: 0;
-  }
-  
-  .fileInput {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    cursor: pointer;
-  }
-  
-  /* Preview Container */
-  .previewContainer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    width: 100%;
-  }
-  
-  .previewImage {
-    max-width: 100%;
-    max-height: 200px;
-    object-fit: contain;
-    border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  }
-  
-  .fileInfo {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.25rem;
-  }
-  
-  .fileName {
-    font-weight: 600;
-    color: #2d3748;
-    font-size: 1rem;
-  }
-  
-  .fileSize {
-    color: #718096;
-    font-size: 0.9rem;
-  }
-  
-  /* Akcje modala */
-  .modalActions {
-    display: flex;
-    gap: 1rem;
-    justify-content: flex-end;
-  }
-  
-  .uploadButton {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-  }
-  
-  .uploadButton:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-  }
-  
-  .uploadButton:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-  }
-  
-  .cancelButton {
-    background: #e2e8f0;
-    color: #4a5568;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-  
-  .cancelButton:hover {
-    background: #cbd5e0;
-    transform: translateY(-2px);
-  }
-  
+}
 
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e2e8f0;
+}
 
-  /*  */
+.modalTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0;
+}
 
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #a0aec0;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
 
-  /* Galeria plików */
+.closeButton:hover {
+  color: #e53e3e;
+  background: #fed7d7;
+}
+
+/* --- Drop Zone --- */
+.dropZone {
+  border: 3px dashed #cbd5e0;
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  background: #f7fafc;
+  transition: all 0.3s ease;
+  position: relative;
+  margin-bottom: 1.5rem;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.dropZone:hover {
+  border-color: #667eea;
+  background: #f0f4ff;
+}
+
+.dropZone.hasFile {
+  border-color: #10b981;
+  background: #f0fff4;
+}
+
+.dropZoneContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.uploadIcon {
+  font-size: 3rem;
+  opacity: 0.6;
+}
+
+.dropText {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #4a5568;
+  margin: 0;
+}
+
+.dropSubtext {
+  font-size: 0.9rem;
+  color: #718096;
+  margin: 0;
+}
+
+.fileInput {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* --- Preview Container --- */
+.previewContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.previewImage {
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.fileInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.fileName {
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 1rem;
+}
+
+.fileSize {
+  color: #718096;
+  font-size: 0.9rem;
+}
+
+/* --- Akcje modala --- */
+.modalActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.uploadButton {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.uploadButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.uploadButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.cancelButton {
+  background: #e2e8f0;
+  color: #4a5568;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cancelButton:hover {
+  background: #cbd5e0;
+  transform: translateY(-2px);
+}
+
+/* --- Galeria plików --- */
 .galleryContainer {
   background: #f7fafc;
   border-radius: 16px;
@@ -717,38 +718,258 @@
   backdrop-filter: blur(10px);
 }
 
-/* Responsywność */
+/* --- Nowe style dla stopki z przyciskiem zarządzania --- */
+.manageButtonContainer {
+  position: fixed; /* Przyklejamy do dołu */
+  bottom: 0; /* Na samym dole */
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center; /* Wyśrodkowanie przycisku */
+  padding: 1rem;
+  background: linear-gradient(to top, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.7) 70%, transparent); /* Delikatny gradient */
+  backdrop-filter: blur(5px); /* Rozmycie tła */
+  box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.1); /* Cień na górze */
+  z-index: 999; /* Upewnij się, że jest nad innymi elementami, ale pod modalem */
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+}
+
+.manageButton {
+  background: linear-gradient(135deg, #4CAF50 0%, #2E8B57 100%); /* Zmieniony na bardziej "zarządzający" kolor */
+  color: white;
+  border: none;
+  padding: 1rem 2.5rem;
+  border-radius: 30px; /* Bardziej zaokrąglony */
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.manageButton:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(76, 175, 80, 0.5);
+}
+
+/* --- Lepszy wygląd statusów w modalu --- */
+.uploadStatusContainer {
+  margin-top: 25px; /* Większy odstęp */
+  border-top: 1px solid #e0e0e0;
+  padding-top: 20px; /* Większy padding */
+  background: #fcfdff; /* Delikatne tło */
+  border-radius: 12px;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05); /* Wewnętrzny cień */
+  padding: 15px 20px; /* Zwiększony padding */
+}
+
+.uploadStatusContainer h4 {
+  margin-top: 0;
+  margin-bottom: 15px; /* Większy odstęp */
+  color: #333;
+  font-size: 1.1rem; /* Większy rozmiar czcionki */
+  font-weight: 600;
+  text-align: center;
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.uploadStatusContainer h4::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  border-radius: 2px;
+}
+
+.uploadStatusList {
+  list-style: none;
+  padding: 0;
+  max-height: 180px; /* Zwiększona wysokość */
+  overflow-y: auto;
+  border: 1px solid #e9ecef; /* Delikatniejsza ramka */
+  border-radius: 10px; /* Większe zaokrąglenie */
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Scrollbar dla listy statusów */
+.uploadStatusList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.uploadStatusList::-webkit-scrollbar-track {
+  background: #f1f3f5;
+  border-radius: 10px;
+}
+
+.uploadStatusList::-webkit-scrollbar-thumb {
+  background: #ced4da;
+  border-radius: 10px;
+}
+
+.uploadStatusList::-webkit-scrollbar-thumb:hover {
+  background: #adb5bd;
+}
+
+.modalUploadStatusItem {
+  padding: 10px 15px; /* Zwiększony padding */
+  border-bottom: 1px solid #f0f2f5; /* Delikatniejszy separator */
+  font-size: 0.95em; /* Nieco większy tekst */
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Odstęp między ikoną/kropką a tekstem */
+  font-weight: 500;
+}
+
+.modalUploadStatusItem:last-child {
+  border-bottom: none;
+}
+
+/* Nowe, bardziej wyraziste ikony statusów */
+.modalUploadStatusItem::before {
+  font-family: 'Font Awesome 5 Free'; /* Zakładając, że masz Font Awesome */
+  font-weight: 900;
+  content: '\f111'; /* Domyślna kropka */
+  margin-right: 0; /* Odstęp zrobiony przez gap */
+  font-size: 0.7em;
+  width: 1em;
+  text-align: center;
+}
+
+.deviceNameInStatus {
+  font-weight: 700; /* Bardziej pogrubiona nazwa */
+  color: #4a5568; /* Ciemniejsza nazwa */
+}
+
+/* Statusy kolorów dla elementów listy w modalu */
+.modalUploadStatusItem.pending {
+  color: #4e4e50; /* Czekający, bardziej neutralny */
+  background-color: #e9ecef; /* Delikatny szary */
+}
+.modalUploadStatusItem.pending::before {
+  content: '\f111'; /* Circle */
+  color: #6c757d;
+}
+
+.modalUploadStatusItem.uploading_file {
+  color: #007bff; /* Wysyłanie pliku */
+  background-color: #e0f2fe; /* Jasnoniebieski */
+}
+.modalUploadStatusItem.uploading_file::before {
+  content: '\f093'; /* Upload icon */
+  color: #007bff;
+}
+
+.modalUploadStatusItem.in_progress {
+  color: #17a2b8; /* W trakcie, turkusowy */
+  background-color: #e8f9fa; /* Jasny turkus */
+}
+.modalUploadStatusItem.in_progress::before {
+  content: '\f110'; /* Spinner icon */
+  animation: spin 1.5s linear infinite; /* Animacja ładowania */
+  color: #17a2b8;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.modalUploadStatusItem.success {
+  color: #28a745; /* Sukces, zielony */
+  background-color: #e6ffed; /* Jasnozielony */
+}
+.modalUploadStatusItem.success::before {
+  content: '\f058'; /* Check circle icon */
+  color: #28a745;
+}
+
+.modalUploadStatusItem.error {
+  color: #dc3545; /* Błąd, czerwony */
+  background-color: #fcebeb; /* Jasnoczerwony */
+}
+.modalUploadStatusItem.error::before {
+  content: '\f06a'; /* Exclamation circle icon */
+  color: #dc3545;
+}
+
+
+/* --- Responsywność --- */
 @media (max-width: 768px) {
   .fileGrid {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 0.75rem;
-    max-height: 300px;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 0.75rem;
+      max-height: 300px;
   }
-  
+
   .galleryThumbnail,
   .galleryPlaceholder {
-    width: 60px;
-    height: 60px;
+      width: 60px;
+      height: 60px;
   }
-  
+
   .galleryFileName {
-    font-size: 0.7rem;
+      font-size: 0.7rem;
   }
-  
+
   .fileIcon {
-    font-size: 1.5rem;
+      font-size: 1.5rem;
+  }
+
+  .container {
+      padding: 1rem;
+  }
+
+  .header {
+      flex-direction: column;
+      align-items: flex-start;
+  }
+
+  .title {
+      font-size: 2rem;
+  }
+
+  .deviceCount {
+      margin-top: 10px;
+  }
+
+  .modalContent {
+      padding: 1.5rem;
+  }
+
+  .modalTitle {
+      font-size: 1.25rem;
+  }
+
+  .uploadButton, .cancelButton {
+      padding: 0.6rem 1.2rem;
+      font-size: 0.9rem;
   }
 }
 
 @media (max-width: 480px) {
   .fileGrid {
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-    gap: 0.5rem;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 0.5rem;
   }
-  
+
   .galleryThumbnail,
   .galleryPlaceholder {
-    width: 50px;
-    height: 50px;
+      width: 50px;
+      height: 50px;
+  }
+
+  .manageButton {
+      padding: 0.8rem 2rem;
+      font-size: 1rem;
   }
 }

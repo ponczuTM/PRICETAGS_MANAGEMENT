@@ -6,27 +6,28 @@ const API_BASE_URL = "http://localhost:8000/api/locations";
 
 function MainPage() {
   const [devices, setDevices] = useState([]);
-  const [selectedDevice, setSelectedDevice] = useState(null);
-  const [file, setFile] = useState(null); // Dla plików przesyłanych
+  const [selectedDevices, setSelectedDevices] = useState([]);
+  const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [uploadedFiles, setUploadedFiles] = useState({});
-  const [activeTab, setActiveTab] = useState("photo"); // photo, video, gallery
+  const [activeTab, setActiveTab] = useState("photo");
   const [errorMsg, setErrorMsg] = useState(null);
-  const [videoFPS, setVideoFPS] = useState(null);
-  const [galleryFiles, setGalleryFiles] = useState([]); // Nowy stan dla plików w galerii
-  const [selectedGalleryFile, setSelectedGalleryFile] = useState(null); // Nowy stan dla wybranego pliku z galerii
-  const videoRef = useRef(null);
+  const [galleryFiles, setGalleryFiles] = useState([]);
+  const [selectedGalleryFile, setSelectedGalleryFile] = useState(null);
+  const [uploadStatuses, setUploadStatuses] = useState({});
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const videoRef = useRef(null); // This ref is no longer strictly necessary for FPS, but kept for potential future video controls
 
   useEffect(() => {
     fetchDevices();
   }, []);
 
-  // Gdy zmienia się selectedDevice lub activeTab na "gallery", pobierz pliki dla galerii
   useEffect(() => {
-    if (selectedDevice && activeTab === "gallery") {
+    if (selectedDevices.length > 0 && activeTab === "gallery") {
       fetchGalleryFiles();
     }
-  }, [selectedDevice, activeTab]);
+  }, [selectedDevices, activeTab]);
 
   const fetchDevices = async () => {
     try {
@@ -34,7 +35,6 @@ function MainPage() {
       const devicesData = await res.json();
       setDevices(devicesData);
 
-      // Pobierz informacje o istniejących plikach dla każdego urządzenia
       const filesInfo = {};
       for (const device of devicesData) {
         filesInfo[device._id] = {
@@ -62,52 +62,6 @@ function MainPage() {
     }
   };
 
-  const measureVideoFPS = (videoEl) => {
-    return new Promise((resolve) => {
-      if (!videoEl || typeof videoEl.requestVideoFrameCallback !== "function") {
-        resolve("Brak wsparcia FPS");
-        return;
-      }
-
-      try {
-        let frames = 0;
-        let start = performance.now();
-
-        const countFrames = () => {
-          frames++;
-          const now = performance.now();
-          const duration = now - start;
-
-          if (duration >= 1000) {
-            const fps = (frames / (duration / 1000)).toFixed(2);
-            videoEl.pause();
-            resolve(fps);
-          } else {
-            videoEl.requestVideoFrameCallback(countFrames);
-          }
-        };
-
-        videoEl.currentTime = 0.1;
-
-        const onError = () => {
-          resolve("Błąd przetwarzania");
-        };
-
-        videoEl.onerror = onError;
-
-        videoEl.play()
-          .then(() => {
-            videoEl.requestVideoFrameCallback(countFrames);
-          })
-          .catch(() => {
-            resolve("Błąd przetwarzania");
-          });
-      } catch (e) {
-        resolve("Błąd przetwarzania");
-      }
-    });
-  };
-
   const handleDrop = (e) => {
     e.preventDefault();
     if (e.dataTransfer.files.length > 0) {
@@ -116,7 +70,6 @@ function MainPage() {
   };
 
   const handleFile = (f) => {
-    // Resetuj wybrany plik z galerii, jeśli użytkownik przeciąga nowy
     setSelectedGalleryFile(null);
 
     const isImage = activeTab === "photo" && f.type.startsWith("image/");
@@ -127,15 +80,6 @@ function MainPage() {
       const url = URL.createObjectURL(f);
       setPreviewUrl(url);
       setErrorMsg(null);
-      setVideoFPS(null);
-
-      if (isVideo) {
-        setTimeout(() => {
-          if (videoRef.current) {
-            measureVideoFPS(videoRef.current).then(setVideoFPS);
-          }
-        }, 500);
-      }
     } else {
       setFile(null);
       setPreviewUrl(null);
@@ -148,36 +92,42 @@ function MainPage() {
   };
 
   const handleGalleryFileSelect = (filename) => {
-    // Ustaw wybrany plik z galerii i zresetuj stan uploadu
     setSelectedGalleryFile(filename);
     setFile(null);
     setPreviewUrl(null);
     setErrorMsg(null);
-    setVideoFPS(null);
   };
 
-  const handleUpload = async () => {
-    if (!selectedDevice) {
-      setErrorMsg("Wybierz urządzenie.");
+  const handleMassUpload = async () => {
+    if (selectedDevices.length === 0) {
+      setErrorMsg("Wybierz urządzenia, dla których chcesz zaktualizować pliki.");
       return;
     }
-    
-    try {
-      await fetch(
-        `${API_BASE_URL}/${locationId}/devices/${selectedDevice._id}/delete-files`,
-        { method: "DELETE" }
-      );
-    } catch (err) {
-      console.warn("Nie udało się usunąć starych plików:", err);
+
+    if (!file && !selectedGalleryFile) {
+      setErrorMsg("Wybierz plik do wysłania lub zaznacz z galerii.");
+      return;
     }
-    
+
+    setErrorMsg(null);
+
+    const initialStatuses = {};
+    selectedDevices.forEach(device => {
+      initialStatuses[device._id] = { status: 'pending', message: 'Oczekuje...' };
+    });
+    setUploadStatuses(initialStatuses);
+
     let filenameToUse = null;
 
-    if (selectedGalleryFile) {
-      // Przypadek 1: Plik wybrany z galerii
-      filenameToUse = selectedGalleryFile;
-    } else if (file) {
-      // Przypadek 2: Plik przeciągnięty/wybrany do uploadu
+    if (file) {
+      setUploadStatuses(prev => {
+        const newStatuses = { ...prev };
+        selectedDevices.forEach(device => {
+          newStatuses[device._id] = { status: 'uploading_file', message: `${device.clientName}, ${device.clientId}: Wysyłanie pliku głównego...` };
+        });
+        return newStatuses;
+      });
+
       const formData = new FormData();
       formData.append("file", file);
 
@@ -198,152 +148,119 @@ function MainPage() {
         filenameToUse = uploadResult.filename;
       } catch (err) {
         console.error("Błąd wysyłania pliku:", err);
-        setErrorMsg("Wystąpił błąd podczas przesyłania pliku");
+        setErrorMsg("Wystąpił błąd podczas przesyłania pliku: " + err.message);
+        setUploadStatuses(prev => {
+          const newStatuses = { ...prev };
+          selectedDevices.forEach(device => {
+            newStatuses[device._id] = { status: 'error', message: `${device.clientName}, ${device.clientId}: Błąd uploadu pliku: ${err.message}` };
+          });
+          return newStatuses;
+        });
         return;
       }
+    } else if (selectedGalleryFile) {
+      filenameToUse = selectedGalleryFile;
     } else {
       setErrorMsg("Wybierz plik do wysłania lub zaznacz z galerii.");
       return;
     }
 
-    // Jeśli mamy nazwę pliku do użycia (z uploadu lub z galerii)
     if (filenameToUse) {
-      try {
-        // Określenie, które pole w urządzeniu ma być zaktualizowane (photo/video)
-        // Bazujemy na typie pliku, a nie na aktywnej zakładce, aby zapewnić spójność
-        const fileTypeActual = getFileType(filenameToUse);
-        let fieldToUpdate = null;
+      const fileTypeActual = getFileType(filenameToUse);
+      let fieldToUpdate = null;
 
-        if (fileTypeActual === 'image') {
-          fieldToUpdate = 'photo';
-        } else if (fileTypeActual === 'video') {
-          fieldToUpdate = 'video';
-        } else {
-          // Obsługa przypadku, gdy plik nie jest ani obrazem, ani wideo
-          setErrorMsg("Wybrany plik z galerii nie jest zdjęciem ani filmem i nie może zostać przypisany.");
-          return;
-        }
+      if (fileTypeActual === 'image') {
+        fieldToUpdate = 'photo';
+      } else if (fileTypeActual === 'video') {
+        fieldToUpdate = 'video';
+      } else {
+        setErrorMsg("Wybrany plik z galerii nie jest zdjęciem ani filmem i nie może zostać przypisany.");
+        return;
+      }
 
-        if (!fieldToUpdate) {
-            setErrorMsg("Nie można określić typu pliku do aktualizacji.");
-            return;
-        }
-
-        // Żądanie 1: Aktualizacja pola 'photo' lub 'video'
-        const updateFieldResponse = await fetch(
-          `${API_BASE_URL}/${locationId}/devices/${selectedDevice._id}/${fieldToUpdate}`,
-          {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ [fieldToUpdate]: filenameToUse }),
-          }
-        );
-
-        if (!updateFieldResponse.ok) {
-          throw new Error(`Błąd podczas aktualizacji pola ${fieldToUpdate} w urządzeniu`);
-        }
-
-        // Żądanie 2: Ustawienie flagi 'changed' na true
-        const updateChangedFlagResponse = await fetch(
-          `${API_BASE_URL}/${locationId}/devices/${selectedDevice._id}/changed-true`,
-          { method: "PUT" }
-        );
-
-        if (!updateChangedFlagResponse.ok) {
-          throw new Error("Błąd podczas ustawiania flagi 'changed' na true");
-        }
-
-        // Żądanie 3: Ustawienie miniaturki (thumbnail)
-        const updateThumbnailResponse = await fetch(
-          `${API_BASE_URL}/${locationId}/devices/${selectedDevice._id}/thumbnail`,
-          {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              thumbnail: `${filenameToUse.split(".")[0]}.png`,
-            }),
-          }
-        );
-
-        if (!updateThumbnailResponse.ok) {
-          throw new Error("Błąd podczas aktualizacji miniaturki urządzenia");
-        }
-
-        
-
-        if (!updateChangedFlagResponse.ok) {
-          throw new Error("Błąd podczas ustawiania flagi 'changed' na true");
-        }
-
-        // Aktualizacja stanu UI po sukcesie
-        setUploadedFiles((prev) => ({
+      for (let i = 0; i < selectedDevices.length; i++) {
+        const device = selectedDevices[i];
+        setUploadStatuses(prev => ({
           ...prev,
-          [selectedDevice._id]: {
-            ...prev[selectedDevice._id],
-            [`${fieldToUpdate}Url`]: `${API_BASE_URL}/${locationId}/files/${filenameToUse}`,
-          },
+          [device._id]: { status: 'in_progress', message: `${device.clientName}, ${device.clientId}: Aktualizowanie...` }
         }));
 
-        closeUpload();
-        fetchDevices(); // Odśwież listę urządzeń, aby UI odzwierciedlało zmiany
-      } catch (err) {
-        console.error("Błąd podczas aktualizacji urządzenia:", err);
-        setErrorMsg(`Wystąpił błąd podczas aktualizacji urządzenia: ${err.message}`);
-      }
-    }
-  };
+        try {
+          await fetch(
+            `${API_BASE_URL}/${locationId}/devices/${device._id}/delete-files`,
+            { method: "DELETE" }
+          );
 
-  const handleDeleteFile = async (fileType) => {
-    if (!selectedDevice) return;
+          const updateFieldResponse = await fetch(
+            `${API_BASE_URL}/${locationId}/devices/${device._id}/${fieldToUpdate}`,
+            {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ [fieldToUpdate]: filenameToUse }),
+            }
+          );
 
-    try {
-      // Wyczyść pole w urządzeniu
-      const updateResponse = await fetch(
-        `${API_BASE_URL}/${locationId}/devices/${selectedDevice._id}/${fileType}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ [fileType]: "" }),
+          if (!updateFieldResponse.ok) {
+            throw new Error(`Błąd podczas aktualizacji pola ${fieldToUpdate}`);
+          }
+
+          const updateChangedFlagResponse = await fetch(
+            `${API_BASE_URL}/${locationId}/devices/${device._id}/changed-true`,
+            { method: "PUT" }
+          );
+
+          if (!updateChangedFlagResponse.ok) {
+            throw new Error("Błąd podczas ustawiania flagi 'changed' na true");
+          }
+
+          const updateThumbnailResponse = await fetch(
+            `${API_BASE_URL}/${locationId}/devices/${device._id}/thumbnail`,
+            {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                thumbnail: `${filenameToUse.split(".")[0]}.png`,
+              }),
+            }
+          );
+
+          if (!updateThumbnailResponse.ok) {
+            throw new Error("Błąd podczas aktualizacji miniaturki urządzenia");
+          }
+
+          setUploadStatuses(prev => ({
+            ...prev,
+            [device._id]: { status: 'success', message: `${device.clientName}, ${device.clientId}: Zakończono sukcesem` }
+          }));
+
+        } catch (err) {
+          console.error(`Błąd podczas aktualizacji urządzenia ${device.clientName}:`, err);
+          setUploadStatuses(prev => ({
+            ...prev,
+            [device._id]: { status: 'error', message: `${device.clientName}, ${device.clientId}: Błąd: ${err.message}` }
+          }));
         }
-      );
-
-      if (!updateResponse.ok) {
-        throw new Error("Błąd podczas usuwania pliku");
       }
-
-      // Oznacz urządzenie jako zmienione
-      await fetch(
-        `${API_BASE_URL}/${locationId}/devices/${selectedDevice._id}/changed-true`,
-        {
-          method: "PUT",
-        }
-      );
-
-      // Zaktualizuj stan
-      setUploadedFiles((prev) => ({
-        ...prev,
-        [selectedDevice._id]: {
-          ...prev[selectedDevice._id],
-          [`${fileType}Url`]: null,
-        },
-      }));
-
-      fetchDevices(); // Odśwież listę urządzeń
-    } catch (err) {
-      console.error("Błąd usuwania pliku:", err);
-      setErrorMsg("Wystąpił błąd podczas usuwania pliku");
+      fetchDevices();
+      setIsModalOpen(false);
+      setSelectedDevices([]);
+      setFile(null);
+      setPreviewUrl(null);
+      setSelectedGalleryFile(null);
+      setUploadStatuses({}); // Wyczyść statusy po zakończeniu uploadu
     }
   };
 
   const closeUpload = () => {
-    setSelectedDevice(null);
+    setSelectedDevices([]);
     setFile(null);
     setPreviewUrl(null);
     setErrorMsg(null);
     setActiveTab("photo");
-    setVideoFPS(null);
-    setGalleryFiles([]); // Wyczyść pliki galerii przy zamknięciu
-    setSelectedGalleryFile(null); // Wyczyść wybrany plik galerii
+    setGalleryFiles([]);
+    setSelectedGalleryFile(null);
+    setUploadStatuses({}); // Wyczyść statusy przy zamykaniu modala
+    setIsModalOpen(false);
   };
 
   const formatFileSize = (bytes) => {
@@ -354,7 +271,6 @@ function MainPage() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
-  // Funkcja do sprawdzenia typu pliku na podstawie rozszerzenia
   const getFileType = (filename) => {
     const ext = filename.split('.').pop().toLowerCase();
     if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(ext)) {
@@ -366,14 +282,35 @@ function MainPage() {
     return 'unknown';
   };
 
-  // Opcjonalna filtracja plików galerii na podstawie aktywnej zakładki
-  // const filteredGalleryFiles = galleryFiles.filter(filename => {
-  //   const fileType = getFileType(filename);
-  //   if (activeTab === 'photo') return fileType === 'image';
-  //   if (activeTab === 'video') return fileType === 'video';
-  //   return true; // W zakładce "Galeria" pokazuj wszystkie
-  // });
+  const handleDeviceSelectToggle = (device) => {
+    setSelectedDevices(prevSelected => {
+      const newSelected = prevSelected.some(d => d._id === device._id)
+        ? prevSelected.filter(d => d._id !== device._id)
+        : [...prevSelected, device];
+      
+      // Wyczyść statusy uploadu za każdym razem, gdy zmieniasz zaznaczone urządzenia
+      setUploadStatuses({}); 
+      return newSelected;
+    });
+    setErrorMsg(null); // Wyczyść błąd, jeśli był
+  };
 
+  const handleSelectAllToggle = () => {
+    if (selectedDevices.length === devices.length) {
+      // All are selected, deselect all
+      setSelectedDevices([]);
+    } else {
+      // Not all are selected, select all
+      setSelectedDevices([...devices]);
+    }
+    setUploadStatuses({}); // Clear statuses when selecting/deselecting all
+    setErrorMsg(null);
+  };
+
+  const getDeviceNameAndId = (deviceId) => {
+    const device = devices.find(d => d._id === deviceId);
+    return device ? `${device.clientName}, ${device.clientId}` : 'Nieznane urządzenie';
+  };
 
   return (
     <div className={styles.container}>
@@ -382,35 +319,44 @@ function MainPage() {
         <div className={styles.deviceCount}>{devices.length} urządzeń</div>
       </div>
 
+      <div className={styles.selectAllContainer}>
+        <button
+          className={styles.selectAllButton}
+          onClick={handleSelectAllToggle}
+        >
+          {selectedDevices.length === devices.length
+            ? "Odznacz wszystkie"
+            : "Zaznacz wszystkie"}
+        </button>
+      </div>
+
       <div className={styles.deviceGrid}>
         {devices.map((device) => (
           <div
             key={device._id}
             className={`${styles.deviceCard} ${
-              selectedDevice?._id === device._id ? styles.selected : ""
+              selectedDevices.some(d => d._id === device._id) ? styles.selected : ""
             }`}
-            onClick={() => setSelectedDevice(device)}
+            onClick={() => handleDeviceSelectToggle(device)}
           >
             <div className={styles.deviceImageContainer}>
               <div className={styles.hangingWrapper}>
-              <div className={styles.hangerBar}></div>
-              <div className={styles.stick + " " + styles.left}></div>
-              <div className={styles.stick + " " + styles.right}></div>
-              <img
-                src={
-                  device.video
-                    ? `${API_BASE_URL}/${locationId}/files/${device.video}/thumbnail`
-                    : device.photo
-                      ? `${API_BASE_URL}/${locationId}/files/${device.photo}/thumbnail`
-                      : "/src/assets/images/device.png"
-                }
-                
-                alt="Device"
-                className={styles.deviceImage}
-              />
-            </div>
+                <div className={styles.hangerBar}></div>
+                <div className={styles.stick + " " + styles.left}></div>
+                <div className={styles.stick + " " + styles.right}></div>
+                <img
+                  src={
+                    device.video
+                      ? `${API_BASE_URL}/${locationId}/files/${device.video}/thumbnail`
+                      : device.photo
+                        ? `${API_BASE_URL}/${locationId}/files/${device.photo}/thumbnail`
+                        : "/src/assets/images/device.png"
+                  }
 
-
+                  alt="Device"
+                  className={styles.deviceImage}
+                />
+              </div>
               <div className={styles.onlineIndicator}></div>
             </div>
 
@@ -426,12 +372,23 @@ function MainPage() {
         ))}
       </div>
 
-      {selectedDevice && (
+      {selectedDevices.length > 0 && (
+        <div className={styles.manageButtonContainer}>
+          <button
+            className={styles.manageButton}
+            onClick={() => setIsModalOpen(true)}
+          >
+            Zarządzaj ({selectedDevices.length}) urządzeń
+          </button>
+        </div>
+      )}
+
+      {isModalOpen && (
         <div className={styles.uploadModal}>
           <div className={styles.modalContent}>
             <div className={styles.modalHeader}>
               <h3 className={styles.modalTitle}>
-                Załaduj {activeTab === "photo" ? "zdjęcie" : (activeTab === "video" ? "film" : "plik")} dla: {selectedDevice.clientName}
+                Załaduj {activeTab === "photo" ? "zdjęcie" : (activeTab === "video" ? "film" : "plik")} dla wybranych urządzeń
               </h3>
               <button className={styles.closeButton} onClick={closeUpload}>
                 ×
@@ -445,9 +402,9 @@ function MainPage() {
                 }`}
                 onClick={() => {
                   setActiveTab("photo");
-                  setFile(null); // Resetuj plik do uploadu
+                  setFile(null);
                   setPreviewUrl(null);
-                  setSelectedGalleryFile(null); // Resetuj wybrany plik z galerii
+                  setSelectedGalleryFile(null);
                 }}
               >
                 Zdjęcie
@@ -458,9 +415,9 @@ function MainPage() {
                 }`}
                 onClick={() => {
                   setActiveTab("video");
-                  setFile(null); // Resetuj plik do uploadu
+                  setFile(null);
                   setPreviewUrl(null);
-                  setSelectedGalleryFile(null); // Resetuj wybrany plik z galerii
+                  setSelectedGalleryFile(null);
                 }}
               >
                 Film
@@ -471,9 +428,8 @@ function MainPage() {
                 }`}
                 onClick={() => {
                   setActiveTab("gallery");
-                  setFile(null); // Resetuj plik do uploadu
+                  setFile(null);
                   setPreviewUrl(null);
-                  // Opcjonalnie: setSelectedGalleryFile(null); jeśli chcesz resetować wybór po przejściu do galerii
                 }}
               >
                 Galeria plików
@@ -481,6 +437,19 @@ function MainPage() {
             </div>
 
             {errorMsg && <div className={styles.errorMessage}>{errorMsg}</div>}
+
+            {Object.keys(uploadStatuses).length > 0 && (
+              <div className={styles.uploadStatusContainer}>
+                <h4>Statusy operacji:</h4>
+                <ul className={styles.uploadStatusList}>
+                  {selectedDevices.map(device => (
+                    <li key={device._id} className={`${styles.modalUploadStatusItem} ${styles[uploadStatuses[device._id]?.status || 'pending']}`}>
+                      <span className={styles.deviceNameInStatus}>{device.clientName}, {device.clientId}:</span> {uploadStatuses[device._id]?.message || 'Oczekuje...'}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {activeTab !== "gallery" ? (
               <div
@@ -504,9 +473,6 @@ function MainPage() {
                           ref={videoRef}
                           className={styles.previewImage}
                         />
-                        {videoFPS && (
-                          <div className={styles.fpsInfo}>FPS: {videoFPS}</div>
-                        )}
                       </>
                     )}
                     <div className={styles.fileInfo}>
@@ -537,11 +503,9 @@ function MainPage() {
                 />
               </div>
             ) : (
-              // Sekcja galerii z radiobuttonami
               <div className={styles.galleryContainer}>
                 {galleryFiles.length > 0 ? (
                   <div className={styles.fileGrid}>
-                    {/* Możesz użyć filteredGalleryFiles tutaj, jeśli chcesz filtrować */}
                     {galleryFiles.map((filename) => (
                       <label
                         key={filename}
@@ -558,24 +522,21 @@ function MainPage() {
                           className={styles.galleryRadioButton}
                         />
                         {getFileType(filename) === 'image' || getFileType(filename) === 'video' ? (
-                          // Miniatura pliku, jeśli jest to obraz lub wideo
                           <img
                             src={`${API_BASE_URL}/${locationId}/files/${filename}/thumbnail`}
                             alt={filename}
                             className={styles.galleryThumbnail}
                           />
                         ) : (
-                          // Placeholder dla innych typów plików
                           <div className={styles.galleryPlaceholder}>
                             <span className={styles.fileIcon}>📄</span>
                           </div>
                         )}
                         <span className={styles.galleryFileName}>
-                        {filename}{" "}<br/>
-                        {filename.endsWith(".png") && "(zdjęcie)"}
-                        {filename.endsWith(".mp4") && "(film)"}
-                      </span>
-
+                          {filename}{" "}<br/>
+                          {filename.endsWith(".png") && "(zdjęcie)"}
+                          {filename.endsWith(".mp4") && "(film)"}
+                        </span>
                       </label>
                     ))}
                   </div>
@@ -588,10 +549,10 @@ function MainPage() {
             <div className={styles.modalActions}>
               <button
                 className={styles.uploadButton}
-                onClick={handleUpload}
-                disabled={!(file || selectedGalleryFile)}
+                onClick={handleMassUpload}
+                disabled={!(file || selectedGalleryFile) || selectedDevices.length === 0}
               >
-                {activeTab === "gallery" ? "Wybierz plik" : "Wyślij plik"}
+                {activeTab === "gallery" ? "Wybierz plik" : "Wyślij plik"} dla {selectedDevices.length} urządzeń
               </button>
               <button className={styles.cancelButton} onClick={closeUpload}>
                 Anuluj
