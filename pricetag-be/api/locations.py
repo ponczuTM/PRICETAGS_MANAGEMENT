@@ -520,3 +520,133 @@ async def list_files_in_location(location_id: str):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error listing files: {str(e)}"
         )
+
+
+
+# Dodaj te importy na górze pliku z endpointami FastAPI
+from PIL import Image
+import io
+import asyncio
+import os
+import subprocess
+from pathlib import Path
+from fastapi.responses import Response, FileResponse # Dodaj FileResponse
+from fastapi import HTTPException, status # Upewnij się, że masz te importy dla błędów HTTP
+from bson import ObjectId # Jeśli używasz MongoDB, upewnij się, że masz to zaimportowane
+
+# --- WAŻNE --- Upewnij się, że UPLOAD_DIR jest zdefiniowany i ma sensowną ścieżkę
+# PRZYKŁAD: UPLOAD_DIR = Path("uploads") # To stworzy katalog 'uploads' w miejscu, gdzie uruchamiasz skrypt
+# UPEWNIJ SIĘ, ŻE TEN KATALOG ISTNIEJE LUB JEST TWORZONY PRZY STARCIE APLIKACJI
+UPLOAD_DIR = Path("") # <-- Popraw lub zweryfikuj tę linię
+
+# Pamiętaj o importowaniu loggera, jeśli go używasz
+# from loguru import logger # Przykładowy logger
+
+@router.get("/{location_id}/files/{filename}/thumbnail")
+async def get_file_thumbnail(
+    location_id: str,
+    filename: str,
+    size: int = 128  # Rozmiar miniaturki (kwadrat)
+):
+    """
+    Zwraca miniaturkę pliku (obrazu lub klatki z wideo).
+    """
+    try:
+        # Możesz dodać walidację location_id, jeśli jest to wymagane dla twojej logiki
+        # if not ObjectId.is_valid(location_id):
+        #     raise HTTPException(
+        #         status_code=status.HTTP_400_BAD_REQUEST,
+        #         detail="Invalid location ID format"
+        #     )
+
+        file_path = UPLOAD_DIR / location_id / filename
+        # print(f"Attempting to get thumbnail for: {file_path}") # Dodaj to do debugowania
+
+        if not file_path.exists():
+            # print(f"File not found at: {file_path}") # Dodaj to do debugowania
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="File not found"
+            )
+
+        file_extension = file_path.suffix.lower()
+
+        if file_extension in [".jpg", ".jpeg", ".png", ".gif", ".bmp"]:
+            # Przetwarzanie obrazów
+            img = Image.open(file_path)
+            img.thumbnail((size, size))
+            img_byte_arr = io.BytesIO()
+            img.save(img_byte_arr, format='PNG')  # Zawsze zwracaj PNG dla spójności
+            return Response(img_byte_arr.getvalue(), media_type="image/png")
+
+        elif file_extension in [".mp4", ".mov", ".avi", ".mkv"]:
+            # Generowanie miniaturki z wideo za pomocą ffmpeg
+            thumbnail_dir = file_path.parent / ".thumbnails"
+            thumbnail_dir.mkdir(exist_ok=True)
+            thumbnail_filename = f"{file_path.stem}.png"
+            thumbnail_path = thumbnail_dir / thumbnail_filename
+
+            # Sprawdź, czy miniaturka już istnieje
+            if not thumbnail_path.exists():
+                # Użyj ffmpeg do wygenerowania miniaturki z 5 sekundy wideo
+                # Możesz dostosować '-ss' (czas startu) i '-vframes' (ilość klatek)
+                cmd = [
+                    "ffmpeg",
+                    "-i", str(file_path),
+                    "-ss", "00:00:05",  # Weź klatkę z 5 sekundy
+                    "-vframes", "1",
+                    "-vf", f"scale={size}:-1", # Skaluj do szerokości 'size', wysokość auto
+                    "-f", "image2",
+                    "-y", # Nadpisz istniejący plik bez pytania
+                    str(thumbnail_path)
+                ]
+                # print(f"Running FFmpeg command: {' '.join(cmd)}") # Dodaj to do debugowania
+                process = await asyncio.create_subprocess_exec(
+                    *cmd,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE
+                )
+                stdout, stderr = await process.communicate()
+
+                if process.returncode != 0:
+                    error_msg = stderr.decode()
+                    # logger.error(f"FFmpeg error: {error_msg}") # Użyj, jeśli masz logger
+                    print(f"FFmpeg error: {error_msg}") # Wypisz do konsoli
+                    raise HTTPException(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail="Could not generate video thumbnail: " + error_msg
+                    )
+
+            if not thumbnail_path.exists():
+                # logger.error("Thumbnail generation failed unexpectedly, file not found after FFmpeg.")
+                print("Thumbnail generation failed unexpectedly, file not found after FFmpeg.")
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Thumbnail generation failed unexpectedly"
+                )
+
+            # Zwróć wygenerowaną miniaturkę
+            return FileResponse(thumbnail_path, media_type="image/png")
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Unsupported file type for thumbnail generation"
+            )
+
+    except HTTPException as http_exc:
+        raise http_exc
+    except FileNotFoundError:
+        # To złapie błąd, jeśli 'ffmpeg' nie zostanie znaleziony w PATH
+        # logger.error("FFmpeg command not found. Is FFmpeg installed and in your system's PATH?")
+        print("FFmpeg command not found. Is FFmpeg installed and in your system's PATH?")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="FFmpeg is not installed or not in system PATH. Cannot generate video thumbnails."
+        )
+    except Exception as e:
+        # logger.error(f"Error generating thumbnail for {filename}: {str(e)}")
+        print(f"Error generating thumbnail for {filename}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error generating thumbnail: {str(e)}"
+        )
