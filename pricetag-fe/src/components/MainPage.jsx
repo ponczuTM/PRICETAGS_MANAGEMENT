@@ -527,7 +527,12 @@ function MainPage() {
                             <span className={styles.fileIcon}>📄</span>
                           </div>
                         )}
-                        <span className={styles.galleryFileName}>{filename}</span>
+                        <span className={styles.galleryFileName}>
+                        {filename}{" "}<br/>
+                        {filename.endsWith(".png") && "(zdjęcie)"}
+                        {filename.endsWith(".mp4") && "(film)"}
+                      </span>
+
                       </label>
                     ))}
                   </div>
