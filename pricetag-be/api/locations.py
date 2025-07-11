@@ -411,3 +411,112 @@ async def set_device_changed_false(location_id: str, device_id: str, db=Depends(
     Ustawia flagę 'changed' na 'false' dla danego urządzenia
     """
     return await _update_device_field(location_id, device_id, {"changed": "false"}, db)
+
+
+from fastapi import UploadFile, File
+import os
+from pathlib import Path
+import shutil
+
+# Konfiguracja ścieżki do przechowywania plików
+UPLOAD_DIR = ""  # Główny katalog dla przesyłanych plików
+
+@router.post("/{location_id}/upload-file/")
+async def upload_file_to_location(
+    location_id: str,
+    file: UploadFile = File(...),
+    db=Depends(get_database)
+):
+    try:
+        # Validate location ID
+        if not ObjectId.is_valid(location_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid location ID format"
+            )
+
+        # Check if location exists
+        location = await db["locations"].find_one({"_id": ObjectId(location_id)})
+        if not location:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Location not found"
+            )
+
+        # Create upload directory if it doesn't exist
+        location_dir = Path(UPLOAD_DIR) / location_id
+        location_dir.mkdir(parents=True, exist_ok=True)
+
+        # Save the file
+        file_path = location_dir / file.filename
+        
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        # Return the path where the file was saved
+        return {
+            "message": "File uploaded successfully",
+            "location_id": location_id,
+            "filename": file.filename,
+            "file_path": str(file_path),
+            "file_size": os.path.getsize(file_path)
+        }
+
+    except Exception as e:
+        logger.error(f"Error uploading file: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error uploading file: {str(e)}"
+        )
+
+
+from fastapi.responses import FileResponse
+
+@router.get("/{location_id}/files/{filename}")
+async def get_file_from_location(
+    location_id: str,
+    filename: str
+):
+    """
+    Download a file from a specific location
+    """
+    try:
+        file_path = Path(UPLOAD_DIR) / location_id / filename
+        
+        if not file_path.exists():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="File not found"
+            )
+
+        return FileResponse(file_path)
+
+    except Exception as e:
+        logger.error(f"Error retrieving file: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving file: {str(e)}"
+        )
+
+
+
+@router.get("/{location_id}/files/")
+async def list_files_in_location(location_id: str):
+    """
+    List all files in a specific location
+    """
+    try:
+        location_dir = Path(UPLOAD_DIR) / location_id
+        
+        if not location_dir.exists():
+            return {"files": []}
+
+        files = [f.name for f in location_dir.iterdir() if f.is_file()]
+        return {"files": files}
+
+    except Exception as e:
+        logger.error(f"Error listing files: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error listing files: {str(e)}"
+        )

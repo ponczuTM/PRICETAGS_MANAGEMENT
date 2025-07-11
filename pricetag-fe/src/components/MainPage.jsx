@@ -2,24 +2,42 @@ import React, { useEffect, useState, useRef } from "react";
 import styles from "./MainPage.module.css";
 
 const locationId = "685003cbf071eb1bb4304cd2";
+const API_BASE_URL = "http://localhost:8000/api/locations";
 
 function MainPage() {
   const [devices, setDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState(null);
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
-  const [uploadedPhotos, setUploadedPhotos] = useState({});
+  const [uploadedFiles, setUploadedFiles] = useState({});
   const [activeTab, setActiveTab] = useState("photo");
   const [errorMsg, setErrorMsg] = useState(null);
   const [videoFPS, setVideoFPS] = useState(null);
   const videoRef = useRef(null);
 
   useEffect(() => {
-    fetch(`http://localhost:8000/api/locations/${locationId}/devices`)
-      .then((res) => res.json())
-      .then(setDevices)
-      .catch((err) => console.error("Błąd pobierania urządzeń:", err));
+    fetchDevices();
   }, []);
+
+  const fetchDevices = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/${locationId}/devices`);
+      const devicesData = await res.json();
+      setDevices(devicesData);
+      
+      // Pobierz informacje o istniejących plikach dla każdego urządzenia
+      const filesInfo = {};
+      for (const device of devicesData) {
+        filesInfo[device._id] = {
+          photoUrl: device.photo ? `${API_BASE_URL}/${locationId}/files/${device.photo}` : null,
+          videoUrl: device.video ? `${API_BASE_URL}/${locationId}/files/${device.video}` : null
+        };
+      }
+      setUploadedFiles(filesInfo);
+    } catch (err) {
+      console.error("Błąd pobierania urządzeń:", err);
+    }
+  };
 
   const measureVideoFPS = (videoEl) => {
     return new Promise((resolve) => {
@@ -66,7 +84,6 @@ function MainPage() {
       }
     });
   };
-  
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -76,10 +93,8 @@ function MainPage() {
   };
 
   const handleFile = (f) => {
-    const isImage = activeTab === "photo" && f.type === "image/png";
-    const isVideo =
-      activeTab === "video" &&
-      ["video/mp4", "video/quicktime", "video/x-msvideo", "video/x-matroska"].includes(f.type);
+    const isImage = activeTab === "photo" && f.type.startsWith("image/");
+    const isVideo = activeTab === "video" && f.type.startsWith("video/");
 
     if (isImage || isVideo) {
       setFile(f);
@@ -100,8 +115,8 @@ function MainPage() {
       setPreviewUrl(null);
       setErrorMsg(
         activeTab === "photo"
-          ? "Dozwolony tylko plik PNG"
-          : "Dozwolone pliki: MP4, MOV, AVI, MKV"
+          ? "Dozwolone tylko pliki graficzne"
+          : "Dozwolone tylko pliki wideo"
       );
     }
   };
@@ -109,50 +124,106 @@ function MainPage() {
   const handleUpload = async () => {
     if (!file || !selectedDevice) return;
 
-    const base64 = await toBase64(file);
-    const deviceId = selectedDevice._id;
-    const endpoint = activeTab === "photo" ? "photo" : "video";
+    const formData = new FormData();
+    formData.append("file", file);
 
     try {
-      await fetch(`http://localhost:8000/api/locations/${locationId}/devices/${deviceId}/delete-files`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" }
-      });
+      // Wyślij plik na serwer
+      const uploadResponse = await fetch(
+        `${API_BASE_URL}/${locationId}/upload-file/`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
-      await fetch(`http://localhost:8000/api/locations/${locationId}/devices/${deviceId}/${endpoint}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ [endpoint]: base64 }),
-      });
+      if (!uploadResponse.ok) {
+        throw new Error("Błąd podczas przesyłania pliku");
+      }
 
-      await fetch(`http://localhost:8000/api/locations/${locationId}/devices/${deviceId}/changed-true`, {
-        method: "PUT",
-      });
+      const uploadResult = await uploadResponse.json();
+      const filename = uploadResult.filename;
 
-      setUploadedPhotos((prev) => ({
+      // Zaktualizuj odpowiednie pole w urządzeniu (photo lub video)
+      const updateResponse = await fetch(
+        `${API_BASE_URL}/${locationId}/devices/${selectedDevice._id}/${activeTab}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ [activeTab]: filename }),
+        }
+      );
+
+      if (!updateResponse.ok) {
+        throw new Error("Błąd podczas aktualizacji urządzenia");
+      }
+
+      // Oznacz urządzenie jako zmienione
+      await fetch(
+        `${API_BASE_URL}/${locationId}/devices/${selectedDevice._id}/changed-true`,
+        {
+          method: "PUT",
+        }
+      );
+
+      // Zaktualizuj stan z nowym plikiem
+      setUploadedFiles(prev => ({
         ...prev,
-        [deviceId]: {
-          url: previewUrl,
-          name: file.name,
-          size: file.size,
-          uploadDate: new Date().toLocaleString(),
-          type: activeTab,
-        },
+        [selectedDevice._id]: {
+          ...prev[selectedDevice._id],
+          [`${activeTab}Url`]: `${API_BASE_URL}/${locationId}/files/${filename}`
+        }
       }));
 
       closeUpload();
+      fetchDevices(); // Odśwież listę urządzeń
     } catch (err) {
       console.error("Błąd wysyłania pliku:", err);
+      setErrorMsg("Wystąpił błąd podczas przesyłania pliku");
     }
   };
 
-  const toBase64 = (file) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result.split(",")[1]);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+  const handleDeleteFile = async (fileType) => {
+    if (!selectedDevice) return;
+
+    try {
+      // Wyczyść pole w urządzeniu
+      const updateResponse = await fetch(
+        `${API_BASE_URL}/${locationId}/devices/${selectedDevice._id}/${fileType}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ [fileType]: "" }),
+        }
+      );
+
+      if (!updateResponse.ok) {
+        throw new Error("Błąd podczas usuwania pliku");
+      }
+
+      // Oznacz urządzenie jako zmienione
+      await fetch(
+        `${API_BASE_URL}/${locationId}/devices/${selectedDevice._id}/changed-true`,
+        {
+          method: "PUT",
+        }
+      );
+
+      // Zaktualizuj stan
+      setUploadedFiles(prev => ({
+        ...prev,
+        [selectedDevice._id]: {
+          ...prev[selectedDevice._id],
+          [`${fileType}Url`]: null
+        }
+      }));
+
+      fetchDevices(); // Odśwież listę urządzeń
+    } catch (err) {
+      console.error("Błąd usuwania pliku:", err);
+      setErrorMsg("Wystąpił błąd podczas usuwania pliku");
+    }
+  };
 
   const closeUpload = () => {
     setSelectedDevice(null);
@@ -198,20 +269,55 @@ function MainPage() {
               <h3 className={styles.deviceName}>Id: {device.clientName}</h3>
               <p className={styles.deviceId}>Status: <a style={{color: "green", fontWeight: "bold"}}>Online</a>, Id: {device.clientId}</p>
 
-              {uploadedPhotos[device._id] && (
-                <div className={styles.uploadedPhotoInfo}>
-                  <div className={styles.uploadedPhotoPreview}>
+              {uploadedFiles[device._id]?.photoUrl && (
+                <div className={styles.uploadedFileInfo}>
+                  <div className={styles.uploadedFilePreview}>
                     <img 
-                      src={uploadedPhotos[device._id].url} 
-                      alt="Uploaded"
+                      src={uploadedFiles[device._id].photoUrl} 
+                      alt="Uploaded photo"
                       className={styles.miniPreview}
                     />
                   </div>
-                  <div className={styles.photoDetails}>
-                    <span className={styles.photoName}>{uploadedPhotos[device._id].name}</span>
-                    <span className={styles.photoMeta}>
-                      {formatFileSize(uploadedPhotos[device._id].size)} • {uploadedPhotos[device._id].uploadDate}
-                    </span>
+                  <div className={styles.fileDetails}>
+                    <span className={styles.fileType}>Zdjęcie</span>
+                    {selectedDevice?._id === device._id && (
+                      <button 
+                        className={styles.deleteFileButton}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteFile("photo");
+                        }}
+                      >
+                        Usuń
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {uploadedFiles[device._id]?.videoUrl && (
+                <div className={styles.uploadedFileInfo}>
+                  <div className={styles.uploadedFilePreview}>
+                    <video 
+                      src={uploadedFiles[device._id].videoUrl} 
+                      className={styles.miniPreview}
+                      muted
+                      playsInline
+                    />
+                  </div>
+                  <div className={styles.fileDetails}>
+                    <span className={styles.fileType}>Wideo</span>
+                    {selectedDevice?._id === device._id && (
+                      <button 
+                        className={styles.deleteFileButton}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteFile("video");
+                        }}
+                      >
+                        Usuń
+                      </button>
+                    )}
                   </div>
                 </div>
               )}
@@ -225,7 +331,7 @@ function MainPage() {
           <div className={styles.modalContent}>
             <div className={styles.modalHeader}>
               <h3 className={styles.modalTitle}>
-                Załaduj {activeTab === "photo" ? "zdjęcie PNG" : "film"} dla: {selectedDevice.clientName}
+                Załaduj {activeTab === "photo" ? "zdjęcie" : "film"} dla: {selectedDevice.clientName}
               </h3>
               <button 
                 className={styles.closeButton}
@@ -283,7 +389,7 @@ function MainPage() {
                 <div className={styles.dropZoneContent}>
                   <div className={styles.uploadIcon}>📁</div>
                   <p className={styles.dropText}>
-                    Przeciągnij i upuść plik {activeTab === "photo" ? "PNG" : "MP4/MOV/AVI/MKV"} tutaj
+                    Przeciągnij i upuść plik {activeTab === "photo" ? "graficzny" : "wideo"} tutaj
                   </p>
                   <p className={styles.dropSubtext}>lub</p>
                 </div>
@@ -291,7 +397,7 @@ function MainPage() {
               
               <input
                 type="file"
-                accept={activeTab === "photo" ? "image/png" : "video/mp4,video/quicktime,video/x-msvideo,video/x-matroska"}
+                accept={activeTab === "photo" ? "image/*" : "video/*"}
                 onChange={(e) => e.target.files.length > 0 && handleFile(e.target.files[0])}
                 className={styles.fileInput}
               />
