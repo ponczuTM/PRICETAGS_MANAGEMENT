@@ -29,7 +29,8 @@ def add_device_to_location(device):
         "clientName": device["name"],
         "ip": device["ip"],
         "photo": "",
-        "video": ""
+        "video": "",
+        "thumbnail": ""
     }
     try:
         response = requests.post(url, json=device_data)

@@ -237,10 +237,30 @@ function MainPage() {
         // Żądanie 2: Ustawienie flagi 'changed' na true
         const updateChangedFlagResponse = await fetch(
           `${API_BASE_URL}/${locationId}/devices/${selectedDevice._id}/changed-true`,
+          { method: "PUT" }
+        );
+
+        if (!updateChangedFlagResponse.ok) {
+          throw new Error("Błąd podczas ustawiania flagi 'changed' na true");
+        }
+
+        // Żądanie 3: Ustawienie miniaturki (thumbnail)
+        const updateThumbnailResponse = await fetch(
+          `${API_BASE_URL}/${locationId}/devices/${selectedDevice._id}/thumbnail`,
           {
             method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              thumbnail: `${filenameToUse.split(".")[0]}.png`,
+            }),
           }
         );
+
+        if (!updateThumbnailResponse.ok) {
+          throw new Error("Błąd podczas aktualizacji miniaturki urządzenia");
+        }
+
+        
 
         if (!updateChangedFlagResponse.ok) {
           throw new Error("Błąd podczas ustawiania flagi 'changed' na true");
@@ -363,11 +383,17 @@ function MainPage() {
             onClick={() => setSelectedDevice(device)}
           >
             <div className={styles.deviceImageContainer}>
-              <img
-                src="/src/assets/images/device.png"
-                alt="Device"
-                className={styles.deviceImage}
-              />
+            <img
+              src={
+                device.thumbnail
+                  ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}/thumbnail`
+                  : "/src/assets/images/device.png"
+              }
+              alt="Device"
+              className={styles.deviceImage}
+            />
+
+
               <div className={styles.onlineIndicator}></div>
             </div>
 

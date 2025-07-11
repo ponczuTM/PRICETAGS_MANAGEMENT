@@ -84,11 +84,13 @@ async def add_device_to_location(location_id: str, device: Device, db=Depends(ge
             "_id": str(ObjectId()),
             "clientId": device.clientId,
             "clientName": device.clientName,
-            "ip": device.ip or "",               # ⬅️ DODAJ
+            "ip": device.ip or "",
             "photo": device.photo,
             "video": device.video,
-            "changed": "false"
+            "changed": "false",
+            "thumbnail": None  # ⬅️ DODANE
         }
+
 
 
 
@@ -649,4 +651,135 @@ async def get_file_thumbnail(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error generating thumbnail: {str(e)}"
+        )
+
+
+@router.get("/{location_id}/devices/{device_id}/thumbnail", response_class=FileResponse)
+async def generate_and_get_thumbnail(location_id: str, device_id: str, db=Depends(get_database), size: int = 128):
+    """
+    Generuje i zwraca miniaturkę wideo urządzenia, zapisując ją w polu `thumbnail`.
+    """
+    try:
+        if not ObjectId.is_valid(location_id) or not ObjectId.is_valid(device_id):
+            raise HTTPException(status_code=400, detail="Invalid ID format")
+
+        location = await db["locations"].find_one({"_id": ObjectId(location_id)})
+        if not location:
+            raise HTTPException(status_code=404, detail="Location not found")
+
+        devices = location.get("devices", [])
+        target_device = next((d for d in devices if str(d["_id"]) == device_id), None)
+
+        if not target_device:
+            raise HTTPException(status_code=404, detail="Device not found")
+
+        video_filename = target_device.get("video")
+        if not video_filename:
+            raise HTTPException(status_code=400, detail="Device has no video")
+
+        video_path = Path(UPLOAD_DIR) / location_id / video_filename
+        if not video_path.exists():
+            raise HTTPException(status_code=404, detail="Video file not found")
+
+        # Generuj ścieżkę miniaturki
+        thumbnail_dir = video_path.parent / ".thumbnails"
+        thumbnail_dir.mkdir(exist_ok=True)
+        thumbnail_filename = f"{video_path.stem}.png"
+        thumbnail_path = thumbnail_dir / thumbnail_filename
+
+        if not thumbnail_path.exists():
+            cmd = [
+                "ffmpeg",
+                "-i", str(video_path),
+                "-ss", "00:00:05",
+                "-vframes", "1",
+                "-vf", f"scale={size}:-1",
+                "-f", "image2",
+                "-y",
+                str(thumbnail_path)
+            ]
+            process = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            _, stderr = await process.communicate()
+
+            if process.returncode != 0:
+                raise HTTPException(
+                    status_code=500,
+                    detail="Failed to generate thumbnail: " + stderr.decode()
+                )
+
+        # Zapisz miniaturkę w polu `thumbnail` (jeśli jeszcze nie była zapisana)
+        relative_path = f"{location_id}/.thumbnails/{thumbnail_filename}"
+        if target_device.get("thumbnail") != relative_path:
+            target_device["thumbnail"] = relative_path
+            await db["locations"].update_one(
+                {"_id": ObjectId(location_id)},
+                {"$set": {"devices": devices}}
+            )
+
+        return FileResponse(thumbnail_path, media_type="image/png")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Thumbnail error: {str(e)}")
+
+
+
+
+
+@router.put("/{location_id}/devices/{device_id}/thumbnail", status_code=200)
+async def update_device_thumbnail(
+    location_id: str,
+    device_id: str,
+    body: dict,
+    db=Depends(get_database)
+):
+    """
+    Ręcznie ustawia ścieżkę miniaturki (`thumbnail`) dla danego urządzenia
+    """
+    thumbnail = body.get("thumbnail")
+    if not thumbnail:
+        raise HTTPException(status_code=400, detail="Missing 'thumbnail' field in body")
+
+    return await _update_device_field(location_id, device_id, {"thumbnail": thumbnail}, db)
+
+
+@router.delete("/{location_id}/devices", status_code=200)
+async def remove_all_devices_from_location(location_id: str, db=Depends(get_database)):
+    """
+    Usuwa wszystkie urządzenia z lokalizacji
+    """
+    try:
+        if not ObjectId.is_valid(location_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid location ID format"
+            )
+
+        location = await db["locations"].find_one({"_id": ObjectId(location_id)})
+        if not location:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Location not found"
+            )
+
+        result = await db["locations"].update_one(
+            {"_id": ObjectId(location_id)},
+            {"$set": {"devices": []}}
+        )
+
+        if result.modified_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Devices were not removed"
+            )
+
+        return {"message": f"All devices removed from location {location_id}"}
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error removing devices: {str(e)}"
         )
