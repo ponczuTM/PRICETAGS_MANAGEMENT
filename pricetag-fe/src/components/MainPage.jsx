@@ -378,7 +378,7 @@ function MainPage() {
             className={styles.manageButton}
             onClick={() => setIsModalOpen(true)}
           >
-            Zarządzaj ({selectedDevices.length}) urządzeń
+            Zarządzaj urządzeniami ({selectedDevices.length})
           </button>
         </div>
       )}

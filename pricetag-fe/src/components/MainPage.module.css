@@ -736,7 +736,7 @@
 }
 
 .manageButton {
-  background: linear-gradient(135deg, #4CAF50 0%, #2E8B57 100%); /* Zmieniony na bardziej "zarządzający" kolor */
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
   padding: 1rem 2.5rem;
