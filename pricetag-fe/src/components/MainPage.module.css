@@ -1,17 +1,90 @@
 /* MainPage.module.css */
 
+/* --- Zmienne CSS dla całej strony --- */
+:root {
+  /* Główny kolor strony */
+  --primary-color: #4472c4;
+  --primary-color-hover: #3b5998;
+  --primary-color-light: #5a80d8;
+  --primary-color-dark: #2e4a8a;
+  --primary-color-alpha-10: rgba(68, 114, 196, 0.1);
+  --primary-color-alpha-20: rgba(68, 114, 196, 0.2);
+  --primary-color-alpha-30: rgba(68, 114, 196, 0.3);
+  --primary-color-alpha-40: rgba(68, 114, 196, 0.4);
+  --primary-color-alpha-50: rgba(68, 114, 196, 0.5);
+  
+  /* Gradient główny */
+  --primary-gradient: linear-gradient(135deg, #4472c4 0%, #3b5998 100%);
+  --primary-gradient-reversed: linear-gradient(135deg, #3b5998 0%, #4472c4 100%);
+  
+  /* Kolory tła */
+  --background-primary: #f8f9fc;
+  --background-secondary: #e8f2ff;
+  --background-card: #ffffff;
+  --background-modal: rgba(0, 0, 0, 0.6);
+  --background-dropdown: #f0f4ff;
+  --background-selected: linear-gradient(135deg, #f0f4ff 0%, #e6f3ff 100%);
+  --background-success: #f0fff4;
+  --background-error: #fff5f5;
+  --background-pending: #e9ecef;
+  --background-uploading: #e0f2fe;
+  --background-in-progress: #e8f9fa;
+  
+  /* Kolory tekstu */
+  --text-primary: #1a202c;
+  --text-secondary: #4a5568;
+  --text-muted: #718096;
+  --text-white: #ffffff;
+  --text-success: #10b981;
+  --text-error: #e53e3e;
+  --text-warning: #f59e0b;
+  
+  /* Kolory ramek */
+  --border-primary: #e2e8f0;
+  --border-secondary: #cbd5e0;
+  --border-selected: var(--primary-color);
+  --border-success: #10b981;
+  --border-error: #e53e3e;
+  --border-transparent: transparent;
+  --border-dashed: #cbd5e0;
+  
+  /* Cienie */
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.15);
+  --shadow-xl: 0 25px 50px rgba(0, 0, 0, 0.3);
+  --shadow-primary: 0 4px 15px var(--primary-color-alpha-30);
+  --shadow-primary-hover: 0 8px 25px var(--primary-color-alpha-40);
+  --shadow-primary-selected: 0 16px 48px var(--primary-color-alpha-20);
+  --shadow-success: 0 2px 8px rgba(16, 185, 129, 0.4);
+  --shadow-error: 0 4px 12px rgba(229, 62, 62, 0.1);
+  
+  /* Kolory statusów */
+  --status-online: #10b981;
+  --status-pending: #6c757d;
+  --status-uploading: #007bff;
+  --status-in-progress: #17a2b8;
+  --status-success: #28a745;
+  --status-error: #dc3545;
+  
+  /* Inne kolory */
+  --scrollbar-track: #edf2f7;
+  --scrollbar-thumb: var(--primary-gradient);
+  --scrollbar-thumb-hover: var(--primary-gradient-reversed);
+  --glass-effect: rgba(255, 255, 255, 0.95);
+  --glass-effect-light: rgba(255, 255, 255, 0.7);
+}
+
 /* --- Container główny --- */
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  /* min-height: 100vh; */
-  display: flex; /* Dodane dla układu ze stopką */
-  flex-direction: column; /* Dodane dla układu ze stopką */
+  background: linear-gradient(135deg, var(--background-primary) 0%, var(--background-secondary) 100%);
+  display: flex;
+  flex-direction: column;
   margin-bottom: 100px;
-
 }
 
 /* --- Header --- */
@@ -21,28 +94,28 @@
   align-items: center;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--border-primary);
 }
 
 .title {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #2d3748;
+  color: var(--text-primary);
   margin: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .deviceCount {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--primary-gradient);
+  color: var(--text-white);
   padding: 0.5rem 1rem;
   border-radius: 20px;
   font-weight: 600;
   font-size: 0.9rem;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  box-shadow: var(--shadow-primary);
 }
 
 /* --- Grid urządzeń --- */
@@ -51,18 +124,18 @@
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
-  flex-grow: 1; /* Pozwala gridowi na rozciąganie */
+  flex-grow: 1;
 }
 
 /* --- Karta urządzenia --- */
 .deviceCard {
-  background: white;
+  background: var(--background-card);
   border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
   cursor: pointer;
   transition: all 0.3s ease;
-  border: 2px solid transparent;
+  border: 2px solid var(--border-transparent);
   position: relative;
   overflow: hidden;
 }
@@ -74,14 +147,14 @@
   left: 0;
   right: 0;
   height: 10px;
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary-gradient);
   transform: scaleX(0);
   transition: transform 0.3s ease;
 }
 
 .deviceCard:hover {
   transform: translateY(-5px);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-lg);
 }
 
 .deviceCard:hover::before {
@@ -89,10 +162,10 @@
 }
 
 .deviceCard.selected {
-  border-color: #667eea;
-  background: linear-gradient(135deg, #f0f4ff 0%, #e6f3ff 100%);
+  border-color: var(--border-selected);
+  background: var(--background-selected);
   transform: translateY(-5px);
-  box-shadow: 0 16px 48px rgba(102, 126, 234, 0.2);
+  box-shadow: var(--shadow-primary-selected);
 }
 
 .deviceCard.selected::before {
@@ -147,24 +220,23 @@
   right: 15%;
 }
 
-
 .onlineIndicator {
   width: 20px;
   height: 20px;
-  background: #10b981;
+  background: var(--status-online);
   border-radius: 50%;
   position: absolute;
   top: -2px;
   left: 110px;
-  border: 2px solid white;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+  border: 2px solid var(--background-card);
+  box-shadow: var(--shadow-success);
   animation: pulse 2s infinite;
 }
 
 @keyframes pulse {
-  0% { box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4); }
+  0% { box-shadow: var(--shadow-success); }
   50% { box-shadow: 0 2px 8px rgba(16, 185, 129, 0.8), 0 0 0 8px rgba(16, 185, 129, 0.1); }
-  100% { box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4); }
+  100% { box-shadow: var(--shadow-success); }
 }
 
 /* --- Informacje o urządzeniu --- */
@@ -175,16 +247,16 @@
 .deviceName {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #1a202c;
+  color: var(--text-primary);
   margin: 0 0 0.5rem 0;
 }
 
 .deviceId {
-  color: #718096;
+  color: var(--text-muted);
   font-size: 0.9rem;
   margin: 0 0 1rem 0;
   font-family: 'Courier New', monospace;
-  background: #f7fafc;
+  background: var(--background-primary);
   padding: 0.25rem 0.5rem;
   border-radius: 6px;
   display: inline-block;
@@ -196,9 +268,9 @@
   justify-content: center;
   margin-bottom: 1.5rem;
   border-radius: 12px;
-  background: #edf2f7;
+  background: var(--border-primary);
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
 }
 
 .tab {
@@ -206,7 +278,7 @@
   padding: 0.75rem 1rem;
   text-align: center;
   font-weight: 600;
-  color: #4a5568;
+  color: var(--text-secondary);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -215,37 +287,37 @@
 }
 
 .tab:hover {
-  background: #aeaeae;
+  background: var(--border-secondary);
 }
 
 .activeTab {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  box-shadow: inset 0 -4px 0 #5a67d8;
+  background: var(--primary-gradient);
+  color: var(--text-white);
+  box-shadow: inset 0 -4px 0 var(--primary-color-dark);
 }
 
 /* --- Komunikat o błędzie --- */
 .errorMessage {
-  background: #fff5f5;
-  color: #e53e3e;
-  border-left: 4px solid #e53e3e;
+  background: var(--background-error);
+  color: var(--text-error);
+  border-left: 4px solid var(--text-error);
   padding: 0.75rem 1rem;
   border-radius: 10px;
   font-weight: 500;
   font-size: 0.95rem;
   margin-top: 1rem;
-  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.1);
+  box-shadow: var(--shadow-error);
 }
 
-/* --- Informacje o uploadowanym zdjęciu (przeedytowane, bo znikają w kodzie, ale dla pewności zostawiam) --- */
+/* --- Informacje o uploadowanym zdjęciu --- */
 .uploadedPhotoInfo {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: #f0fff4;
+  background: var(--background-success);
   padding: 0.75rem;
   border-radius: 10px;
-  border-left: 4px solid #10b981;
+  border-left: 4px solid var(--text-success);
   margin-top: 1rem;
 }
 
@@ -258,7 +330,7 @@
   height: 40px;
   object-fit: cover;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .photoDetails {
@@ -270,7 +342,7 @@
 
 .photoName {
   font-weight: 500;
-  color: #1a202c;
+  color: var(--text-primary);
   font-size: 0.9rem;
   white-space: nowrap;
   overflow: hidden;
@@ -279,7 +351,7 @@
 
 .photoMeta {
   font-size: 0.75rem;
-  color: #10b981;
+  color: var(--text-success);
   font-weight: 500;
 }
 
@@ -290,7 +362,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--background-modal);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -299,14 +371,14 @@
 }
 
 .modalContent {
-  background: white;
+  background: var(--background-card);
   border-radius: 20px;
   padding: 2rem;
   max-width: 500px;
   width: 90%;
   max-height: 80vh;
   overflow-y: auto;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-xl);
   transform: translateY(0);
   animation: modalSlideIn 0.3s ease;
 }
@@ -328,13 +400,13 @@
   align-items: center;
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--border-primary);
 }
 
 .modalTitle {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #2d3748;
+  color: var(--text-primary);
   margin: 0;
 }
 
@@ -342,7 +414,7 @@
   background: none;
   border: none;
   font-size: 2rem;
-  color: #a0aec0;
+  color: var(--text-muted);
   cursor: pointer;
   transition: color 0.2s ease;
   width: 40px;
@@ -354,17 +426,17 @@
 }
 
 .closeButton:hover {
-  color: #e53e3e;
-  background: #fed7d7;
+  color: var(--text-error);
+  background: var(--background-error);
 }
 
 /* --- Drop Zone --- */
 .dropZone {
-  border: 3px dashed #cbd5e0;
+  border: 3px dashed var(--border-dashed);
   border-radius: 16px;
   padding: 2rem;
   text-align: center;
-  background: #f7fafc;
+  background: var(--background-primary);
   transition: all 0.3s ease;
   position: relative;
   margin-bottom: 1.5rem;
@@ -376,13 +448,13 @@
 }
 
 .dropZone:hover {
-  border-color: #667eea;
-  background: #f0f4ff;
+  border-color: var(--primary-color);
+  background: var(--background-dropdown);
 }
 
 .dropZone.hasFile {
-  border-color: #10b981;
-  background: #f0fff4;
+  border-color: var(--text-success);
+  background: var(--background-success);
 }
 
 .dropZoneContent {
@@ -400,13 +472,13 @@
 .dropText {
   font-size: 1.1rem;
   font-weight: 500;
-  color: #4a5568;
+  color: var(--text-secondary);
   margin: 0;
 }
 
 .dropSubtext {
   font-size: 0.9rem;
-  color: #718096;
+  color: var(--text-muted);
   margin: 0;
 }
 
@@ -434,7 +506,7 @@
   max-height: 200px;
   object-fit: contain;
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .fileInfo {
@@ -446,12 +518,12 @@
 
 .fileName {
   font-weight: 600;
-  color: #2d3748;
+  color: var(--text-primary);
   font-size: 1rem;
 }
 
 .fileSize {
-  color: #718096;
+  color: var(--text-muted);
   font-size: 0.9rem;
 }
 
@@ -463,20 +535,20 @@
 }
 
 .uploadButton {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--primary-gradient);
+  color: var(--text-white);
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  box-shadow: var(--shadow-primary);
 }
 
 .uploadButton:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  box-shadow: var(--shadow-primary-hover);
 }
 
 .uploadButton:disabled {
@@ -487,8 +559,8 @@
 }
 
 .cancelButton {
-  background: #e2e8f0;
-  color: #4a5568;
+  background: var(--border-primary);
+  color: var(--text-secondary);
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 12px;
@@ -498,17 +570,17 @@
 }
 
 .cancelButton:hover {
-  background: #cbd5e0;
+  background: var(--border-secondary);
   transform: translateY(-2px);
 }
 
 /* --- Galeria plików --- */
 .galleryContainer {
-  background: #f7fafc;
+  background: var(--background-primary);
   border-radius: 16px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--border-primary);
   min-height: 300px;
 }
 
@@ -527,17 +599,17 @@
 }
 
 .fileGrid::-webkit-scrollbar-track {
-  background: #edf2f7;
+  background: var(--scrollbar-track);
   border-radius: 10px;
 }
 
 .fileGrid::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--scrollbar-thumb);
   border-radius: 10px;
 }
 
 .fileGrid::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* Element galerii */
@@ -545,28 +617,28 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: white;
+  background: var(--background-card);
   border-radius: 12px;
   padding: 0.75rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  border: 2px solid transparent;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 2px solid var(--border-transparent);
+  box-shadow: var(--shadow-sm);
   position: relative;
   overflow: hidden;
 }
 
 .galleryItem:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  border-color: #cbd5e0;
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-secondary);
 }
 
 .galleryItem.selectedGalleryItem {
-  border-color: #667eea;
-  background: linear-gradient(135deg, #f0f4ff 0%, #e6f3ff 100%);
+  border-color: var(--border-selected);
+  background: var(--background-selected);
   transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+  box-shadow: var(--shadow-primary-selected);
 }
 
 .galleryItem.selectedGalleryItem::before {
@@ -576,7 +648,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary-gradient);
 }
 
 /* Radio button ukryty */
@@ -594,7 +666,7 @@
   object-fit: cover;
   border-radius: 8px;
   margin-bottom: 0.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
   transition: transform 0.3s ease;
 }
 
@@ -606,31 +678,31 @@
 .galleryPlaceholder {
   width: 80px;
   height: 80px;
-  background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%);
+  background: linear-gradient(135deg, var(--scrollbar-track) 0%, var(--border-primary) 100%);
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 0.5rem;
-  border: 2px dashed #cbd5e0;
+  border: 2px dashed var(--border-dashed);
   transition: all 0.3s ease;
 }
 
 .galleryItem:hover .galleryPlaceholder {
-  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
-  border-color: #a0aec0;
+  background: linear-gradient(135deg, var(--border-primary) 0%, var(--border-secondary) 100%);
+  border-color: var(--text-muted);
 }
 
 .fileIcon {
   font-size: 2rem;
   opacity: 0.6;
-  color: #718096;
+  color: var(--text-muted);
 }
 
 /* Nazwa pliku */
 .galleryFileName {
   font-size: 0.75rem;
-  color: #4a5568;
+  color: var(--text-secondary);
   font-weight: 500;
   text-align: center;
   word-break: break-word;
@@ -644,7 +716,7 @@
 }
 
 .selectedGalleryItem .galleryFileName {
-  color: #667eea;
+  color: var(--primary-color);
   font-weight: 600;
 }
 
@@ -653,10 +725,10 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: #f0fff4;
+  background: var(--background-success);
   padding: 0.75rem;
   border-radius: 10px;
-  border-left: 4px solid #10b981;
+  border-left: 4px solid var(--text-success);
   margin-top: 1rem;
   transition: all 0.3s ease;
 }
@@ -680,13 +752,13 @@
 
 .fileType {
   font-weight: 500;
-  color: #1a202c;
+  color: var(--text-primary);
   font-size: 0.9rem;
 }
 
 .deleteFileButton {
-  background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--text-error) 0%, #c53030 100%);
+  color: var(--text-white);
   border: none;
   padding: 0.25rem 0.75rem;
   border-radius: 6px;
@@ -707,7 +779,7 @@
 /* Efekt FPS */
 .fpsInfo {
   background: rgba(0, 0, 0, 0.8);
-  color: white;
+  color: var(--text-white);
   padding: 0.25rem 0.5rem;
   border-radius: 6px;
   font-size: 0.75rem;
@@ -720,32 +792,32 @@
 
 /* --- Nowe style dla stopki z przyciskiem zarządzania --- */
 .manageButtonContainer {
-  position: fixed; /* Przyklejamy do dołu */
-  bottom: 0; /* Na samym dole */
+  position: fixed;
+  bottom: 0;
   left: 0;
   width: 100%;
   display: flex;
-  justify-content: center; /* Wyśrodkowanie przycisku */
+  justify-content: center;
   padding: 1rem;
-  background: linear-gradient(to top, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.7) 70%, transparent); /* Delikatny gradient */
-  backdrop-filter: blur(5px); /* Rozmycie tła */
-  box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.1); /* Cień na górze */
-  z-index: 999; /* Upewnij się, że jest nad innymi elementami, ale pod modalem */
+  background: linear-gradient(to top, var(--glass-effect), var(--glass-effect-light) 70%, transparent);
+  backdrop-filter: blur(5px);
+  box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.1);
+  z-index: 999;
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
 }
 
 .manageButton {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--primary-gradient);
+  color: var(--text-white);
   border: none;
   padding: 1rem 2.5rem;
-  border-radius: 30px; /* Bardziej zaokrąglony */
+  border-radius: 30px;
   font-weight: 700;
   font-size: 1.1rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+  box-shadow: var(--shadow-primary);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -753,25 +825,45 @@
 
 .manageButton:hover {
   transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(76, 175, 80, 0.5);
+  box-shadow: var(--shadow-primary-hover);
+}
+
+.selectButton {
+  background: var(--primary-gradient);
+  color: var(--text-white);
+  border: none;
+  padding: 1rem 2.5rem;
+  border-radius: 30px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-primary);
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.selectButton:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-primary-hover);
 }
 
 /* --- Lepszy wygląd statusów w modalu --- */
 .uploadStatusContainer {
-  margin-top: 25px; /* Większy odstęp */
-  border-top: 1px solid #e0e0e0;
-  padding-top: 20px; /* Większy padding */
-  background: #fcfdff; /* Delikatne tło */
+  margin-top: 25px;
+  border-top: 1px solid var(--border-primary);
+  padding-top: 20px;
+  background: var(--background-primary);
   border-radius: 12px;
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05); /* Wewnętrzny cień */
-  padding: 15px 20px; /* Zwiększony padding */
+  box-shadow: inset 0 0 10px var(--primary-color-alpha-10);
+  padding: 15px 20px;
 }
 
 .uploadStatusContainer h4 {
   margin-top: 0;
-  margin-bottom: 15px; /* Większy odstęp */
-  color: #333;
-  font-size: 1.1rem; /* Większy rozmiar czcionki */
+  margin-bottom: 15px;
+  color: var(--text-primary);
+  font-size: 1.1rem;
   font-weight: 600;
   text-align: center;
   position: relative;
@@ -786,19 +878,19 @@
   transform: translateX(-50%);
   width: 60px;
   height: 3px;
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary-gradient);
   border-radius: 2px;
 }
 
 .uploadStatusList {
   list-style: none;
   padding: 0;
-  max-height: 180px; /* Zwiększona wysokość */
+  max-height: 180px;
   overflow-y: auto;
-  border: 1px solid #e9ecef; /* Delikatniejsza ramka */
-  border-radius: 10px; /* Większe zaokrąglenie */
-  background-color: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  background-color: var(--background-card);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Scrollbar dla listy statusów */
@@ -807,26 +899,26 @@
 }
 
 .uploadStatusList::-webkit-scrollbar-track {
-  background: #f1f3f5;
+  background: var(--scrollbar-track);
   border-radius: 10px;
 }
 
 .uploadStatusList::-webkit-scrollbar-thumb {
-  background: #ced4da;
+  background: var(--border-secondary);
   border-radius: 10px;
 }
 
 .uploadStatusList::-webkit-scrollbar-thumb:hover {
-  background: #adb5bd;
+  background: var(--text-muted);
 }
 
 .modalUploadStatusItem {
-  padding: 10px 15px; /* Zwiększony padding */
-  border-bottom: 1px solid #f0f2f5; /* Delikatniejszy separator */
-  font-size: 0.95em; /* Nieco większy tekst */
+  padding: 10px 15px;
+  border-bottom: 1px solid var(--border-primary);
+  font-size: 0.95em;
   display: flex;
   align-items: center;
-  gap: 8px; /* Odstęp między ikoną/kropką a tekstem */
+  gap: 8px;
   font-weight: 500;
 }
 
@@ -836,47 +928,47 @@
 
 /* Nowe, bardziej wyraziste ikony statusów */
 .modalUploadStatusItem::before {
-  font-family: 'Font Awesome 5 Free'; /* Zakładając, że masz Font Awesome */
+  font-family: 'Font Awesome 5 Free';
   font-weight: 900;
-  content: '\f111'; /* Domyślna kropka */
-  margin-right: 0; /* Odstęp zrobiony przez gap */
+  content: '\f111';
+  margin-right: 0;
   font-size: 0.7em;
   width: 1em;
   text-align: center;
 }
 
 .deviceNameInStatus {
-  font-weight: 700; /* Bardziej pogrubiona nazwa */
-  color: #4a5568; /* Ciemniejsza nazwa */
+  font-weight: 700;
+  color: var(--text-secondary);
 }
 
 /* Statusy kolorów dla elementów listy w modalu */
 .modalUploadStatusItem.pending {
-  color: #4e4e50; /* Czekający, bardziej neutralny */
-  background-color: #e9ecef; /* Delikatny szary */
+  color: var(--status-pending);
+  background-color: var(--background-pending);
 }
 .modalUploadStatusItem.pending::before {
-  content: '\f111'; /* Circle */
-  color: #6c757d;
+  content: '\f111';
+  color: var(--status-pending);
 }
 
 .modalUploadStatusItem.uploading_file {
-  color: #007bff; /* Wysyłanie pliku */
-  background-color: #e0f2fe; /* Jasnoniebieski */
+  color: var(--status-uploading);
+  background-color: var(--background-uploading);
 }
 .modalUploadStatusItem.uploading_file::before {
-  content: '\f093'; /* Upload icon */
-  color: #007bff;
+  content: '\f093';
+  color: var(--status-uploading);
 }
 
 .modalUploadStatusItem.in_progress {
-  color: #17a2b8; /* W trakcie, turkusowy */
-  background-color: #e8f9fa; /* Jasny turkus */
+  color: var(--status-in-progress);
+  background-color: var(--background-in-progress);
 }
 .modalUploadStatusItem.in_progress::before {
-  content: '\f110'; /* Spinner icon */
-  animation: spin 1.5s linear infinite; /* Animacja ładowania */
-  color: #17a2b8;
+  content: '\f110';
+  animation: spin 1.5s linear infinite;
+  color: var(--status-in-progress);
 }
 
 @keyframes spin {
@@ -885,21 +977,21 @@
 }
 
 .modalUploadStatusItem.success {
-  color: #28a745; /* Sukces, zielony */
-  background-color: #e6ffed; /* Jasnozielony */
+  color: var(--status-success);
+  background-color: var(--background-success);
 }
 .modalUploadStatusItem.success::before {
-  content: '\f058'; /* Check circle icon */
-  color: #28a745;
+  content: '\f058';
+  color: var(--status-success);
 }
 
 .modalUploadStatusItem.error {
-  color: #dc3545; /* Błąd, czerwony */
-  background-color: #fcebeb; /* Jasnoczerwony */
+  color: var(--status-error);
+  background-color: var(--background-error);
 }
 .modalUploadStatusItem.error::before {
-  content: '\f06a'; /* Exclamation circle icon */
-  color: #dc3545;
+  content: '\f06a';
+  color: var(--status-error);
 }
 
 

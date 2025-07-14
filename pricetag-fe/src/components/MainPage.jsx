@@ -17,7 +17,7 @@ function MainPage() {
   const [uploadStatuses, setUploadStatuses] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const videoRef = useRef(null); // This ref is no longer strictly necessary for FPS, but kept for potential future video controls
+  const videoRef = useRef(null);
 
   useEffect(() => {
     fetchDevices();
@@ -307,11 +307,6 @@ function MainPage() {
     setErrorMsg(null);
   };
 
-  const getDeviceNameAndId = (deviceId) => {
-    const device = devices.find(d => d._id === deviceId);
-    return device ? `${device.clientName}, ${device.clientId}` : 'Nieznane urządzenie';
-  };
-
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -321,7 +316,7 @@ function MainPage() {
 
       <div className={styles.selectAllContainer}>
         <button
-          className={styles.selectAllButton}
+          className={styles.selectButton}
           onClick={handleSelectAllToggle}
         >
           {selectedDevices.length === devices.length
@@ -345,17 +340,14 @@ function MainPage() {
                 <div className={styles.stick + " " + styles.left}></div>
                 <div className={styles.stick + " " + styles.right}></div>
                 <img
-                  src={
-                    device.video
-                      ? `${API_BASE_URL}/${locationId}/files/${device.video}/thumbnail`
-                      : device.photo
-                        ? `${API_BASE_URL}/${locationId}/files/${device.photo}/thumbnail`
-                        : "/src/assets/images/device.png"
-                  }
-
-                  alt="Device"
-                  className={styles.deviceImage}
-                />
+                src={
+                  device.thumbnail
+                    ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}` // Użyj pola thumbnail!
+                    : "/src/assets/images/device.png"
+                }
+                alt="Device"
+                className={styles.deviceImage}
+              />
               </div>
               <div className={styles.onlineIndicator}></div>
             </div>
