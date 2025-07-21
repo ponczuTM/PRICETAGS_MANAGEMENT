@@ -35,7 +35,7 @@ def calculate_md5(file_path):
 def clear_device_space(ip):
     url = f"http://{ip}/control?action=clearspace&sign=sign"
     try:
-        response = requests.get(url, timeout=15)
+        response = requests.get(url, timeout=20)
         return response.status_code == 200
     except:
         return False
@@ -60,7 +60,7 @@ def trigger_device(ip, js_name):
     sign = calculate_md5(js_name)
     url = f"http://{ip}/replay?task={js_path}&sign={sign}"
     try:
-        response = requests.get(url, timeout=5)
+        response = requests.get(url, timeout=15)
         return response.status_code == 200
     except:
         return False
@@ -108,7 +108,7 @@ def main():
             png_md5 = calculate_md5(png_path)
             js_data["LabelPicture"] = {
                 "Height": 1280,
-                "Width": 720,
+                "Width": 800,
                 "X": 0,
                 "Y": 0,
                 "PictureName": f"{clientid}.png",
@@ -120,7 +120,7 @@ def main():
             mp4_md5 = calculate_md5(mp4_path)
             js_data["LabelVideo"] = {
                 "Height": 1280,
-                "Width": 720,
+                "Width": 800,
                 "X": 0,
                 "Y": 0,
                 "VideoList": [{

@@ -19,6 +19,49 @@ function MainPage() {
 
   const videoRef = useRef(null);
 
+  const [editingDeviceId, setEditingDeviceId] = useState(null);
+  const [editedNames, setEditedNames] = useState(() => {
+    const stored = localStorage.getItem("deviceNames");
+    return stored ? JSON.parse(stored) : {};
+  });
+  const [editInputValue, setEditInputValue] = useState("");
+  const [originalValue, setOriginalValue] = useState("");
+
+  const getDisplayName = (clientName) => {
+    return editedNames[clientName] || clientName;
+  };
+
+  const handleEditClick = (device) => {
+    setEditingDeviceId(device._id);
+    const currentName = editedNames[device.clientName] || "";
+    setEditInputValue(currentName);
+    setOriginalValue(currentName);
+  };
+
+  const handleEditSave = (clientName) => {
+    const updated = { ...editedNames, [clientName]: editInputValue };
+    setEditedNames(updated);
+    localStorage.setItem("deviceNames", JSON.stringify(updated));
+    setEditingDeviceId(null);
+    setOriginalValue("");
+  };
+
+  const handleEditReset = (clientName) => {
+    const updated = { ...editedNames };
+    delete updated[clientName];
+    setEditedNames(updated);
+    localStorage.setItem("deviceNames", JSON.stringify(updated));
+    setEditingDeviceId(null);
+    setOriginalValue("");
+  };
+
+  const handleEditCancel = () => {
+    setEditInputValue(originalValue);
+    setEditingDeviceId(null);
+    setOriginalValue("");
+  };
+
+
   useEffect(() => {
     fetchDevices();
   }, []);
@@ -219,7 +262,7 @@ function MainPage() {
               method: "PUT",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                thumbnail: `${filenameToUse.split(".")[0]}.png`,
+                thumbnail: filenameToUse,
               }),
             }
           );
@@ -276,7 +319,7 @@ function MainPage() {
     if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(ext)) {
       return 'image';
     }
-    if (['mp4', 'mov', 'avi', 'mkv'].includes(ext)) {
+    if (['mp4', 'mov', 'avi', 'mkv', 'webm'].includes(ext)) { // Added webm for broader video support
       return 'video';
     }
     return 'unknown';
@@ -287,9 +330,9 @@ function MainPage() {
       const newSelected = prevSelected.some(d => d._id === device._id)
         ? prevSelected.filter(d => d._id !== device._id)
         : [...prevSelected, device];
-      
+
       // Wyczyść statusy uploadu za każdym razem, gdy zmieniasz zaznaczone urządzenia
-      setUploadStatuses({}); 
+      setUploadStatuses({});
       return newSelected;
     });
     setErrorMsg(null); // Wyczyść błąd, jeśli był
@@ -339,25 +382,59 @@ function MainPage() {
                 <div className={styles.hangerBar}></div>
                 <div className={styles.stick + " " + styles.left}></div>
                 <div className={styles.stick + " " + styles.right}></div>
-                <img
-                src={
-                  device.thumbnail
-                    ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}` // Użyj pola thumbnail!
-                    : "/src/assets/images/device.png"
-                }
-                alt="Device"
-                className={styles.deviceImage}
-              />
+                {getFileType(device.thumbnail || '') === 'video' ? (
+                  <video
+                    src={device.thumbnail ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}` : null}
+                    autoPlay
+                    loop
+                    muted
+                    className={styles.deviceImage}
+                    // For devices, you might want to show a default image if no video/thumbnail
+                    onError={(e) => { e.target.onerror = null; e.target.src="/src/assets/images/device.png" }}
+                  />
+                ) : (
+                  <img
+                    src={
+                      device.thumbnail
+                        ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}`
+                        : "/src/assets/images/device.png"
+                    }
+                    alt="Device"
+                    className={styles.deviceImage}
+                  />
+                )}
               </div>
               <div className={styles.onlineIndicator}></div>
             </div>
 
             <div className={styles.deviceInfo}>
-              <h3 className={styles.deviceName}>Id: {device.clientName}</h3>
+            <div className={styles.deviceNameEditWrapper}>
+            {editingDeviceId === device._id ? (
+              <>
+                <input
+                  type="text"
+                  value={editInputValue}
+                  onChange={(e) => setEditInputValue(e.target.value)}
+                  className={styles.editInput}
+                />
+                <button onClick={() => handleEditSave(device.clientName)} className={styles.saveButton}>Zapisz</button>
+                <button onClick={() => handleEditReset(device.clientName)} className={styles.resetButton}>Resetuj</button>
+                <button onClick={handleEditCancel} className={styles.cancelButton}>Anuluj</button>
+              </>
+            ) : (
+              <>
+                <h3 className={styles.deviceName}>
+                  {getDisplayName(device.clientName)}
+                </h3>
+                <button onClick={() => handleEditClick(device)} className={styles.editButton}>✏️</button>
+              </>
+            )}
+          </div>
+
               <p className={styles.deviceId}>
                 Status:{" "}
                 <a style={{ color: "green", fontWeight: "bold" }}>Online</a>,
-                Id: {device.clientId}
+                {device.clientId}
               </p>
             </div>
           </div>
@@ -436,7 +513,7 @@ function MainPage() {
                 <ul className={styles.uploadStatusList}>
                   {selectedDevices.map(device => (
                     <li key={device._id} className={`${styles.modalUploadStatusItem} ${styles[uploadStatuses[device._id]?.status || 'pending']}`}>
-                      <span className={styles.deviceNameInStatus}>{device.clientName}, {device.clientId}:</span> {uploadStatuses[device._id]?.message || 'Oczekuje...'}
+                      <span className={styles.deviceNameInStatus}>{getDisplayName(device.clientName)}, {device.clientId}:</span> {uploadStatuses[device._id]?.message || 'Oczekuje...'}
                     </li>
                   ))}
                 </ul>
@@ -498,39 +575,57 @@ function MainPage() {
               <div className={styles.galleryContainer}>
                 {galleryFiles.length > 0 ? (
                   <div className={styles.fileGrid}>
-                    {galleryFiles.map((filename) => (
-                      <label
-                        key={filename}
-                        className={`${styles.galleryItem} ${
-                          selectedGalleryFile === filename ? styles.selectedGalleryItem : ""
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="galleryFile"
-                          value={filename}
-                          checked={selectedGalleryFile === filename}
-                          onChange={() => handleGalleryFileSelect(filename)}
-                          className={styles.galleryRadioButton}
-                        />
-                        {getFileType(filename) === 'image' || getFileType(filename) === 'video' ? (
-                          <img
-                            src={`${API_BASE_URL}/${locationId}/files/${filename}/thumbnail`}
-                            alt={filename}
-                            className={styles.galleryThumbnail}
+                    {galleryFiles.map((filename) => {
+                      const fileType = getFileType(filename);
+                      const fileUrl = `${API_BASE_URL}/${locationId}/files/${filename}`;
+                      // const thumbnailUrl = `${API_BASE_URL}/${locationId}/files/${filename}/thumbnail`; // This line is not strictly needed if video directly plays
+
+                      return (
+                        <label
+                          key={filename}
+                          className={`${styles.galleryItem} ${
+                            selectedGalleryFile === filename ? styles.selectedGalleryItem : ""
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="galleryFile"
+                            value={filename}
+                            checked={selectedGalleryFile === filename}
+                            onChange={() => handleGalleryFileSelect(filename)}
+                            className={styles.galleryRadioButton}
                           />
-                        ) : (
-                          <div className={styles.galleryPlaceholder}>
-                            <span className={styles.fileIcon}>📄</span>
+                          <div className={styles.galleryMediaWrapper}>
+                            {fileType === 'image' ? (
+                              <img
+                                src={fileUrl}
+                                alt={filename}
+                                className={styles.galleryMedia}
+                              />
+                            ) : fileType === 'video' ? (
+                              <video
+                                src={fileUrl}
+                                autoPlay // Autoplay the video
+                                loop     // Loop the video
+                                muted    // Mute the video for autoplay
+                                playsInline // Important for iOS to play videos inline
+                                className={styles.galleryMedia}
+                                onError={(e) => { e.target.onerror = null; e.target.src="/src/assets/images/placeholder-video.png"; }} // Fallback image if video fails to load
+                              />
+                            ) : (
+                              <div className={styles.galleryPlaceholder}>
+                                <span className={styles.fileIcon}>📄</span>
+                              </div>
+                            )}
                           </div>
-                        )}
-                        <span className={styles.galleryFileName}>
-                          {filename}{" "}<br/>
-                          {filename.endsWith(".png") && "(zdjęcie)"}
-                          {filename.endsWith(".mp4") && "(film)"}
-                        </span>
-                      </label>
-                    ))}
+                          <span className={styles.galleryFileName}>
+                            {filename}{" "}
+                            {fileType === 'image' && "(zdjęcie)"}
+                            {fileType === 'video' && "(film)"}
+                          </span>
+                        </label>
+                      );
+                    })}
                   </div>
                 ) : (
                   <p>Brak plików w galerii dla tej lokalizacji.</p>

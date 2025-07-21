@@ -262,6 +262,162 @@
   display: inline-block;
 }
 
+/* --- Style dla edytowania nazw urządzeń --- */
+
+/* Wrapper dla nazwy urządzenia z przyciskiem edycji */
+.deviceNameEditWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  min-height: 2rem;
+  position: relative;
+}
+
+/* Przycisk edycji (ołówek) */
+.editButton {
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateX(-5px);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editButton:hover {
+  background: var(--background-dropdown);
+  color: var(--primary-color);
+  transform: translateX(0) scale(1.1);
+}
+
+/* Pokaż przycisk edycji przy hover na karcie urządzenia */
+.deviceCard:hover .editButton {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Input do edycji nazwy */
+.editInput {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 2px solid var(--primary-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--background-card);
+  outline: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 0 3px var(--primary-color-alpha-20);
+  min-width: 0;
+}
+
+.editInput:focus {
+  border-color: var(--primary-color-dark);
+  box-shadow: 0 0 0 4px var(--primary-color-alpha-30);
+  background: var(--background-dropdown);
+}
+
+/* Przyciski zapisz, resetuj i anuluj */
+.saveButton,
+.resetButton,
+.cancelButton {
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Przycisk zapisz */
+.saveButton {
+  background: linear-gradient(135deg, var(--text-success) 0%, #059669 100%);
+  color: var(--text-white);
+}
+
+.saveButton:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.saveButton:active {
+  transform: translateY(0);
+}
+
+/* Przycisk resetuj */
+.resetButton {
+  background: linear-gradient(135deg, var(--border-secondary) 0%, #a0aec0 100%);
+  color: var(--text-secondary);
+}
+
+.resetButton:hover {
+  background: linear-gradient(135deg, #a0aec0 0%, #718096 100%);
+  color: var(--text-white);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(160, 174, 192, 0.3);
+}
+
+.resetButton:active {
+  transform: translateY(0);
+}
+
+/* Przycisk anuluj */
+.cancelButton {
+  background: linear-gradient(135deg, var(--text-error) 0%, #c53030 100%);
+  color: var(--text-white);
+}
+
+.cancelButton:hover {
+  background: linear-gradient(135deg, #c53030 0%, #9c2c2c 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
+}
+
+.cancelButton:active {
+  transform: translateY(0);
+}
+
+/* Animacja przejścia między trybami */
+.deviceNameEditWrapper .deviceName {
+  transition: all 0.3s ease;
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Grupa przycisków w trybie edycji */
+.deviceNameEditWrapper .saveButton + .resetButton,
+.deviceNameEditWrapper .resetButton + .cancelButton {
+  margin-left: 0.25rem;
+}
+
+/* Efekt focus trap dla trybu edycji */
+.deviceNameEditWrapper:has(.editInput) {
+  background: var(--background-selected);
+  border-radius: 10px;
+  padding: 0.5rem;
+  margin: -0.5rem;
+  border: 2px solid var(--primary-color-alpha-30);
+  box-shadow: 0 0 0 4px var(--primary-color-alpha-10);
+}
+
 /* --- Przełącznik zakładek --- */
 .tabSwitcher {
   display: flex;
@@ -558,7 +714,7 @@
   box-shadow: none;
 }
 
-.cancelButton {
+.modalActions .cancelButton {
   background: var(--border-primary);
   color: var(--text-secondary);
   border: none;
@@ -567,9 +723,10 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
 }
 
-.cancelButton:hover {
+.modalActions .cancelButton:hover {
   background: var(--border-secondary);
   transform: translateY(-2px);
 }
@@ -659,31 +816,43 @@
   height: 0;
 }
 
-/* Miniaturka */
-.galleryThumbnail {
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
-  border-radius: 8px;
+/* NOWE: Wrapper dla mediów w galerii (obrazów i wideo) */
+.galleryMediaWrapper {
+  width: 100px; /* Rozmiar miniatury */
+  height: 100px; /* Rozmiar miniatury */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 0.5rem;
+  overflow: hidden; /* Przytnij zawartość, która wykracza poza wymiary */
+  border-radius: 8px;
   box-shadow: var(--shadow-md);
-  transition: transform 0.3s ease;
+  background-color: var(--border-primary); /* Domyślne tło przed załadowaniem mediów */
+  transition: all 0.3s ease;
 }
 
-.galleryItem:hover .galleryThumbnail {
-  transform: scale(1.05);
+.galleryItem:hover .galleryMediaWrapper {
+  transform: scale(1.05); /* Skalowanie całego wrappera przy najechaniu */
+  box-shadow: var(--shadow-lg);
+}
+
+/* NOWE: Ogólny styl dla obrazów i wideo w galerii */
+.galleryMedia {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Wypełnia kontener, zachowując proporcje i przycinając nadmiar */
+  display: block; /* Usuwa potencjalne spacje pod elementami inline */
 }
 
 /* Placeholder dla nieobsługiwanych plików */
 .galleryPlaceholder {
-  width: 80px;
-  height: 80px;
+  width: 100%; /* Wypełnia galleryMediaWrapper */
+  height: 100%; /* Wypełnia galleryMediaWrapper */
   background: linear-gradient(135deg, var(--scrollbar-track) 0%, var(--border-primary) 100%);
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 0.5rem;
   border: 2px dashed var(--border-dashed);
   transition: all 0.3s ease;
 }
@@ -928,9 +1097,9 @@
 
 /* Nowe, bardziej wyraziste ikony statusów */
 .modalUploadStatusItem::before {
-  font-family: 'Font Awesome 5 Free';
+  font-family: 'Font Awesome 5 Free'; /* Upewnij się, że masz Font Awesome w projekcie */
   font-weight: 900;
-  content: '\f111';
+  content: '\f111'; /* Domyślna ikona - okrąg */
   margin-right: 0;
   font-size: 0.7em;
   width: 1em;
@@ -957,7 +1126,7 @@
   background-color: var(--background-uploading);
 }
 .modalUploadStatusItem.uploading_file::before {
-  content: '\f093';
+  content: '\f093'; /* Ikona uploadu */
   color: var(--status-uploading);
 }
 
@@ -966,9 +1135,9 @@
   background-color: var(--background-in-progress);
 }
 .modalUploadStatusItem.in_progress::before {
-  content: '\f110';
+  content: '\f110'; /* Ikona spinnera */
   animation: spin 1.5s linear infinite;
-  color: var(--status-in-progress);
+  color: var(--status-in_progress);
 }
 
 @keyframes spin {
@@ -981,7 +1150,7 @@
   background-color: var(--background-success);
 }
 .modalUploadStatusItem.success::before {
-  content: '\f058';
+  content: '\f058'; /* Ikona check-circle */
   color: var(--status-success);
 }
 
@@ -990,23 +1159,43 @@
   background-color: var(--background-error);
 }
 .modalUploadStatusItem.error::before {
-  content: '\f06a';
+  content: '\f06a'; /* Ikona exclamation-circle */
   color: var(--status-error);
 }
 
-
 /* --- Responsywność --- */
+
+/* Responsive design dla edytowania nazw na mniejszych ekranach */
 @media (max-width: 768px) {
+  .deviceNameEditWrapper {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  
+  .editInput {
+    width: 100%;
+    margin-bottom: 0.4rem;
+  }
+  
+  .saveButton,
+  .resetButton,
+  .cancelButton {
+    flex: 1;
+    min-width: 60px;
+    font-size: 0.75rem;
+    padding: 0.35rem 0.6rem;
+  }
+
   .fileGrid {
       grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
       gap: 0.75rem;
       max-height: 300px;
   }
 
-  .galleryThumbnail,
-  .galleryPlaceholder {
-      width: 60px;
-      height: 60px;
+  /* Dostosowanie dla responsywności nowej klasy */
+  .galleryMediaWrapper {
+      width: 80px;
+      height: 80px;
   }
 
   .galleryFileName {
@@ -1042,22 +1231,35 @@
       font-size: 1.25rem;
   }
 
-  .uploadButton, .cancelButton {
+  .uploadButton, .modalActions .cancelButton {
       padding: 0.6rem 1.2rem;
       font-size: 0.9rem;
   }
 }
 
 @media (max-width: 480px) {
+  .deviceNameEditWrapper:has(.editInput) {
+    padding: 0.4rem;
+    margin: -0.4rem;
+  }
+  
+  .saveButton,
+  .resetButton,
+  .cancelButton {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.5rem;
+    min-width: 50px;
+  }
+
   .fileGrid {
       grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
       gap: 0.5rem;
   }
 
-  .galleryThumbnail,
-  .galleryPlaceholder {
-      width: 50px;
-      height: 50px;
+  /* Dostosowanie dla responsywności nowej klasy */
+  .galleryMediaWrapper {
+      width: 70px;
+      height: 70px;
   }
 
   .manageButton {

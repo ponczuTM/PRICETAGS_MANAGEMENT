@@ -59,7 +59,7 @@ def check_device(args):
     print(f"🔍 Próba {index + 1}: Sprawdzam IP {BASE_IP}{ip}")
     url = f"http://{BASE_IP}{ip}/Iotags"
     try:
-        response = requests.get(url, timeout=2)
+        response = requests.get(url, timeout=5)
         if response.status_code == 200:
             data = response.json()
             if "STATE" in data and data["STATE"] == "SUCCEED" and "name" in data:

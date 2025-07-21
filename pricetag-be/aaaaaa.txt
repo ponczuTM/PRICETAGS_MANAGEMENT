@@ -1479,6 +1479,45 @@ async def update_device_thumbnail(
     return await _update_device_field(location_id, device_id, {"thumbnail": thumbnail}, db)
 
 
+@router.delete("/{location_id}/devices", status_code=200)
+async def remove_all_devices_from_location(location_id: str, db=Depends(get_database)):
+    """
+    Usuwa wszystkie urządzenia z lokalizacji
+    """
+    try:
+        if not ObjectId.is_valid(location_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid location ID format"
+            )
+
+        location = await db["locations"].find_one({"_id": ObjectId(location_id)})
+        if not location:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Location not found"
+            )
+
+        result = await db["locations"].update_one(
+            {"_id": ObjectId(location_id)},
+            {"$set": {"devices": []}}
+        )
+
+        if result.modified_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Devices were not removed"
+            )
+
+        return {"message": f"All devices removed from location {location_id}"}
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error removing devices: {str(e)}"
+        )
+
+
 mam taki api/users.py:
 from fastapi import APIRouter, HTTPException, Depends, Request, status
 from typing import List
