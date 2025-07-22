@@ -190,7 +190,7 @@
 .deviceImage {
   width: 117px;
   height: 192px;
-  object-fit: cover;
+  object-fit: fill;
   border: #000 solid 6px;
   position: relative;
 }

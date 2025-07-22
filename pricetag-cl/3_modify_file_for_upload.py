@@ -3,7 +3,9 @@ import os
 import subprocess
 import glob
 
-# 🧹 Usuń stare pliki tymczasowe (jeśli istnieją z poprzednich uruchomień)
+TARGET_SIZE = (1080, 1920)
+
+# Usuń stare tymczasowe pliki
 for temp_file in glob.glob("temp_*.png"):
     try:
         os.remove(temp_file)
@@ -11,50 +13,46 @@ for temp_file in glob.glob("temp_*.png"):
     except Exception as e:
         print(f"❌ Błąd usuwania {temp_file}: {e}")
 
-# 📦 Przetwarzanie plików PNG na MP4
+# Konwersja PNG do czystych, bezpiecznych obrazów PNG
 for filename in os.listdir("."):
     if filename.lower().endswith(".png"):
         try:
-            print(f"➡️ Przetwarzanie PNG na MP4: {filename}")
+            print(f"➡️ Przetwarzanie PNG: {filename}")
 
-            input_png_path = filename
-            output_mp4_path = f"{os.path.splitext(filename)[0]}.mp4" # Zapisujemy jako .mp4
+            # Otwórz obraz i usuń wszelkie profile, konwertuj do RGB (24-bit)
+            image = Image.open(filename).convert("RGB")
+            image = image.resize(TARGET_SIZE, Image.LANCZOS)
 
-            # FFmpeg command to create a 3-second MP4 from the PNG
-            # -loop 1: Loop the input image indefinitely
-            # -t 3: Set the duration to 3 seconds
-            # -c:v libx264: Use H.264 video codec
-            # -pix_fmt yuv420p: Pixel format for broad compatibility
-            # -vf "scale=1080:1920": Scale the video to 1080x1920
-            # -y: Overwrite output files without asking
+            temp_filename = f"temp_{filename}"
+            image.save(temp_filename, format="PNG", optimize=True)
+
+            # Konwersja do MP4
+            output_mp4_path = f"{os.path.splitext(filename)[0]}.mp4"
             ffmpeg_command = [
                 'ffmpeg',
                 '-loop', '1',
-                '-i', input_png_path,
+                '-i', temp_filename,
                 '-t', '3',
                 '-c:v', 'libx264',
                 '-pix_fmt', 'yuv420p',
-                '-vf', 'scale=1080:1920',
                 '-y',
                 output_mp4_path
             ]
             subprocess.run(ffmpeg_command, check=True)
 
-            # Usuń oryginalny plik PNG
-            os.remove(input_png_path)
-            print(f"✅ PNG przekonwertowany na MP4 i usunięty: {output_mp4_path}")
-
+            os.remove(filename)  # Usuń oryginalny PNG
+            os.remove(temp_filename)  # Usuń tymczasowy PNG
+            print(f"✅ Utworzono MP4: {output_mp4_path}")
         except Exception as e:
-            print(f"❌ Błąd podczas przetwarzania PNG {filename}: {e}")
+            print(f"❌ Błąd PNG {filename}: {e}")
 
-# 🎥 Przetwarzanie plików MP4 (bez zmian - to jest oddzielna sekcja od przetwarzania PNG)
+# Obróbka istniejących MP4
 for filename in os.listdir("."):
-    if filename.lower().endswith(".mp4") and not filename.startswith("temp_") and not filename.startswith("converted_"):
+    if filename.lower().endswith(".mp4") and not filename.startswith("converted_"):
         try:
             input_path = filename
-            output_path = f"converted_{filename}" # Używamy tymczasowej nazwy
+            output_path = f"converted_{filename}"
 
-            # Sprawdzamy, czy plik wyjściowy już istnieje, aby uniknąć pętli
             if os.path.exists(output_path):
                 print(f"⚠️ Pomijam {filename}, ponieważ {output_path} już istnieje.")
                 continue
@@ -66,7 +64,7 @@ for filename in os.listdir("."):
                 '-profile:v', 'high',
                 '-level', '4.2',
                 '-pix_fmt', 'yuv420p',
-                '-vf', 'scale=720:1280', # Nadal skalowanie do 720:1280 dla istniejących MP4
+                '-vf', 'scale=720:1280',
                 '-c:a', 'aac',
                 '-b:a', '192k',
                 '-movflags', '+faststart',
@@ -75,8 +73,8 @@ for filename in os.listdir("."):
             ]
             subprocess.run(ffmpeg_command, check=True)
 
-            os.remove(input_path) # Usuń oryginalny plik
-            os.rename(output_path, input_path) # Zmień nazwę skonwertowanego pliku na oryginalną
+            os.remove(input_path)
+            os.rename(output_path, input_path)
             print(f"✅ MP4 gotowy: {filename}")
         except Exception as e:
             print(f"❌ Błąd MP4 {filename}: {e}")
