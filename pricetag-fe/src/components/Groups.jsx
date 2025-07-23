@@ -521,71 +521,89 @@ function Groups() {
               <div className={styles.deviceGrid}>
                 {getDevicesInGroup(group._id).map((device) => (
                   <div
-                    key={device._id}
-                    className={`${styles.deviceCard} ${
-                      selectedDevices.some((d) => d._id === device._id) ? styles.selected : ""
-                    }`}
-                    onClick={() => handleDeviceSelectToggle(device)}
-                  >
-                    <div className={styles.deviceImageContainer}>
-                      <div className={styles.hangingWrapper}>
-                        <div className={styles.hangerBar}></div>
-                        <div className={styles.stick + " " + styles.left}></div>
-                        <div className={styles.stick + " " + styles.right}></div>
-                        {getFileType(device.thumbnail || '') === 'video' ? (
-                          <video
-                            src={device.thumbnail ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}` : null}
-                            autoPlay
-                            loop
-                            muted
-                            className={styles.deviceImage}
-                            onError={(e) => { e.target.onerror = null; e.target.src="/src/assets/images/device.png" }}
-                          />
-                        ) : (
-                          <img
-                            src={
-                              device.thumbnail
-                                ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}`
-                                : "/src/assets/images/device.png"
-                            }
-                            alt="Device"
-                            className={styles.deviceImage}
-                          />
-                        )}
-                      </div>
-                      <div className={styles.onlineIndicator}></div>
-                    </div>
-                    <div className={styles.deviceInfo}>
-                      <div className={styles.deviceNameEditWrapper}>
-                        {editingDeviceId === device._id ? (
-                          <>
-                            <input
-                              type="text"
-                              value={editInputValue}
-                              onChange={(e) => setEditInputValue(e.target.value)}
-                              className={styles.editInput}
-                            />
-                            <button onClick={() => handleEditSave(device.clientName)} className={styles.saveButton}>Zapisz</button>
-                            <button onClick={() => handleEditReset(device.clientName)} className={styles.resetButton}>Resetuj</button>
-                            <button onClick={handleEditCancel} className={styles.cancelButton}>Anuluj</button>
-                          </>
-                        ) : (
-                          <>
-                            <h3 className={styles.deviceName}>
-                              {getDisplayName(device.clientName)}
-                            </h3>
-                            <button onClick={() => handleEditClick(device)} className={styles.editButton}> <img src={editIcon} alt="Edytuj" className={styles.editIcon} /> </button>
-                            <button onClick={(e) => { e.stopPropagation(); openGroupManagementModal(device); }} className={styles.editGroupButton}> <img src={groupIcon} alt="Grupuj" className={styles.editIcon2} /> </button>
-                          </>
-                        )}
-                      </div>
-                      <p className={styles.deviceId}>
-                        Status:{" "}
-                        <a style={{ color: "green", fontWeight: "bold" }}>Online</a>,
-                        {device.clientId}
-                      </p>
-                    </div>
+                  key={device._id}
+                  className={`${styles.deviceCard} ${
+                    selectedDevices.some((d) => d._id === device._id) ? styles.selected : ""
+                  }`}
+                  onClick={() => handleDeviceSelectToggle(device)}
+                >
+                  {/* ▶️ IKONY EDYCJI – ABSOLUTNE */}
+                  <div className={styles.deviceIcons}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditClick(device);
+                      }}
+                      className={styles.editButton}
+                    >
+                      <img src={editIcon} alt="Edytuj" className={styles.editIcon} />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openGroupManagementModal(device);
+                      }}
+                      className={styles.editGroupButton}
+                    >
+                      <img src={groupIcon} alt="Grupuj" className={styles.editIcon2} />
+                    </button>
                   </div>
+                
+                  {/* ▶️ OBRAZ URZĄDZENIA */}
+                  <div className={styles.deviceImageContainer}>
+                    <div className={styles.hangingWrapper}>
+                      <div className={styles.hangerBar}></div>
+                      <div className={styles.stick + " " + styles.left}></div>
+                      <div className={styles.stick + " " + styles.right}></div>
+                      {getFileType(device.thumbnail || '') === 'video' ? (
+                        <video
+                          src={device.thumbnail ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}` : null}
+                          autoPlay
+                          loop
+                          muted
+                          className={styles.deviceImage}
+                          onError={(e) => { e.target.onerror = null; e.target.src = "/src/assets/images/device.png" }}
+                        />
+                      ) : (
+                        <img
+                          src={
+                            device.thumbnail
+                              ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}`
+                              : "/src/assets/images/device.png"
+                          }
+                          alt="Device"
+                          className={styles.deviceImage}
+                        />
+                      )}
+                    </div>
+                    <div className={styles.onlineIndicator}></div>
+                  </div>
+                
+                  {/* ▶️ INFORMACJE O URZĄDZENIU */}
+                  <div className={styles.deviceInfo}>
+                    {editingDeviceId === device._id ? (
+                      <>
+                        <input
+                          type="text"
+                          value={editInputValue}
+                          onChange={(e) => setEditInputValue(e.target.value)}
+                          className={styles.editInput}
+                        />
+                        <button onClick={() => handleEditSave(device.clientName)} className={styles.saveButton}>Zapisz</button>
+                        <button onClick={() => handleEditReset(device.clientName)} className={styles.resetButton}>Resetuj</button>
+                        <button onClick={handleEditCancel} className={styles.cancelButton}>Anuluj</button>
+                      </>
+                    ) : (
+                      <div className={styles.deviceNameEditWrapper}>
+                        <h3 className={styles.deviceName}>{getDisplayName(device.clientName)}</h3>
+                      </div>
+                    )}
+                    <p className={styles.deviceId}>
+                      Status: <a style={{ color: "green", fontWeight: "bold" }}>Online</a>,{device.clientId}
+                    </p>
+                  </div>
+                </div>
+                
                 ))}
               </div>
             ) : (

@@ -1274,3 +1274,51 @@
   width: 50px;
   height: 50px;
 }
+
+
+.deviceCard {
+  position: relative;
+  /* inne style kart... */
+}
+
+/* Kontener ikon (może być pusty, ale trzyma logicznie 2 przyciski) */
+.deviceIcons {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 10;
+}
+
+/* ✏️ Przycisk edycji (lewy z dwóch) */
+.editButton {
+  position: absolute;
+  top: 8px;      /* zmniejszamy z 20px */
+  right: 42px;   /* bliżej siebie */
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 11;
+}
+
+.editIcon {
+  width: 20px;
+  height: 20px;
+}
+
+/* 👥 Przycisk grupy (prawy) */
+.editGroupButton {
+  position: absolute;
+  top: 8px;
+  right: 12px;   /* bliżej prawej krawędzi */
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 11;
+}
+
+.editIcon2 {
+  width: 20px;
+  height: 20px;
+}
