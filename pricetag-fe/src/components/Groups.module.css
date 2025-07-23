@@ -1,6 +1,6 @@
-/* MainPage.module.css */
+/* Groups.module.css */
 
-/* --- Zmienne CSS dla całej strony --- */
+/* --- Zmienne CSS dla całej strony (re-użyte z MainPage.module.css) --- */
 :root {
   /* Główny kolor strony */
   --primary-color: #4472c4;
@@ -84,7 +84,9 @@
   background: linear-gradient(135deg, var(--background-primary) 0%, var(--background-secondary) 100%);
   display: flex;
   flex-direction: column;
-  margin-bottom: 100px;
+  margin-bottom: 100px; /* Przestrzeń na dolny pasek */
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 
 /* --- Header --- */
@@ -95,6 +97,7 @@
   margin-bottom: 2rem;
   padding-bottom: 1rem;
   border-bottom: 2px solid var(--border-primary);
+  flex-wrap: wrap;
 }
 
 .title {
@@ -118,16 +121,97 @@
   box-shadow: var(--shadow-primary);
 }
 
-/* --- Grid urządzeń --- */
+/* --- Sekcja Grupy --- */
+.groupSection {
+  background: var(--background-card);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 2rem;
+  border: 2px solid var(--border-primary);
+}
+
+.groupHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-primary);
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.groupName {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.groupActions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.selectGroupButton,
+.deleteGroupButton {
+  padding: 0.6rem 1.2rem;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  box-shadow: var(--shadow-sm);
+  border: none;
+}
+
+.selectGroupButton {
+  background: var(--background-selected);
+  color: var(--primary-color-dark);
+  border: 1px solid var(--primary-color-alpha-30);
+}
+
+.selectGroupButton:hover {
+  background: var(--primary-color-alpha-20);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-primary);
+}
+
+.deleteGroupButton {
+  background: linear-gradient(135deg, var(--text-error) 0%, #c53030 100%);
+  color: var(--text-white);
+}
+
+.deleteGroupButton:hover {
+  background: linear-gradient(135deg, #c53030 0%, #9c2c2c 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
+}
+
+.noGroupsMessage,
+.noDevicesMessage {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  padding: 1rem 0;
+}
+
+/* --- Grid urządzeń (re-użyte z MainPage.module.css) --- */
 .deviceGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Zmniejszono minmax, by zmieściło się więcej na małych ekranach */
   gap: 1.5rem;
-  margin-bottom: 2rem;
   flex-grow: 1;
 }
 
-/* --- Karta urządzenia --- */
+/* --- Karta urządzenia (re-użyte z MainPage.module.css) --- */
 .deviceCard {
   background: var(--background-card);
   border-radius: 16px;
@@ -138,6 +222,9 @@
   border: 2px solid var(--border-transparent);
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .deviceCard::before {
@@ -172,7 +259,7 @@
   transform: scaleX(1);
 }
 
-/* --- Kontener obrazu urządzenia --- */
+/* --- Kontener obrazu urządzenia (re-użyte z MainPage.module.css) --- */
 .deviceImageContainer {
   display: flex;
   align-items: center;
@@ -239,7 +326,7 @@
   100% { box-shadow: var(--shadow-success); }
 }
 
-/* --- Informacje o urządzeniu --- */
+/* --- Informacje o urządzeniu (re-użyte z MainPage.module.css) --- */
 .deviceInfo {
   flex: 1;
 }
@@ -262,7 +349,7 @@
   display: inline-block;
 }
 
-/* --- Style dla edytowania nazw urządzeń --- */
+/* --- Style dla edytowania nazw urządzeń (re-użyte z MainPage.module.css) --- */
 
 /* Wrapper dla nazwy urządzenia z przyciskiem edycji */
 .deviceNameEditWrapper {
@@ -272,6 +359,7 @@
   margin-bottom: 0.5rem;
   min-height: 2rem;
   position: relative;
+  flex-wrap: wrap; /* Dodano flex-wrap dla responsywności */
 }
 
 /* Przycisk edycji (ołówek) */
@@ -301,6 +389,37 @@
 
 /* Pokaż przycisk edycji przy hover na karcie urządzenia */
 .deviceCard:hover .editButton {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Nowy przycisk do zarządzania grupami */
+.editGroupButton {
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateX(-5px);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editGroupButton:hover {
+  background: var(--background-dropdown);
+  color: var(--primary-color);
+  transform: translateX(0) scale(1.1);
+}
+
+/* Pokaż przycisk edycji przy hover na karcie urządzenia */
+.deviceCard:hover .editGroupButton {
   opacity: 1;
   transform: translateX(0);
 }
@@ -343,6 +462,7 @@
   justify-content: center;
   min-width: 60px;
   box-shadow: var(--shadow-sm);
+  margin-top: 0.25rem; /* Dodano margines dla responsywności */
 }
 
 /* Przycisk zapisz */
@@ -418,7 +538,7 @@
   box-shadow: 0 0 0 4px var(--primary-color-alpha-10);
 }
 
-/* --- Przełącznik zakładek --- */
+/* --- Przełącznik zakładek (re-użyte z MainPage.module.css) --- */
 .tabSwitcher {
   display: flex;
   justify-content: center;
@@ -452,7 +572,7 @@
   box-shadow: inset 0 -4px 0 var(--primary-color-dark);
 }
 
-/* --- Komunikat o błędzie --- */
+/* --- Komunikat o błędzie (re-użyte z MainPage.module.css) --- */
 .errorMessage {
   background: var(--background-error);
   color: var(--text-error);
@@ -463,9 +583,11 @@
   font-size: 0.95rem;
   margin-top: 1rem;
   box-shadow: var(--shadow-error);
+  width: 100%; /* Upewnij się, że zajmuje całą szerokość */
+  box-sizing: border-box;
 }
 
-/* --- Informacje o uploadowanym zdjęciu --- */
+/* --- Informacje o uploadowanym zdjęciu (re-użyte z MainPage.module.css) --- */
 .uploadedPhotoInfo {
   display: flex;
   align-items: center;
@@ -511,7 +633,7 @@
   font-weight: 500;
 }
 
-/* --- Modal upload --- */
+/* --- Modal upload (re-użyte z MainPage.module.css) --- */
 .uploadModal {
   position: fixed;
   top: 0;
@@ -586,7 +708,7 @@
   background: var(--background-error);
 }
 
-/* --- Drop Zone --- */
+/* --- Drop Zone (re-użyte z MainPage.module.css) --- */
 .dropZone {
   border: 3px dashed var(--border-dashed);
   border-radius: 16px;
@@ -648,7 +770,7 @@
   cursor: pointer;
 }
 
-/* --- Preview Container --- */
+/* --- Preview Container (re-użyte z MainPage.module.css) --- */
 .previewContainer {
   display: flex;
   flex-direction: column;
@@ -683,11 +805,12 @@
   font-size: 0.9rem;
 }
 
-/* --- Akcje modala --- */
+/* --- Akcje modala (re-użyte z MainPage.module.css) --- */
 .modalActions {
   display: flex;
   gap: 1rem;
   justify-content: flex-end;
+  margin-top: 1.5rem;
 }
 
 .uploadButton {
@@ -731,7 +854,7 @@
   transform: translateY(-2px);
 }
 
-/* --- Galeria plików --- */
+/* --- Galeria plików (re-użyte z MainPage.module.css) --- */
 .galleryContainer {
   background: var(--background-primary);
   border-radius: 16px;
@@ -816,7 +939,7 @@
   height: 0;
 }
 
-/* NOWE: Wrapper dla mediów w galerii (obrazów i wideo) */
+/* Wrapper dla mediów w galerii (obrazów i wideo) */
 .galleryMediaWrapper {
   width: 100px; /* Rozmiar miniatury */
   height: 100px; /* Rozmiar miniatury */
@@ -836,7 +959,7 @@
   box-shadow: var(--shadow-lg);
 }
 
-/* NOWE: Ogólny styl dla obrazów i wideo w galerii */
+/* Ogólny styl dla obrazów i wideo w galerii */
 .galleryMedia {
   width: 100%;
   height: 100%;
@@ -945,7 +1068,7 @@
   box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
 }
 
-/* Efekt FPS */
+/* Efekt FPS (re-użyte z MainPage.module.css) */
 .fpsInfo {
   background: rgba(0, 0, 0, 0.8);
   color: var(--text-white);
@@ -959,7 +1082,7 @@
   backdrop-filter: blur(10px);
 }
 
-/* --- Nowe style dla stopki z przyciskiem zarządzania --- */
+/* --- Nowe style dla stopki z przyciskiem zarządzania (re-użyte z MainPage.module.css) --- */
 .manageButtonContainer {
   position: fixed;
   bottom: 0;
@@ -997,7 +1120,7 @@
   box-shadow: var(--shadow-primary-hover);
 }
 
-.selectButton {
+.selectButton { /* Reużyte dla spójności, choć w kodzie React nieużywane bezpośrednio */
   background: var(--primary-gradient);
   color: var(--text-white);
   border: none;
@@ -1017,7 +1140,7 @@
   box-shadow: var(--shadow-primary-hover);
 }
 
-/* --- Lepszy wygląd statusów w modalu --- */
+/* --- Lepszy wygląd statusów w modalu (re-użyte z MainPage.module.css) --- */
 .uploadStatusContainer {
   margin-top: 25px;
   border-top: 1px solid var(--border-primary);
@@ -1163,6 +1286,256 @@
   color: var(--status-error);
 }
 
+/* --- Group Management Modal Styles --- */
+.groupModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--background-modal);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1010; /* Wyższy z-index niż główny modal */
+  backdrop-filter: blur(5px);
+}
+
+.groupModalContent {
+  background: var(--background-card);
+  border-radius: 20px;
+  padding: 2rem;
+  max-width: 600px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-xl);
+  transform: translateY(0);
+  animation: modalSlideIn 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.groupModalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--border-primary);
+}
+
+.groupModalTitle {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.groupListContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.groupListContainer h4 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
+  position: relative;
+  padding-bottom: 8px;
+}
+
+.groupListContainer h4::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 2px;
+  background: var(--primary-color-light);
+  border-radius: 1px;
+}
+
+.currentGroupList,
+.availableGroupList {
+  list-style: none;
+  padding: 0;
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: var(--background-primary);
+  box-shadow: inset 0 0 8px var(--primary-color-alpha-10);
+}
+
+.groupListItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-primary);
+  transition: background-color 0.2s ease;
+}
+
+.groupListItem:last-child {
+  border-bottom: none;
+}
+
+.groupListItem:hover {
+  background-color: var(--background-dropdown);
+}
+
+.groupNameInList {
+  font-weight: 500;
+  color: var(--text-primary);
+  flex-grow: 1;
+  font-size: 1rem;
+}
+
+.groupDescriptionInList {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-left: 1rem;
+  flex-basis: 60%;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.groupListItemActions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.removeGroupButton,
+.addGroupButton {
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.85rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.removeGroupButton {
+  background: linear-gradient(135deg, var(--text-error) 0%, #c53030 100%);
+  color: var(--text-white);
+}
+
+.removeGroupButton:hover {
+  background: linear-gradient(135deg, #c53030 0%, #9c2c2c 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
+}
+
+.addGroupButton {
+  background: linear-gradient(135deg, var(--text-success) 0%, #059669 100%);
+  color: var(--text-white);
+}
+
+.addGroupButton:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.addGroupButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--border-primary);
+  color: var(--text-secondary);
+  box-shadow: none;
+}
+
+.createNewGroupSection {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.createNewGroupSection h4 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-align: center;
+  position: relative;
+  padding-bottom: 8px;
+}
+
+.createNewGroupSection h4::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 2px;
+  background: var(--primary-color-light);
+  border-radius: 1px;
+}
+
+.newGroupInput,
+.newGroupTextarea {
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--border-primary);
+  border-radius: 10px;
+  font-size: 1rem;
+  color: var(--text-primary);
+  background: var(--background-primary);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.newGroupTextarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.newGroupInput:focus,
+.newGroupTextarea:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-color-alpha-20);
+}
+
+.createGroupButton {
+  background: var(--primary-gradient);
+  color: var(--text-white);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-primary);
+  align-self: flex-end; /* Przyklej do prawej */
+  width: fit-content;
+}
+
+.createGroupButton:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-primary-hover);
+}
+
 /* --- Responsywność --- */
 
 /* Responsive design dla edytowania nazw na mniejszych ekranach */
@@ -1184,6 +1557,7 @@
     min-width: 60px;
     font-size: 0.75rem;
     padding: 0.35rem 0.6rem;
+    margin-top: 0.2rem;
   }
 
   .fileGrid {
@@ -1223,17 +1597,70 @@
       margin-top: 10px;
   }
 
-  .modalContent {
+  .modalContent, .groupModalContent {
       padding: 1.5rem;
   }
 
-  .modalTitle {
+  .modalTitle, .groupModalTitle {
       font-size: 1.25rem;
   }
 
-  .uploadButton, .modalActions .cancelButton {
+  .uploadButton, .modalActions .cancelButton, .createGroupButton {
       padding: 0.6rem 1.2rem;
       font-size: 0.9rem;
+  }
+
+  .groupHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .groupActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .groupName {
+    font-size: 1.5rem;
+  }
+
+  .groupListItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .groupDescriptionInList {
+    text-align: left;
+    margin-left: 0;
+    width: 100%;
+    white-space: normal;
+  }
+
+  .groupListItemActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .groupListContainer h4 {
+    font-size: 1rem;
+  }
+
+  .removeGroupButton,
+  .addGroupButton {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+  }
+
+  .newGroupInput,
+  .newGroupTextarea {
+    font-size: 0.9rem;
+    padding: 0.6rem 0.8rem;
+  }
+
+  .createGroupButton {
+    align-self: stretch; /* Rozciągnij na całą szerokość */
+    width: 100%;
   }
 }
 
@@ -1265,5 +1692,14 @@
   .manageButton {
       padding: 0.8rem 2rem;
       font-size: 1rem;
+  }
+
+  .selectGroupButton, .deleteGroupButton {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .groupName {
+    font-size: 1.3rem;
   }
 }

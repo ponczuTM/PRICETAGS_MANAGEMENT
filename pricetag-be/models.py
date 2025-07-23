@@ -50,7 +50,8 @@ class Device(BaseModel):
     photo: Optional[str] = Field(None, description="Base64 encoded photo")
     video: Optional[str] = Field(None, description="Base64 encoded video")
     changed: Optional[str] = Field("false", description="Has device been changed")
-    thumbnail: Optional[str] = Field(None, description="Path to thumbnail")  # ⬅️ DODANE
+    thumbnail: Optional[str] = Field(None, description="Path to thumbnail")
+    groups: Optional[List[PyObjectId]] = Field(default_factory=list, description="Lista ID grup")
 
     class Config:
         allow_population_by_field_name = True

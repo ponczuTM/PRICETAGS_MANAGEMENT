@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from config import settings
 from api import users, locations
+from api import groups
 
 app = FastAPI(
     title="Location Management API",
@@ -41,6 +42,8 @@ async def shutdown_db_client():
 # Include routers
 app.include_router(users.router, prefix="/api/users", tags=["users"])
 app.include_router(locations.router, prefix="/api/locations", tags=["locations"])
+app.include_router(groups.router, prefix="/api", tags=["groups"])
+
 
 @app.get("/")
 async def root():

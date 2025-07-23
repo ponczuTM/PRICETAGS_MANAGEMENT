@@ -11,6 +11,7 @@ models_py = 'models.py'
 api_py = 'api.py'
 api_location_py = 'api/locations.py'
 api_users_py = 'api/users.py'
+api_groups_py = 'api/groups.py'
 
 # Tworzymy plik tekstowy 'code.txt'
 with open('code.txt', 'w') as output_file:
@@ -32,5 +33,8 @@ with open('code.txt', 'w') as output_file:
     
     output_file.write(f"mam taki {api_users_py}:\n")
     output_file.write(read_file(api_users_py))
+    
+    output_file.write(f"mam taki {api_groups_py}:\n")
+    output_file.write(read_file(api_groups_py))
 
 print("Plik 'code.txt' został utworzony.")
