@@ -1,0 +1,94 @@
+/* Navbar.module.css */
+
+:root {
+  /* Główne kolory */
+  --primary-color: #4472c4;
+  --primary-color-hover: #3b5998;
+  
+  --text-secondary: #000000;
+
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.navbar {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 1rem 2rem;
+  background-color: var(--background-card);
+  box-shadow: var(--shadow-sm);
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+}
+
+.navbarBrand {
+  flex-shrink: 0;
+}
+
+.logoText {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--primary-color);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.navbarLinks {
+  display: flex;
+  margin-left: auto; /* Przesuwa linki na prawą stronę */
+  margin-right: 100px; /* Odsunięcie 100px od prawej */
+  gap: 2rem; /* Odstęp między linkami */
+}
+
+.navLink {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.5rem 0;
+  position: relative;
+  transition: color 0.3s ease-in-out;
+}
+
+.navLink:hover {
+  color: var(--primary-color);
+}
+
+.navLink::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 2px;
+  background-color: var(--primary-color);
+  transition: width 0.3s ease-in-out;
+}
+
+.navLink:hover::after,
+.navLink.active::after {
+  width: 100%;
+}
+
+/* Dostosowania dla mniejszych ekranów, jeśli potrzebne */
+@media (max-width: 768px) {
+  .navbar {
+    flex-wrap: wrap;
+    padding: 1rem;
+  }
+
+  .navbarLinks {
+    margin-right: 0;
+    margin-top: 1rem;
+    width: 100%;
+    justify-content: space-around;
+  }
+
+  .logoText {
+    font-size: 1.2rem;
+  }
+}

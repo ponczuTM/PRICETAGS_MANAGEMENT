@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
-import styles from "./Groups.module.css"; // Assuming you'll create a new CSS module
-// You can reuse some styles from MainPage.module.css if they are general enough
-// or create new specific styles in Groups.module.css
+import styles from "./Groups.module.css";
+import Navbar from "./Navbar";
+import editIcon from './../assets/images/edit.png';
+import groupIcon from './../assets/images/group.png';
 
 const locationId = "685003cbf071eb1bb4304cd2";
 const API_BASE_URL = "http://localhost:8000/api/locations";
@@ -482,6 +483,8 @@ function Groups() {
   };
 
   return (
+    <>
+    <Navbar/>
     <div className={styles.container}>
       <div className={styles.header}>
         <h2 className={styles.title}>Zarządzanie grupami i urządzeniami</h2>
@@ -571,8 +574,8 @@ function Groups() {
                             <h3 className={styles.deviceName}>
                               {getDisplayName(device.clientName)}
                             </h3>
-                            <button onClick={() => handleEditClick(device)} className={styles.editButton}>✏️</button>
-                            <button onClick={(e) => { e.stopPropagation(); openGroupManagementModal(device); }} className={styles.editGroupButton}>👥</button>
+                            <button onClick={() => handleEditClick(device)} className={styles.editButton}> <img src={editIcon} alt="Edytuj" className={styles.editIcon} /> </button>
+                            <button onClick={(e) => { e.stopPropagation(); openGroupManagementModal(device); }} className={styles.editGroupButton}> <img src={groupIcon} alt="Grupuj" className={styles.editIcon2} /> </button>
                           </>
                         )}
                       </div>
@@ -903,15 +906,18 @@ function Groups() {
                   {deviceToManageGroups.groups.map(groupId => {
                     const group = groups.find(g => g._id === groupId);
                     return group ? (
-                      <li key={group._id}>
-                        {group.name}
+                      <li key={group._id} className={styles.groupListItem}>
+                      <span className={styles.groupNameInList}>{group.name}</span>
+                      <div className={styles.groupListItemActions}>
                         <button
                           className={styles.removeGroupButton}
                           onClick={() => handleRemoveDeviceFromGroup(group._id)}
                         >
                           Usuń
                         </button>
-                      </li>
+                      </div>
+                    </li>
+
                     ) : null;
                   })}
                 </ul>
@@ -925,16 +931,25 @@ function Groups() {
                   groups.map(group => {
                     const isAssigned = deviceToManageGroups.groups.includes(group._id);
                     return (
-                      <li key={group._id}>
-                        {group.name} ({group.description})
-                        <button
-                          className={styles.addGroupButton}
-                          onClick={() => handleAddDeviceToGroup(group._id)}
-                          disabled={isAssigned}
-                        >
-                          {isAssigned ? "Przypisano" : "Dodaj"}
-                        </button>
+                      <li key={group._id} className={styles.groupListItem}>
+                        <div className={styles.groupNameInList}>
+                        {group.name}
+                        {group.description && (
+                          <span className={styles.groupDescriptionInList}> ({group.description})</span>
+                        )}
+                      </div>
+
+                        <div className={styles.groupListItemActions}>
+                          <button
+                            className={styles.addGroupButton}
+                            onClick={() => handleAddDeviceToGroup(group._id)}
+                            disabled={isAssigned}
+                          >
+                            {isAssigned ? "Przypisano" : "Dodaj"}
+                          </button>
+                        </div>
                       </li>
+
                     );
                   })
                 ) : (
@@ -972,6 +987,7 @@ function Groups() {
         </div>
       )}
     </div>
+    </>
   );
 }
 

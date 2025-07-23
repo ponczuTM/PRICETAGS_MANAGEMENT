@@ -87,6 +87,7 @@
   margin-bottom: 100px; /* Przestrzeń na dolny pasek */
   min-height: 100vh;
   box-sizing: border-box;
+  margin-top: 80px;
 }
 
 /* --- Header --- */
@@ -359,7 +360,7 @@
   margin-bottom: 0.5rem;
   min-height: 2rem;
   position: relative;
-  flex-wrap: wrap; /* Dodano flex-wrap dla responsywności */
+  flex-wrap: wrap
 }
 
 /* Przycisk edycji (ołówek) */
@@ -381,11 +382,12 @@
   justify-content: center;
 }
 
-.editButton:hover {
-  background: var(--background-dropdown);
-  color: var(--primary-color);
-  transform: translateX(0) scale(1.1);
+.saveButton,
+.resetButton,
+.cancelButton {
+  width: 100%; /* każdy przycisk pełnej szerokości */
 }
+
 
 /* Pokaż przycisk edycji przy hover na karcie urządzenia */
 .deviceCard:hover .editButton {
@@ -412,11 +414,6 @@
   justify-content: center;
 }
 
-.editGroupButton:hover {
-  background: var(--background-dropdown);
-  color: var(--primary-color);
-  transform: translateX(0) scale(1.1);
-}
 
 /* Pokaż przycisk edycji przy hover na karcie urządzenia */
 .deviceCard:hover .editGroupButton {
@@ -516,7 +513,7 @@
 
 /* Animacja przejścia między trybami */
 .deviceNameEditWrapper .deviceName {
-  transition: all 0.3s ease;
+  /* transition: all 0.3s ease; */
   margin: 0;
   flex: 1;
   min-width: 0;
@@ -1383,6 +1380,7 @@
   transition: background-color 0.2s ease;
 }
 
+
 .groupListItem:last-child {
   border-bottom: none;
 }
@@ -1703,3 +1701,32 @@
     font-size: 1.3rem;
   }
 }
+.groupListItemActions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+
+.groupDescriptionInList {
+  display: none;
+  font-weight: normal;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.groupListItem:hover .groupDescriptionInList {
+  display: inline;
+}
+
+
+.editIcon {
+  width: 50px;
+  height: 50px;
+  margin-right: 50px;
+}
+.editIcon2 {
+  width: 50px;
+  height: 50px;
+}
+

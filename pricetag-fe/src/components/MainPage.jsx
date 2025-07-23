@@ -1,5 +1,7 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import styles from "./MainPage.module.css";
+import Navbar from "./Navbar";
+import edit from './../assets/images/edit.png'
 
 const locationId = "685003cbf071eb1bb4304cd2";
 const API_BASE_URL = "http://localhost:8000/api/locations";
@@ -351,6 +353,8 @@ function MainPage() {
   };
 
   return (
+    <>
+    <Navbar/>
     <div className={styles.container}>
       <div className={styles.header}>
         <h2 className={styles.title}>Lista urządzeń</h2>
@@ -426,7 +430,9 @@ function MainPage() {
                 <h3 className={styles.deviceName}>
                   {getDisplayName(device.clientName)}
                 </h3>
-                <button onClick={() => handleEditClick(device)} className={styles.editButton}>✏️</button>
+                <button onClick={() => handleEditClick(device)} className={styles.editButton}>
+                  <img src={edit} alt="Edytuj" className={styles.editIcon} />
+                </button>
               </>
             )}
           </div>
@@ -649,6 +655,7 @@ function MainPage() {
         </div>
       )}
     </div>
+    </>
   );
 }
 
