@@ -1786,8 +1786,10 @@ async def create_group(location_id: str, group: GroupCreate, db=Depends(get_data
         "description": group.description
     }
     result = await db["groups"].insert_one(group_doc)
-    group_doc["_id"] = result.inserted_id
+    group_doc["_id"] = str(result.inserted_id)
+    group_doc["location_id"] = str(group_doc["location_id"])
     return GroupResponse(**group_doc)
+
 
 # 2. GET /locations/{location_id}/groups – pobierz wszystkie grupy
 @router.get("/locations/{location_id}/groups", response_model=List[GroupResponse])
@@ -1836,9 +1838,10 @@ async def get_devices_in_group(location_id: str, group_id: str, db=Depends(get_d
 @router.delete("/locations/{location_id}/devices/{device_id}/groups/{group_id}")
 async def remove_device_from_group(location_id: str, device_id: str, group_id: str, db=Depends(get_database)):
     result = await db["locations"].update_one(
-        {"_id": ObjectId(location_id), "devices._id": ObjectId(device_id)},
+        {"_id": ObjectId(location_id), "devices._id": device_id},  # string, nie ObjectId!
         {"$pull": {"devices.$.groups": ObjectId(group_id)}}
     )
+
     if result.matched_count == 0:
         raise HTTPException(404, detail="Device or location not found")
 

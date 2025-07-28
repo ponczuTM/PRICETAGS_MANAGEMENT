@@ -527,7 +527,6 @@ function Groups() {
                   }`}
                   onClick={() => handleDeviceSelectToggle(device)}
                 >
-                  {/* ▶️ IKONY EDYCJI – ABSOLUTNE */}
                   <div className={styles.deviceIcons}>
                     <button
                       onClick={(e) => {
@@ -549,7 +548,6 @@ function Groups() {
                     </button>
                   </div>
                 
-                  {/* ▶️ OBRAZ URZĄDZENIA */}
                   <div className={styles.deviceImageContainer}>
                     <div className={styles.hangingWrapper}>
                       <div className={styles.hangerBar}></div>
@@ -642,19 +640,48 @@ function Groups() {
                 }`}
                 onClick={() => handleDeviceSelectToggle(device)}
               >
+                {/* 🎯 Ikony w prawym górnym rogu */}
+                <div className={styles.deviceIcons}>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditClick(device);
+                    }}
+                    className={styles.editButton}
+                  >
+                    <img src={editIcon} alt="Edytuj" className={styles.editIcon} />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openGroupManagementModal(device);
+                    }}
+                    className={styles.editGroupButton}
+                  >
+                    <img src={groupIcon} alt="Grupuj" className={styles.editIcon2} />
+                  </button>
+                </div>
+
                 <div className={styles.deviceImageContainer}>
                   <div className={styles.hangingWrapper}>
                     <div className={styles.hangerBar}></div>
-                    <div className={styles.stick + " " + styles.left}></div>
-                    <div className={styles.stick + " " + styles.right}></div>
+                    <div className={`${styles.stick} ${styles.left}`}></div>
+                    <div className={`${styles.stick} ${styles.right}`}></div>
                     {getFileType(device.thumbnail || '') === 'video' ? (
                       <video
-                        src={device.thumbnail ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}` : null}
+                        src={
+                          device.thumbnail
+                            ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}`
+                            : null
+                        }
                         autoPlay
                         loop
                         muted
                         className={styles.deviceImage}
-                        onError={(e) => { e.target.onerror = null; e.target.src="/src/assets/images/device.png" }}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "/src/assets/images/device.png";
+                        }}
                       />
                     ) : (
                       <img
@@ -670,6 +697,7 @@ function Groups() {
                   </div>
                   <div className={styles.onlineIndicator}></div>
                 </div>
+
                 <div className={styles.deviceInfo}>
                   <div className={styles.deviceNameEditWrapper}>
                     {editingDeviceId === device._id ? (
@@ -685,23 +713,18 @@ function Groups() {
                         <button onClick={handleEditCancel} className={styles.cancelButton}>Anuluj</button>
                       </>
                     ) : (
-                      <>
-                        <h3 className={styles.deviceName}>
-                          {getDisplayName(device.clientName)}
-                        </h3>
-                        <button onClick={() => handleEditClick(device)} className={styles.editButton}>✏️</button>
-                        <button onClick={(e) => { e.stopPropagation(); openGroupManagementModal(device); }} className={styles.editGroupButton}>👥</button>
-                      </>
+                      <h3 className={styles.deviceName}>
+                        {getDisplayName(device.clientName)}
+                      </h3>
                     )}
                   </div>
                   <p className={styles.deviceId}>
-                    Status:{" "}
-                    <a style={{ color: "green", fontWeight: "bold" }}>Online</a>,
-                    {device.clientId}
+                    Status: <a style={{ color: "green", fontWeight: "bold" }}>Online</a>, {device.clientId}
                   </p>
                 </div>
               </div>
             ))}
+
           </div>
         ) : (
           <p className={styles.noDevicesMessage}>Brak urządzeń bez przypisanych grup.</p>
