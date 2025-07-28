@@ -2,7 +2,13 @@ import React, { useEffect, useState } from "react";
 import styles from "./Schedule.module.css";
 import Navbar from "./Navbar";
 import editIcon from './../assets/images/edit.png';
-import groupIcon from './../assets/images/group.png';
+import DatePicker, { registerLocale } from "react-datepicker";
+import pl from "date-fns/locale/pl";
+import "react-datepicker/dist/react-datepicker.css";
+
+registerLocale("pl", pl);
+
+
 
 const locationId = "685003cbf071eb1bb4304cd2";
 const API_BASE_URL = "http://localhost:8000/api/locations";
@@ -17,7 +23,7 @@ function Schedule() {
   const [selectedGalleryFile, setSelectedGalleryFile] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [scheduleType, setScheduleType] = useState("fixed");
-  const [dateTime, setDateTime] = useState("");
+  const [dateTime, setDateTime] = useState(null);
   const [dayOfWeek, setDayOfWeek] = useState(1);
   const [hour, setHour] = useState(8);
   const [minute, setMinute] = useState(0);
@@ -191,55 +197,59 @@ function Schedule() {
       setErrorMsg("Wybierz plik z galerii.");
       return;
     }
-
+  
     if (scheduleType === "fixed" && !dateTime) {
       setErrorMsg("Wybierz datę i godzinę dla harmonogramu.");
       return;
     }
-
+  
     const mediaType = getFileType(selectedGalleryFile);
-    if (mediaType === 'unknown') {
+    if (mediaType === "unknown") {
       setErrorMsg("Wybrany plik nie jest zdjęciem ani filmem.");
       return;
     }
-
+  
     const media = {
       filename: selectedGalleryFile,
-      mediaType: mediaType
+      mediaType: mediaType,
     };
-
+  
     const scheduleData = {
       type: scheduleType,
       media: media,
-      ...(scheduleType === "fixed" ? { date: new Date(dateTime).toISOString() } : { 
-        dayOfWeek: parseInt(dayOfWeek),
-        hour: parseInt(hour),
-        minute: parseInt(minute)
-      })
+      ...(scheduleType === "fixed"
+        ? { date: dateTime?.toISOString() }
+        : {
+            dayOfWeek: parseInt(dayOfWeek),
+            hour: parseInt(hour),
+            minute: parseInt(minute),
+          }),
     };
-
+  
     try {
-      const promises = selectedDevices.map(device => 
+      const promises = selectedDevices.map((device) =>
         fetch(`${API_BASE_URL}/${locationId}/devices/${device._id}/schedules`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(scheduleData)
+          body: JSON.stringify(scheduleData),
         })
       );
-
+  
       const results = await Promise.all(promises);
-      const errors = results.filter(res => !res.ok);
-
+      const errors = results.filter((res) => !res.ok);
+  
       if (errors.length > 0) {
         const errorMessages = await Promise.all(
-          errors.map(async res => {
+          errors.map(async (res) => {
             const errData = await res.json();
             return errData.message || "Nieznany błąd";
           })
         );
-        throw new Error(`Błędy podczas zapisywania harmonogramów: ${errorMessages.join(", ")}`);
+        throw new Error(
+          `Błędy podczas zapisywania harmonogramów: ${errorMessages.join(", ")}`
+        );
       }
-
+  
       setErrorMsg(null);
       setIsModalOpen(false);
       setSelectedGalleryFile(null);
@@ -248,6 +258,7 @@ function Schedule() {
       setErrorMsg(err.message);
     }
   };
+  
 
   const fetchDeviceSchedules = async (deviceId) => {
     try {
@@ -598,11 +609,16 @@ function Schedule() {
                 <div className={styles.dateTimePicker}>
                   <label>
                     Data i godzina:
-                    <input
-                      type="datetime-local"
-                      value={dateTime}
-                      onChange={(e) => setDateTime(e.target.value)}
-                      className={styles.dateTimeInput}
+                    <DatePicker
+                        selected={dateTime}
+                        onChange={(date) => setDateTime(date)}
+                        showTimeSelect
+                        timeFormat="HH:mm"
+                        timeIntervals={5}
+                        dateFormat="Pp"
+                        timeCaption="Godzina"
+                        locale="pl"
+                        className={styles.dateTimeInput}
                     />
                   </label>
                 </div>
