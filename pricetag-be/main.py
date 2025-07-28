@@ -4,6 +4,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from config import settings
 from api import users, locations
 from api import groups
+from api import schedules
 
 app = FastAPI(
     title="Location Management API",
@@ -43,7 +44,7 @@ async def shutdown_db_client():
 app.include_router(users.router, prefix="/api/users", tags=["users"])
 app.include_router(locations.router, prefix="/api/locations", tags=["locations"])
 app.include_router(groups.router, prefix="/api", tags=["groups"])
-
+app.include_router(schedules.router, prefix="/api")
 
 @app.get("/")
 async def root():

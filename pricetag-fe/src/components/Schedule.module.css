@@ -1,0 +1,1532 @@
+/* Schedule.module.css */
+
+/* --- Zmienne CSS dla całej strony --- */
+:root {
+  /* Główny kolor strony */
+  --primary-color: #4472c4;
+  --primary-color-hover: #3b5998;
+  --primary-color-light: #5a80d8;
+  --primary-color-dark: #2e4a8a;
+  --primary-color-alpha-10: rgba(68, 114, 196, 0.1);
+  --primary-color-alpha-20: rgba(68, 114, 196, 0.2);
+  --primary-color-alpha-30: rgba(68, 114, 196, 0.3);
+  --primary-color-alpha-40: rgba(68, 114, 196, 0.4);
+  --primary-color-alpha-50: rgba(68, 114, 196, 0.5);
+  
+  /* Gradient główny */
+  --primary-gradient: linear-gradient(135deg, #4472c4 0%, #3b5998 100%);
+  --primary-gradient-reversed: linear-gradient(135deg, #3b5998 0%, #4472c4 100%);
+  
+  /* Kolory tła */
+  --background-primary: #f8f9fc;
+  --background-secondary: #e8f2ff;
+  --background-card: #ffffff;
+  --background-modal: rgba(0, 0, 0, 0.6);
+  --background-dropdown: #f0f4ff;
+  --background-selected: linear-gradient(135deg, #f0f4ff 0%, #e6f3ff 100%);
+  --background-success: #f0fff4;
+  --background-error: #fff5f5;
+  --background-pending: #e9ecef;
+  --background-uploading: #e0f2fe;
+  --background-in-progress: #e8f9fa;
+  
+  /* Kolory tekstu */
+  --text-primary: #1a202c;
+  --text-secondary: #4a5568;
+  --text-muted: #718096;
+  --text-white: #ffffff;
+  --text-success: #10b981;
+  --text-error: #e53e3e;
+  --text-warning: #f59e0b;
+  
+  /* Kolory ramek */
+  --border-primary: #e2e8f0;
+  --border-secondary: #cbd5e0;
+  --border-selected: var(--primary-color);
+  --border-success: #10b981;
+  --border-error: #e53e3e;
+  --border-transparent: transparent;
+  --border-dashed: #cbd5e0;
+  
+  /* Cienie */
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.15);
+  --shadow-xl: 0 25px 50px rgba(0, 0, 0, 0.3);
+  --shadow-primary: 0 4px 15px var(--primary-color-alpha-30);
+  --shadow-primary-hover: 0 8px 25px var(--primary-color-alpha-40);
+  --shadow-primary-selected: 0 16px 48px var(--primary-color-alpha-20);
+  --shadow-success: 0 2px 8px rgba(16, 185, 129, 0.4);
+  --shadow-error: 0 4px 12px rgba(229, 62, 62, 0.1);
+  
+  /* Kolory statusów */
+  --status-online: #10b981;
+  --status-pending: #6c757d;
+  --status-uploading: #007bff;
+  --status-in-progress: #17a2b8;
+  --status-success: #28a745;
+  --status-error: #dc3545;
+  
+  /* Inne kolory */
+  --scrollbar-track: #edf2f7;
+  --scrollbar-thumb: var(--primary-gradient);
+  --scrollbar-thumb-hover: var(--primary-gradient-reversed);
+  --glass-effect: rgba(255, 255, 255, 0.95);
+  --glass-effect-light: rgba(255, 255, 255, 0.7);
+}
+
+/* --- Container główny --- */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  margin-top: 80px;
+  padding: 2rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, var(--background-primary) 0%, var(--background-secondary) 100%);
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 100px; /* Dodatkowy margines na dole dla przycisku akcji */
+  min-height: calc(100vh - 80px - 100px); /* Minimalna wysokość, aby zawartość nie była zbyt krótka */
+}
+
+/* --- Header --- */
+.header {
+  display: flex;
+  flex-direction: column; /* Zmienione na column dla lepszej responsywności */
+  justify-content: space-between;
+  align-items: flex-start; /* Zmienione na flex-start */
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--border-primary);
+  gap: 1rem; /* Odstęp między tytułem a komunikatem */
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* --- Komunikat o błędzie --- */
+.errorMessage {
+  background: var(--background-error);
+  color: var(--text-error);
+  border-left: 4px solid var(--text-error);
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  margin-top: 0.5rem; /* Dopasowany margines */
+  box-shadow: var(--shadow-error);
+  width: 100%; /* Rozciągnij na całą szerokość */
+}
+
+/* --- Sekcje grup urządzeń --- */
+.groupSection {
+  margin-bottom: 2.5rem;
+  background: var(--background-card);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-primary);
+}
+
+.groupHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-secondary);
+  flex-wrap: wrap; /* Pozwala na zawijanie elementów */
+  gap: 1rem; /* Odstęp między elementami nagłówka */
+}
+
+.groupName {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  flex-grow: 1; /* Pozwala na rozciąganie nazwy grupy */
+}
+
+.selectGroupButton {
+  background: var(--primary-color-light);
+  color: var(--text-white);
+  padding: 0.6rem 1.2rem;
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-primary);
+}
+
+.selectGroupButton:hover {
+  background: var(--primary-color-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-primary-hover);
+}
+
+.selectGroupButton:active {
+  transform: translateY(0);
+}
+
+/* --- Grid urządzeń --- */
+.deviceGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* Nieco mniejszy min-width */
+  gap: 1.5rem;
+}
+
+/* --- Karta urządzenia --- */
+.deviceCard {
+  background: var(--background-card);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid var(--border-transparent);
+  position: relative;
+  overflow: hidden;
+  display: flex; /* Dodane dla lepszego układu wewnętrznego */
+  flex-direction: column; /* Elementy w kolumnie */
+  align-items: flex-start; /* Wyrównanie do lewej */
+}
+
+.deviceCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background: var(--primary-gradient);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.deviceCard:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+}
+
+.deviceCard:hover::before {
+  transform: scaleX(1);
+}
+
+.deviceCard.selected {
+  border-color: var(--border-selected);
+  background: var(--background-selected);
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-primary-selected);
+}
+
+.deviceCard.selected::before {
+  transform: scaleX(1);
+}
+
+/* --- Kontener obrazu urządzenia --- */
+.deviceImageContainer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  margin-top: 10px;
+  position: relative;
+  width: 100%; /* Rozciągnij na 100% szerokości karty */
+  justify-content: center; /* Wyśrodkuj obraz */
+}
+
+.hangingWrapper {
+  position: relative;
+  width: auto;
+}
+
+.deviceImage {
+  width: 117px;
+  height: 192px;
+  object-fit: contain; /* Zmienione na contain, aby obraz nie był zniekształcony */
+  border: #000 solid 6px;
+  position: relative;
+  background-color: #000; /* Tło dla obrazów z przezroczystością */
+}
+
+.hangerBar {
+  position: absolute;
+  top: -15px;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  background-color: black;
+}
+
+.stick {
+  position: absolute;
+  width: 6px;
+  height: 15px;
+  background-color: black;
+  top: -15px;
+}
+
+.left {
+  left: 15%;
+}
+
+.right {
+  right: 15%;
+}
+
+.onlineIndicator {
+  width: 20px;
+  height: 20px;
+  background: var(--status-online);
+  border-radius: 50%;
+  position: absolute;
+  top: -2px;
+  left: 110px;
+  border: 2px solid var(--background-card);
+  box-shadow: var(--shadow-success);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: var(--shadow-success); }
+  50% { box-shadow: 0 2px 8px rgba(16, 185, 129, 0.8), 0 0 0 8px rgba(16, 185, 129, 0.1); }
+  100% { box-shadow: var(--shadow-success); }
+}
+
+/* --- Informacje o urządzeniu --- */
+.deviceInfo {
+  flex: 1;
+  width: 100%; /* Rozciągnij na 100% szerokości karty */
+}
+
+.deviceName {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.deviceId {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin: 0.5rem 0 0 0; /* Zmieniony margines */
+  font-family: 'Courier New', monospace;
+  background: var(--background-primary);
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  display: inline-block;
+  white-space: nowrap; /* Zapobiega łamaniu wierszy */
+  overflow: hidden; /* Ukrywa nadmiar */
+  text-overflow: ellipsis; /* Dodaje elipsę */
+}
+
+/* --- Style dla edytowania nazw urządzeń --- */
+
+/* Wrapper dla nazwy urządzenia z przyciskiem edycji */
+.deviceNameEditWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  min-height: 2rem;
+  position: relative;
+  flex-wrap: wrap; /* Umożliwia zawijanie przycisków */
+}
+
+/* Przycisk edycji (ołówek) */
+.editButton {
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateX(-5px);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute; /* Ustawienie absolutne dla przycisków ikon */
+  top: 8px;
+  right: 42px;
+  z-index: 11;
+}
+
+.editButton:hover {
+  background: var(--background-dropdown);
+  color: var(--primary-color);
+  transform: translateX(0) scale(1.1);
+}
+
+/* Pokaż przycisk edycji przy hover na karcie urządzenia */
+.deviceCard:hover .editButton {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.editIcon {
+  width: 20px; /* Mniejsze ikony */
+  height: 20px;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.editButton:hover .editIcon {
+  opacity: 1;
+}
+
+/* Input do edycji nazwy */
+.editInput {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 2px solid var(--primary-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--background-card);
+  outline: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 0 3px var(--primary-color-alpha-20);
+  min-width: 0;
+}
+
+.editInput:focus {
+  border-color: var(--primary-color-dark);
+  box-shadow: 0 0 0 4px var(--primary-color-alpha-30);
+  background: var(--background-dropdown);
+}
+
+/* Przyciski zapisz, resetuj i anuluj */
+.saveButton,
+.resetButton,
+.cancelButton {
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Przycisk zapisz */
+.saveButton {
+  background: linear-gradient(135deg, var(--text-success) 0%, #059669 100%);
+  color: var(--text-white);
+}
+
+.saveButton:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.saveButton:active {
+  transform: translateY(0);
+}
+
+/* Przycisk resetuj */
+.resetButton {
+  background: linear-gradient(135deg, var(--border-secondary) 0%, #a0aec0 100%);
+  color: var(--text-secondary);
+}
+
+.resetButton:hover {
+  background: linear-gradient(135deg, #a0aec0 0%, #718096 100%);
+  color: var(--text-white);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(160, 174, 192, 0.3);
+}
+
+.resetButton:active {
+  transform: translateY(0);
+}
+
+/* Przycisk anuluj */
+.cancelButton {
+  background: linear-gradient(135deg, var(--text-error) 0%, #c53030 100%);
+  color: var(--text-white);
+}
+
+.cancelButton:hover {
+  background: linear-gradient(135deg, #c53030 0%, #9c2c2c 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
+}
+
+.cancelButton:active {
+  transform: translateY(0);
+}
+
+/* Animacja przejścia między trybami */
+.deviceNameEditWrapper .deviceName {
+  transition: all 0.3s ease;
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Grupa przycisków w trybie edycji */
+.deviceNameEditWrapper .saveButton + .resetButton,
+.deviceNameEditWrapper .resetButton + .cancelButton {
+  margin-left: 0.25rem;
+}
+
+/* Efekt focus trap dla trybu edycji */
+.deviceNameEditWrapper:has(.editInput) {
+  background: var(--background-selected);
+  border-radius: 10px;
+  padding: 0.5rem;
+  margin: -0.5rem;
+  border: 2px solid var(--primary-color-alpha-30);
+  box-shadow: 0 0 0 4px var(--primary-color-alpha-10);
+}
+
+/* Dodatkowe przyciski ikon na karcie */
+.deviceIcons {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  padding: 8px 12px; /* Margines od krawędzi karty */
+  gap: 8px; /* Odstęp między ikonami */
+}
+
+/* Nowy przycisk grupy (prawy) */
+.editGroupButton {
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  opacity: 0; /* Domyślnie ukryty */
+  transform: translateX(5px);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editGroupButton:hover {
+  background: var(--background-dropdown);
+  color: var(--primary-color);
+  transform: translateX(0) scale(1.1);
+}
+
+.deviceCard:hover .editGroupButton {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.groupIcon {
+  width: 20px;
+  height: 20px;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.editGroupButton:hover .groupIcon {
+  opacity: 1;
+}
+
+.noDevicesMessage,
+.noGroupsMessage {
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 2rem;
+  background: var(--background-primary);
+  border-radius: 12px;
+  margin-top: 1.5rem;
+  border: 1px dashed var(--border-dashed);
+}
+
+/* --- Nowe style dla stopki z przyciskiem zarządzania --- */
+.manageButtonContainer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+  background: linear-gradient(to top, var(--glass-effect), var(--glass-effect-light) 70%, transparent);
+  backdrop-filter: blur(5px);
+  box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.1);
+  z-index: 999;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  gap: 1rem; /* Odstęp między przyciskami */
+  flex-wrap: wrap; /* Pozwala na zawijanie przycisków */
+}
+
+.manageButton,
+.showScheduleButton { /* Dodany styl dla showScheduleButton */
+  background: var(--primary-gradient);
+  color: var(--text-white);
+  border: none;
+  padding: 1rem 2.5rem;
+  border-radius: 30px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0; /* Zapobiega zmniejszaniu się przycisków */
+}
+
+.manageButton:hover,
+.showScheduleButton:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-primary-hover);
+}
+
+.showScheduleButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  background: var(--border-secondary); /* Zmienione tło dla disabled */
+  color: var(--text-muted); /* Zmieniony kolor tekstu dla disabled */
+}
+
+/* --- Schedule Modal --- */
+.scheduleModal,
+.scheduleListModal { /* Wspólny styl dla obu modali */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--background-modal);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.modalContent {
+  background: var(--background-card);
+  border-radius: 20px;
+  padding: 2rem;
+  max-width: 600px; /* Zwiększona szerokość modala */
+  width: 90%;
+  max-height: 90vh; /* Zwiększona maksymalna wysokość */
+  overflow-y: auto;
+  box-shadow: var(--shadow-xl);
+  transform: translateY(0);
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+      transform: translateY(-50px);
+      opacity: 0;
+  }
+  to {
+      transform: translateY(0);
+      opacity: 1;
+  }
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--border-primary);
+}
+
+.modalTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.2s ease;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.closeButton:hover {
+  color: var(--text-error);
+  background: var(--background-error);
+}
+
+/* --- Przełącznik typów harmonogramów (radio buttons) --- */
+.scheduleTypeSelector {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  justify-content: center;
+  padding: 0.5rem;
+  border-radius: 12px;
+  background: var(--background-primary);
+}
+
+.scheduleTypeLabel {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: color 0.2s ease;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  position: relative;
+  background: transparent;
+  flex: 1;
+  justify-content: center;
+}
+
+.scheduleTypeLabel:hover {
+  color: var(--primary-color);
+  background: var(--background-dropdown);
+}
+
+.scheduleTypeLabel input[type="radio"] {
+  display: none; /* Ukryj domyślny radio button */
+}
+
+.scheduleTypeLabel input[type="radio"] + span {
+  position: relative;
+  padding-left: 25px; /* Przestrzeń na niestandardowy radio */
+}
+
+.scheduleTypeLabel input[type="radio"] + span::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border-secondary);
+  border-radius: 50%;
+  background: var(--background-card);
+  transition: all 0.2s ease;
+}
+
+.scheduleTypeLabel input[type="radio"]:checked + span::before {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.scheduleTypeLabel input[type="radio"]:checked + span::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-white);
+}
+
+.scheduleTypeLabel input[type="radio"]:checked {
+  color: var(--primary-color);
+  background: var(--background-selected);
+  box-shadow: var(--shadow-sm);
+}
+
+
+/* --- Date Time Picker (dla fixed) --- */
+.dateTimePicker {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.dateTimePicker label {
+  display: block;
+  font-size: 1rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.dateTimeInput {
+  width: calc(100% - 2rem);
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--border-primary);
+  border-radius: 10px;
+  font-size: 1rem;
+  color: var(--text-primary);
+  background: var(--background-card);
+  outline: none;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.dateTimeInput:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-color-alpha-20);
+}
+
+/* --- Weekly Controls (dla weekly) --- */
+.weeklyControls {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap; /* Pozwala na zawijanie wierszy */
+  justify-content: center;
+}
+
+.weeklyControl {
+  flex: 1;
+  min-width: 120px;
+}
+
+.weeklyControl label {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-bottom: 0.4rem;
+}
+
+.daySelect,
+.timeInput {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: 2px solid var(--border-primary);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  background: var(--background-card);
+  outline: none;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+  -webkit-appearance: none; /* Ukryj domyślne strzałki dla select */
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.daySelect {
+  background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>');
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  background-size: 1em;
+}
+
+.daySelect:focus,
+.timeInput:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-color-alpha-20);
+}
+
+/* --- Przełącznik zakładek --- */
+.tabSwitcher {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  border-radius: 12px;
+  background: var(--border-primary);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.tab {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  text-align: center;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+}
+
+.tab:hover {
+  background: var(--border-secondary);
+}
+
+.activeTab {
+  background: var(--primary-gradient);
+  color: var(--text-white);
+  box-shadow: inset 0 -4px 0 var(--primary-color-dark);
+}
+
+/* --- Galeria plików --- */
+.galleryContainer {
+  background: var(--background-primary);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 2px solid var(--border-primary);
+  min-height: 250px; /* Nieco mniejsza wysokość */
+  display: flex;
+  justify-content: center; /* Wyśrodkowanie zawartości */
+  align-items: center;
+}
+
+.galleryInfo {
+  text-align: center;
+  padding: 1rem;
+  background: var(--background-primary);
+  border-radius: 12px;
+  border: 1px dashed var(--border-dashed);
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 0.95rem;
+}
+
+.fileGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* Mniejsze miniatury */
+  gap: 1rem;
+  max-height: 300px; /* Zmniejszona wysokość */
+  overflow-y: auto;
+  padding: 0.5rem;
+  width: 100%; /* Upewnij się, że grid zajmuje całą dostępną szerokość */
+}
+
+/* Scrollbar dla galerii */
+.fileGrid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.fileGrid::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: 10px;
+}
+
+.fileGrid::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 10px;
+}
+
+.fileGrid::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* Element galerii */
+.galleryItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--background-card);
+  border-radius: 12px;
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid var(--border-transparent);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+  height: 180px; /* Stała wysokość elementu galerii */
+  justify-content: space-between; /* Rozłożenie elementów w pionie */
+}
+
+.galleryItem:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-secondary);
+}
+
+.galleryItem.selectedGalleryItem {
+  border-color: var(--border-selected);
+  background: var(--background-selected);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-primary-selected);
+}
+
+.galleryItem.selectedGalleryItem::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--primary-gradient);
+}
+
+/* Radio button ukryty */
+.galleryRadioButton {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Wrapper dla mediów w galerii (obrazów i wideo) */
+.galleryMediaWrapper {
+  width: 100px; /* Rozmiar miniatury */
+  height: 100px; /* Rozmiar miniatury */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+  overflow: hidden; /* Przytnij zawartość, która wykracza poza wymiary */
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  background-color: var(--border-primary); /* Domyślne tło przed załadowaniem mediów */
+  transition: all 0.3s ease;
+  flex-shrink: 0; /* Nie pozwól na zmniejszanie */
+}
+
+.galleryItem:hover .galleryMediaWrapper {
+  transform: scale(1.05); /* Skalowanie całego wrappera przy najechaniu */
+  box-shadow: var(--shadow-lg);
+}
+
+/* Ogólny styl dla obrazów i wideo w galerii */
+.galleryMedia {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Wypełnia kontener, zachowując proporcje i przycinając nadmiar */
+  display: block; /* Usuwa potencjalne spacje pod elementami inline */
+}
+
+/* Placeholder dla nieobsługiwanych plików */
+.galleryPlaceholder {
+  width: 100%; /* Wypełnia galleryMediaWrapper */
+  height: 100%; /* Wypełnia galleryMediaWrapper */
+  background: linear-gradient(135deg, var(--scrollbar-track) 0%, var(--border-primary) 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--border-dashed);
+  transition: all 0.3s ease;
+}
+
+.galleryItem:hover .galleryPlaceholder {
+  background: linear-gradient(135deg, var(--border-primary) 0%, var(--border-secondary) 100%);
+  border-color: var(--text-muted);
+}
+
+.fileIcon {
+  font-size: 2rem;
+  opacity: 0.6;
+  color: var(--text-muted);
+}
+
+/* Nazwa pliku */
+.galleryFileName {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-align: center;
+  word-break: break-word;
+  line-height: 1.2;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  flex-grow: 1; /* Pozwala na zajmowanie dostępnej przestrzeni */
+  display: flex; /* Dodane dla lepszego wyśrodkowania tekstu */
+  align-items: center; /* Wyśrodkowanie w pionie */
+  justify-content: center; /* Wyśrodkowanie w poziomie */
+}
+
+.selectedGalleryItem .galleryFileName {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* Podgląd wybranego pliku w modalu */
+.selectedFilePreview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  background: var(--background-primary);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid var(--border-primary);
+}
+
+.previewImage {
+  max-width: 100%;
+  max-height: 250px; /* Zwiększona wysokość podglądu */
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-secondary);
+}
+
+.selectedFileInfo {
+  text-align: center;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.selectedFileInfo p {
+  margin: 0.25rem 0;
+}
+
+
+/* --- Akcje modala --- */
+.modalActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-primary);
+}
+
+.uploadButton, /* Zmieniono nazwę na .saveButton */
+.modalActions .saveButton { /* Upewnij się, że .saveButton ma te same style */
+  background: var(--primary-gradient);
+  color: var(--text-white);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-primary);
+}
+
+.modalActions .saveButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-primary-hover);
+}
+
+.modalActions .saveButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  background: var(--border-secondary);
+  color: var(--text-muted);
+}
+
+.modalActions .cancelButton {
+  background: var(--border-primary);
+  color: var(--text-secondary);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.modalActions .cancelButton:hover {
+  background: var(--border-secondary);
+  transform: translateY(-2px);
+}
+
+/* --- Lista istniejących harmonogramów --- */
+.scheduleListModal .modalContent {
+  max-width: 700px; /* Większa szerokość dla listy harmonogramów */
+}
+
+.scheduleList {
+  list-style: none;
+  padding: 0;
+  max-height: 400px; /* Wysokość listy */
+  overflow-y: auto;
+  border: 1px solid var(--border-primary);
+  border-radius: 10px;
+  background-color: var(--background-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.scheduleList::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scheduleList::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: 10px;
+}
+
+.scheduleList::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 10px;
+}
+
+.scheduleList::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+.scheduleItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border-primary);
+  transition: all 0.2s ease;
+}
+
+.scheduleItem:last-child {
+  border-bottom: none;
+}
+
+.scheduleItem:hover {
+  background: var(--background-dropdown);
+}
+
+.scheduleInfo {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.scheduleType {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--background-primary);
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  align-self: flex-start; /* Dopasowanie do treści */
+}
+
+.scheduleTime {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.scheduleMedia {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  word-break: break-all; /* Łamanie długich nazw plików */
+}
+
+.scheduleMedia span {
+  font-family: 'Courier New', monospace;
+  background: var(--background-primary);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+}
+
+.deleteScheduleButton {
+  background: linear-gradient(135deg, var(--text-error) 0%, #c53030 100%);
+  color: var(--text-white);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(229, 62, 62, 0.2);
+  flex-shrink: 0;
+}
+
+.deleteScheduleButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
+}
+
+.deleteScheduleButton:active {
+  transform: translateY(0);
+}
+
+.scheduleListModal .modalActions {
+  justify-content: center; /* Wyśrodkowanie przycisku Zamknij */
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+}
+
+.scheduleListModal .closeButton {
+  background: var(--primary-color);
+  color: var(--text-white);
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-primary);
+  font-size: 1rem; /* Przywrócenie standardowego rozmiaru czcionki dla przycisku */
+  width: auto; /* Domyślna szerokość */
+  height: auto; /* Domyślna wysokość */
+  border-radius: 12px; /* Zmiana na zaokrąglone rogi */
+}
+
+.scheduleListModal .closeButton:hover {
+  background: var(--primary-color-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-primary-hover);
+  color: var(--text-white); /* Upewnij się, że kolor tekstu pozostaje biały */
+}
+
+.scheduleListModal p {
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 1rem;
+  background: var(--background-primary);
+  border-radius: 8px;
+  margin-top: 1rem;
+  border: 1px dashed var(--border-dashed);
+}
+
+
+/* --- Responsywność --- */
+
+@media (max-width: 992px) {
+  .container {
+    padding: 1.5rem;
+  }
+  .groupName {
+    font-size: 1.5rem;
+  }
+  .selectGroupButton {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+  .deviceGrid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+    margin-top: 60px;
+    margin-bottom: 80px;
+  }
+  .title {
+    font-size: 2rem;
+  }
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .groupName {
+    font-size: 1.25rem;
+    width: 100%; /* Rozciągnij na całą szerokość */
+    margin-bottom: 0.5rem;
+  }
+  .groupHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .selectGroupButton {
+    width: 100%;
+  }
+
+  .deviceGrid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+
+  .manageButtonContainer {
+    flex-direction: column;
+    align-items: center;
+    padding: 0.75rem;
+  }
+  .manageButton,
+  .showScheduleButton {
+    width: 100%;
+    max-width: 300px;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  .scheduleModal .modalContent,
+  .scheduleListModal .modalContent {
+    padding: 1.5rem;
+    max-width: 95%;
+  }
+  .modalTitle {
+    font-size: 1.25rem;
+  }
+  .closeButton {
+    font-size: 1.5rem;
+    width: 32px;
+    height: 32px;
+  }
+
+  .scheduleTypeSelector {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .scheduleTypeLabel {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .weeklyControls {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .weeklyControl {
+    min-width: unset;
+    width: 100%;
+  }
+
+  .tabSwitcher {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .tab {
+    flex: none;
+    width: calc(33% - 0.5rem); /* Trzy kolumny */
+    font-size: 0.9rem;
+    padding: 0.6rem 0.8rem;
+  }
+
+  .fileGrid {
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); /* Mniejsze miniatury */
+      gap: 0.75rem;
+      max-height: 250px;
+  }
+
+  .galleryMediaWrapper {
+      width: 70px;
+      height: 70px;
+  }
+
+  .galleryFileName {
+      font-size: 0.7rem;
+  }
+
+  .fileIcon {
+      font-size: 1.5rem;
+  }
+
+  .scheduleItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+  .deleteScheduleButton {
+    align-self: flex-end; /* Przycisk usuwania na prawo */
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0.75rem;
+  }
+  .title {
+    font-size: 1.8rem;
+  }
+  .deviceGrid {
+    grid-template-columns: 1fr; /* Pojedyncza kolumna */
+    gap: 1rem;
+  }
+  .deviceCard {
+    padding: 1rem;
+  }
+  .deviceName {
+    font-size: 1.1rem;
+  }
+  .deviceId {
+    font-size: 0.8rem;
+    padding: 0.2rem 0.4rem;
+  }
+  .editButton, .editGroupButton {
+    width: 20px;
+    height: 20px;
+    top: 6px;
+  }
+  .editButton {
+    right: 36px;
+  }
+  .editGroupButton {
+    right: 8px;
+  }
+  .editIcon, .groupIcon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .editInput {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.9rem;
+  }
+  .saveButton, .resetButton, .cancelButton {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+    min-width: 50px;
+  }
+
+  .scheduleModal .modalContent,
+  .scheduleListModal .modalContent {
+    padding: 1rem;
+  }
+  .modalTitle {
+    font-size: 1.1rem;
+  }
+
+  .tab {
+    width: 100%; /* Jeden pod drugim */
+  }
+
+  .fileGrid {
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 0.5rem;
+  }
+
+  .galleryMediaWrapper {
+      width: 60px;
+      height: 60px;
+  }
+
+  .galleryFileName {
+      font-size: 0.65rem;
+  }
+
+  .deleteScheduleButton {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+  }
+}
