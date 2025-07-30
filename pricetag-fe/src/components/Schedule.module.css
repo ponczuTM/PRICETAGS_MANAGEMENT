@@ -203,6 +203,7 @@
   display: flex; /* Dodane dla lepszego układu wewnętrznego */
   flex-direction: column; /* Elementy w kolumnie */
   align-items: flex-start; /* Wyrównanie do lewej */
+  
 }
 
 .deviceCard::before {
@@ -240,13 +241,13 @@
 /* --- Kontener obrazu urządzenia --- */
 .deviceImageContainer {
   display: flex;
-  align-items: center;
+  align-items: left;
   gap: 1rem;
   margin-bottom: 1rem;
   margin-top: 10px;
   position: relative;
   width: 100%; /* Rozciągnij na 100% szerokości karty */
-  justify-content: center; /* Wyśrodkuj obraz */
+  justify-content: left; /* Wyśrodkuj obraz */
 }
 
 .hangingWrapper {
@@ -383,9 +384,9 @@
 }
 
 .editIcon {
-  width: 20px; /* Mniejsze ikony */
-  height: 20px;
-  opacity: 0.8;
+  width: 40px;
+  height: 40px;
+  margin-top: 40px;
   transition: opacity 0.3s ease;
 }
 
