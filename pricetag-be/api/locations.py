@@ -783,3 +783,40 @@ async def remove_all_devices_from_location(location_id: str, db=Depends(get_data
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error removing devices: {str(e)}"
         )
+
+
+from fastapi import status
+
+@router.delete("/{location_id}/files/{filename}", status_code=status.HTTP_200_OK)
+async def delete_file_from_location(location_id: str, filename: str):
+    """
+    Usuwa fizyczny plik z lokalizacji (i opcjonalnie także miniaturkę, jeśli istnieje).
+    """
+    try:
+        file_path = UPLOAD_DIR / location_id / filename
+        thumbnail_path = UPLOAD_DIR / location_id / ".thumbnails" / f"{Path(filename).stem}.png"
+
+        # Sprawdź czy plik istnieje
+        if not file_path.exists():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Plik nie istnieje"
+            )
+
+        # Usuń plik
+        file_path.unlink()
+
+        # Usuń miniaturkę, jeśli istnieje
+        if thumbnail_path.exists():
+            thumbnail_path.unlink()
+
+        return {
+            "message": f"Plik {filename} został usunięty",
+            "location_id": location_id
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Błąd podczas usuwania pliku: {str(e)}"
+        )

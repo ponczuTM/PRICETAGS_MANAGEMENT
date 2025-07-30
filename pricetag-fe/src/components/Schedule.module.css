@@ -643,7 +643,7 @@
   background: var(--background-card);
   border-radius: 20px;
   padding: 2rem;
-  max-width: 600px; /* Zwiększona szerokość modala */
+  max-width: 700px; /* Zwiększona szerokość modala */
   width: 90%;
   max-height: 90vh; /* Zwiększona maksymalna wysokość */
   overflow-y: auto;
@@ -833,7 +833,7 @@
 
 .daySelect,
 .timeInput {
-  width: 100%;
+  width: 180px;
   padding: 0.6rem 0.8rem;
   border: 2px solid var(--border-primary);
   border-radius: 10px;

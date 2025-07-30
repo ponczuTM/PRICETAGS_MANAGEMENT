@@ -645,29 +645,23 @@ function Schedule() {
                   <div className={styles.weeklyControl}>
                     <label>
                       Godzina:
-                      <input
-                        type="number"
-                        min="0"
-                        max="23"
-                        value={hour}
-                        onChange={(e) => setHour(e.target.value)}
-                        className={styles.timeInput}
+                      <DatePicker
+                        selected={new Date(0, 0, 0, hour, minute)}
+                        onChange={(time) => {
+                          setHour(time.getHours());
+                          setMinute(time.getMinutes());
+                        }}
+                        showTimeSelect
+                        showTimeSelectOnly
+                        timeIntervals={5}
+                        timeCaption="Godzina"
+                        dateFormat="HH:mm"
+                        locale="pl"
+                        className={styles.dateTimeInput}
                       />
                     </label>
                   </div>
-                  <div className={styles.weeklyControl}>
-                    <label>
-                      Minuta:
-                      <input
-                        type="number"
-                        min="0"
-                        max="59"
-                        value={minute}
-                        onChange={(e) => setMinute(e.target.value)}
-                        className={styles.timeInput}
-                      />
-                    </label>
-                  </div>
+
                 </div>
               )}
 

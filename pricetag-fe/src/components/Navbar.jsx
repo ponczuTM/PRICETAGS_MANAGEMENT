@@ -12,6 +12,7 @@ const Navbar = ({ logoText = 'ZARZĄDZANIE PRICETAGAMI'}) => {
         <Link to="/" className={styles.navLink}>Urządzenia</Link>
         <Link to="/groups" className={styles.navLink}>Grupy</Link>
         <Link to="/schedule" className={styles.navLink}>Harmonogram</Link>
+        <Link to="/gallery" className={styles.navLink}>Galeria plików</Link>
       </div>
     </nav>
   );
