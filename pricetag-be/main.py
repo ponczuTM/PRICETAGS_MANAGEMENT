@@ -6,6 +6,15 @@ from api import users, locations
 from api import groups
 from api import schedules
 
+import logging
+
+# Wyłącz debugowanie pymongo i innych bibliotek
+logging.getLogger("pymongo").setLevel(logging.WARNING)
+logging.getLogger("motor").setLevel(logging.WARNING)
+logging.getLogger("asyncio").setLevel(logging.WARNING)
+logging.getLogger("uvicorn.access").setLevel(logging.INFO)
+
+
 app = FastAPI(
     title="Location Management API",
     description="API for managing users and locations with devices",
