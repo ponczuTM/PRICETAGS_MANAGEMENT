@@ -341,320 +341,328 @@ function MainPage() {
   };
 
   const handleSelectAllToggle = () => {
-    if (selectedDevices.length === devices.length) {
-      // All are selected, deselect all
+    const onlineDevices = devices.filter(device => device.isOnline);
+  
+    if (selectedDevices.length === onlineDevices.length) {
+      // Jeśli wszystkie ONLINE są zaznaczone → odznacz wszystkie
       setSelectedDevices([]);
     } else {
-      // Not all are selected, select all
-      setSelectedDevices([...devices]);
+      // W przeciwnym razie zaznacz tylko ONLINE
+      setSelectedDevices(onlineDevices);
     }
-    setUploadStatuses({}); // Clear statuses when selecting/deselecting all
+  
+    setUploadStatuses({});
     setErrorMsg(null);
   };
+  
 
   return (
     <>
-    <Navbar/>
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <h2 className={styles.title}>Lista urządzeń</h2>
-        <div className={styles.deviceCount}>{devices.length} urządzeń</div>
-      </div>
+      <Navbar />
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <h2 className={styles.title}>Lista urządzeń</h2>
+          <div className={styles.deviceCount}>{devices.length} urządzeń</div>
+        </div>
 
-      <div className={styles.selectAllContainer}>
-        <button
-          className={styles.selectButton}
-          onClick={handleSelectAllToggle}
-        >
-          {selectedDevices.length === devices.length
-            ? "Odznacz wszystkie"
-            : "Zaznacz wszystkie"}
-        </button>
-      </div>
+        <div className={styles.selectAllContainer}>
+          <button
+            className={styles.selectButton}
+            onClick={handleSelectAllToggle}
+          >
+            {selectedDevices.length === devices.length
+              ? "Odznacz wszystkie"
+              : "Zaznacz wszystkie"}
+          </button>
+        </div>
 
-      <div className={styles.deviceGrid}>
-        {devices.map((device) => (
-          <div
+        <div className={styles.deviceGrid}>
+          {devices.map((device) => (
+            <div
             key={device._id}
             className={`${styles.deviceCard} ${
               selectedDevices.some(d => d._id === device._id) ? styles.selected : ""
-            }`}
-            onClick={() => handleDeviceSelectToggle(device)}
+            } ${!device.isOnline ? styles.offline : ""}`}
+            onClick={() => {
+              if (device.isOnline) {
+                handleDeviceSelectToggle(device);
+              }
+            }}
           >
-            <div className={styles.deviceImageContainer}>
-              <div className={styles.hangingWrapper}>
-                <div className={styles.hangerBar}></div>
-                <div className={styles.stick + " " + styles.left}></div>
-                <div className={styles.stick + " " + styles.right}></div>
-                {getFileType(device.thumbnail || '') === 'video' ? (
-                  <video
-                    src={device.thumbnail ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}` : null}
-                    autoPlay
-                    loop
-                    muted
-                    className={styles.deviceImage}
-                    // For devices, you might want to show a default image if no video/thumbnail
-                    onError={(e) => { e.target.onerror = null; e.target.src="/src/assets/images/device.png" }}
-                  />
-                ) : (
-                  <img
-                    src={
-                      device.thumbnail
-                        ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}`
-                        : "/src/assets/images/device.png"
-                    }
-                    alt="Device"
-                    className={styles.deviceImage}
-                  />
-                )}
+          
+              <div className={styles.deviceImageContainer}>
+                <div className={styles.hangingWrapper}>
+                  <div className={styles.hangerBar}></div>
+                  <div className={styles.stick + " " + styles.left}></div>
+                  <div className={styles.stick + " " + styles.right}></div>
+                  {getFileType(device.thumbnail || '') === 'video' ? (
+                    <video
+                      src={device.thumbnail ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}` : null}
+                      autoPlay
+                      loop
+                      muted
+                      className={styles.deviceImage}
+                      // For devices, you might want to show a default image if no video/thumbnail
+                      onError={(e) => { e.target.onerror = null; e.target.src = "/src/assets/images/device.png" }}
+                    />
+                  ) : (
+                    <img
+                      src={
+                        device.thumbnail
+                          ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}`
+                          : "/src/assets/images/device.png"
+                      }
+                      alt="Device"
+                      className={styles.deviceImage}
+                    />
+                  )}
+                </div>
+                <div
+                  className={`${styles.onlineIndicator} ${device.isOnline ? styles.green : styles.red
+                    }`}
+                  title={device.isOnline ? "Online" : "Offline"}
+                ></div>
+
               </div>
-              <div className={styles.onlineIndicator}></div>
-            </div>
 
-            <div className={styles.deviceInfo}>
-            <div className={styles.deviceNameEditWrapper}>
-            {editingDeviceId === device._id ? (
-              <>
-                <input
-                  type="text"
-                  value={editInputValue}
-                  onChange={(e) => setEditInputValue(e.target.value)}
-                  className={styles.editInput}
-                />
-                <button onClick={() => handleEditSave(device.clientName)} className={styles.saveButton}>Zapisz</button>
-                <button onClick={() => handleEditReset(device.clientName)} className={styles.resetButton}>Resetuj</button>
-                <button onClick={handleEditCancel} className={styles.cancelButton}>Anuluj</button>
-              </>
-            ) : (
-              <>
-                <h3 className={styles.deviceName}>
-                  {getDisplayName(device.clientName)}
-                </h3>
-                <button onClick={() => handleEditClick(device)} className={styles.editButton}>
-                  <img src={edit} alt="Edytuj" className={styles.editIcon} />
-                </button>
-              </>
-            )}
-          </div>
-
-              <p className={styles.deviceId}>
-                Status:{" "}
-                <a style={{ color: "green", fontWeight: "bold" }}>Online</a>,
-                {device.clientId}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {selectedDevices.length > 0 && (
-        <div className={styles.manageButtonContainer}>
-          <button
-            className={styles.manageButton}
-            onClick={() => setIsModalOpen(true)}
-          >
-            Zarządzaj urządzeniami ({selectedDevices.length})
-          </button>
-        </div>
-      )}
-
-      {isModalOpen && (
-        <div className={styles.uploadModal}>
-          <div className={styles.modalContent}>
-            <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>
-                Załaduj {activeTab === "photo" ? "zdjęcie" : (activeTab === "video" ? "film" : "plik")} dla wybranych urządzeń
-              </h3>
-              <button className={styles.closeButton} onClick={closeUpload}>
-                ×
-              </button>
-            </div>
-
-            <div className={styles.tabSwitcher}>
-              <button
-                className={`${styles.tab} ${
-                  activeTab === "photo" ? styles.activeTab : ""
-                }`}
-                onClick={() => {
-                  setActiveTab("photo");
-                  setFile(null);
-                  setPreviewUrl(null);
-                  setSelectedGalleryFile(null);
-                }}
-              >
-                Zdjęcie
-              </button>
-              <button
-                className={`${styles.tab} ${
-                  activeTab === "video" ? styles.activeTab : ""
-                }`}
-                onClick={() => {
-                  setActiveTab("video");
-                  setFile(null);
-                  setPreviewUrl(null);
-                  setSelectedGalleryFile(null);
-                }}
-              >
-                Film
-              </button>
-              <button
-                className={`${styles.tab} ${
-                  activeTab === "gallery" ? styles.activeTab : ""
-                }`}
-                onClick={() => {
-                  setActiveTab("gallery");
-                  setFile(null);
-                  setPreviewUrl(null);
-                }}
-              >
-                Galeria plików
-              </button>
-            </div>
-
-            {errorMsg && <div className={styles.errorMessage}>{errorMsg}</div>}
-
-            {Object.keys(uploadStatuses).length > 0 && (
-              <div className={styles.uploadStatusContainer}>
-                <h4>Statusy operacji:</h4>
-                <ul className={styles.uploadStatusList}>
-                  {selectedDevices.map(device => (
-                    <li key={device._id} className={`${styles.modalUploadStatusItem} ${styles[uploadStatuses[device._id]?.status || 'pending']}`}>
-                      <span className={styles.deviceNameInStatus}>{getDisplayName(device.clientName)}, {device.clientId}:</span> {uploadStatuses[device._id]?.message || 'Oczekuje...'}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {activeTab !== "gallery" ? (
-              <div
-                className={`${styles.dropZone} ${file ? styles.hasFile : ""}`}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={handleDrop}
-              >
-                {previewUrl ? (
-                  <div className={styles.previewContainer}>
-                    {activeTab === "photo" ? (
-                      <img
-                        src={previewUrl}
-                        alt="Preview"
-                        className={styles.previewImage}
+              <div className={styles.deviceInfo}>
+                <div className={styles.deviceNameEditWrapper}>
+                  {editingDeviceId === device._id ? (
+                    <>
+                      <input
+                        type="text"
+                        value={editInputValue}
+                        onChange={(e) => setEditInputValue(e.target.value)}
+                        className={styles.editInput}
                       />
-                    ) : (
-                      <>
-                        <video
+                      <button onClick={() => handleEditSave(device.clientName)} className={styles.saveButton}>Zapisz</button>
+                      <button onClick={() => handleEditReset(device.clientName)} className={styles.resetButton}>Resetuj</button>
+                      <button onClick={handleEditCancel} className={styles.cancelButton}>Anuluj</button>
+                    </>
+                  ) : (
+                    <>
+                      <h3 className={styles.deviceName}>
+                        {getDisplayName(device.clientName)}
+                      </h3>
+                      <button onClick={() => handleEditClick(device)} className={styles.editButton}>
+                        <img src={edit} alt="Edytuj" className={styles.editIcon} />
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                <p className={styles.deviceId}>
+                Client: {device.clientId}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {selectedDevices.length > 0 && (
+          <div className={styles.manageButtonContainer}>
+            <button
+              className={styles.manageButton}
+              onClick={() => setIsModalOpen(true)}
+            >
+              Zarządzaj urządzeniami ({selectedDevices.length})
+            </button>
+          </div>
+        )}
+
+        {isModalOpen && (
+          <div className={styles.uploadModal}>
+            <div className={styles.modalContent}>
+              <div className={styles.modalHeader}>
+                <h3 className={styles.modalTitle}>
+                  Załaduj {activeTab === "photo" ? "zdjęcie" : (activeTab === "video" ? "film" : "plik")} dla wybranych urządzeń
+                </h3>
+                <button className={styles.closeButton} onClick={closeUpload}>
+                  ×
+                </button>
+              </div>
+
+              <div className={styles.tabSwitcher}>
+                <button
+                  className={`${styles.tab} ${activeTab === "photo" ? styles.activeTab : ""
+                    }`}
+                  onClick={() => {
+                    setActiveTab("photo");
+                    setFile(null);
+                    setPreviewUrl(null);
+                    setSelectedGalleryFile(null);
+                  }}
+                >
+                  Zdjęcie
+                </button>
+                <button
+                  className={`${styles.tab} ${activeTab === "video" ? styles.activeTab : ""
+                    }`}
+                  onClick={() => {
+                    setActiveTab("video");
+                    setFile(null);
+                    setPreviewUrl(null);
+                    setSelectedGalleryFile(null);
+                  }}
+                >
+                  Film
+                </button>
+                <button
+                  className={`${styles.tab} ${activeTab === "gallery" ? styles.activeTab : ""
+                    }`}
+                  onClick={() => {
+                    setActiveTab("gallery");
+                    setFile(null);
+                    setPreviewUrl(null);
+                  }}
+                >
+                  Galeria plików
+                </button>
+              </div>
+
+              {errorMsg && <div className={styles.errorMessage}>{errorMsg}</div>}
+
+              {Object.keys(uploadStatuses).length > 0 && (
+                <div className={styles.uploadStatusContainer}>
+                  <h4>Statusy operacji:</h4>
+                  <ul className={styles.uploadStatusList}>
+                    {selectedDevices.map(device => (
+                      <li key={device._id} className={`${styles.modalUploadStatusItem} ${styles[uploadStatuses[device._id]?.status || 'pending']}`}>
+                        <span className={styles.deviceNameInStatus}>{getDisplayName(device.clientName)}, {device.clientId}:</span> {uploadStatuses[device._id]?.message || 'Oczekuje...'}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {activeTab !== "gallery" ? (
+                <div
+                  className={`${styles.dropZone} ${file ? styles.hasFile : ""}`}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={handleDrop}
+                >
+                  {previewUrl ? (
+                    <div className={styles.previewContainer}>
+                      {activeTab === "photo" ? (
+                        <img
                           src={previewUrl}
-                          controls
-                          ref={videoRef}
+                          alt="Preview"
                           className={styles.previewImage}
                         />
-                      </>
-                    )}
-                    <div className={styles.fileInfo}>
-                      <span className={styles.fileName}>{file.name}</span>
-                      <span className={styles.fileSize}>
-                        {formatFileSize(file.size)}
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className={styles.dropZoneContent}>
-                    <div className={styles.uploadIcon}>📁</div>
-                    <p className={styles.dropText}>
-                      Przeciągnij i upuść plik{" "}
-                      {activeTab === "photo" ? "graficzny" : "wideo"} tutaj
-                    </p>
-                    <p className={styles.dropSubtext}>lub</p>
-                  </div>
-                )}
-
-                <input
-                  type="file"
-                  accept={activeTab === "photo" ? "image/*" : "video/*"}
-                  onChange={(e) =>
-                    e.target.files.length > 0 && handleFile(e.target.files[0])
-                  }
-                  className={styles.fileInput}
-                />
-              </div>
-            ) : (
-              <div className={styles.galleryContainer}>
-                {galleryFiles.length > 0 ? (
-                  <div className={styles.fileGrid}>
-                    {galleryFiles.map((filename) => {
-                      const fileType = getFileType(filename);
-                      const fileUrl = `${API_BASE_URL}/${locationId}/files/${filename}`;
-                      // const thumbnailUrl = `${API_BASE_URL}/${locationId}/files/${filename}/thumbnail`; // This line is not strictly needed if video directly plays
-
-                      return (
-                        <label
-                          key={filename}
-                          className={`${styles.galleryItem} ${
-                            selectedGalleryFile === filename ? styles.selectedGalleryItem : ""
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            name="galleryFile"
-                            value={filename}
-                            checked={selectedGalleryFile === filename}
-                            onChange={() => handleGalleryFileSelect(filename)}
-                            className={styles.galleryRadioButton}
+                      ) : (
+                        <>
+                          <video
+                            src={previewUrl}
+                            controls
+                            ref={videoRef}
+                            className={styles.previewImage}
                           />
-                          <div className={styles.galleryMediaWrapper}>
-                            {fileType === 'image' ? (
-                              <img
-                                src={fileUrl}
-                                alt={filename}
-                                className={styles.galleryMedia}
-                              />
-                            ) : fileType === 'video' ? (
-                              <video
-                                src={fileUrl}
-                                autoPlay // Autoplay the video
-                                loop     // Loop the video
-                                muted    // Mute the video for autoplay
-                                playsInline // Important for iOS to play videos inline
-                                className={styles.galleryMedia}
-                                onError={(e) => { e.target.onerror = null; e.target.src="/src/assets/images/placeholder-video.png"; }} // Fallback image if video fails to load
-                              />
-                            ) : (
-                              <div className={styles.galleryPlaceholder}>
-                                <span className={styles.fileIcon}>📄</span>
-                              </div>
-                            )}
-                          </div>
-                          <span className={styles.galleryFileName}>
-                            {filename}{" "}
-                            {fileType === 'image' && "(zdjęcie)"}
-                            {fileType === 'video' && "(film)"}
-                          </span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <p>Brak plików w galerii dla tej lokalizacji.</p>
-                )}
-              </div>
-            )}
+                        </>
+                      )}
+                      <div className={styles.fileInfo}>
+                        <span className={styles.fileName}>{file.name}</span>
+                        <span className={styles.fileSize}>
+                          {formatFileSize(file.size)}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className={styles.dropZoneContent}>
+                      <div className={styles.uploadIcon}>📁</div>
+                      <p className={styles.dropText}>
+                        Przeciągnij i upuść plik{" "}
+                        {activeTab === "photo" ? "graficzny" : "wideo"} tutaj
+                      </p>
+                      <p className={styles.dropSubtext}>lub</p>
+                    </div>
+                  )}
 
-            <div className={styles.modalActions}>
-              <button
-                className={styles.uploadButton}
-                onClick={handleMassUpload}
-                disabled={!(file || selectedGalleryFile) || selectedDevices.length === 0}
-              >
-                {activeTab === "gallery" ? "Wybierz plik" : "Wyślij plik"} dla {selectedDevices.length} urządzeń
-              </button>
-              <button className={styles.cancelButton} onClick={closeUpload}>
-                Anuluj
-              </button>
+                  <input
+                    type="file"
+                    accept={activeTab === "photo" ? "image/*" : "video/*"}
+                    onChange={(e) =>
+                      e.target.files.length > 0 && handleFile(e.target.files[0])
+                    }
+                    className={styles.fileInput}
+                  />
+                </div>
+              ) : (
+                <div className={styles.galleryContainer}>
+                  {galleryFiles.length > 0 ? (
+                    <div className={styles.fileGrid}>
+                      {galleryFiles.map((filename) => {
+                        const fileType = getFileType(filename);
+                        const fileUrl = `${API_BASE_URL}/${locationId}/files/${filename}`;
+                        // const thumbnailUrl = `${API_BASE_URL}/${locationId}/files/${filename}/thumbnail`; // This line is not strictly needed if video directly plays
+
+                        return (
+                          <label
+                            key={filename}
+                            className={`${styles.galleryItem} ${selectedGalleryFile === filename ? styles.selectedGalleryItem : ""
+                              }`}
+                          >
+                            <input
+                              type="radio"
+                              name="galleryFile"
+                              value={filename}
+                              checked={selectedGalleryFile === filename}
+                              onChange={() => handleGalleryFileSelect(filename)}
+                              className={styles.galleryRadioButton}
+                            />
+                            <div className={styles.galleryMediaWrapper}>
+                              {fileType === 'image' ? (
+                                <img
+                                  src={fileUrl}
+                                  alt={filename}
+                                  className={styles.galleryMedia}
+                                />
+                              ) : fileType === 'video' ? (
+                                <video
+                                  src={fileUrl}
+                                  autoPlay // Autoplay the video
+                                  loop     // Loop the video
+                                  muted    // Mute the video for autoplay
+                                  playsInline // Important for iOS to play videos inline
+                                  className={styles.galleryMedia}
+                                  onError={(e) => { e.target.onerror = null; e.target.src = "/src/assets/images/placeholder-video.png"; }} // Fallback image if video fails to load
+                                />
+                              ) : (
+                                <div className={styles.galleryPlaceholder}>
+                                  <span className={styles.fileIcon}>📄</span>
+                                </div>
+                              )}
+                            </div>
+                            <span className={styles.galleryFileName}>
+                              {filename}{" "}
+                              {fileType === 'image' && "(zdjęcie)"}
+                              {fileType === 'video' && "(film)"}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p>Brak plików w galerii dla tej lokalizacji.</p>
+                  )}
+                </div>
+              )}
+
+              <div className={styles.modalActions}>
+                <button
+                  className={styles.uploadButton}
+                  onClick={handleMassUpload}
+                  disabled={!(file || selectedGalleryFile) || selectedDevices.length === 0}
+                >
+                  {activeTab === "gallery" ? "Wybierz plik" : "Wyślij plik"} dla {selectedDevices.length} urządzeń
+                </button>
+                <button className={styles.cancelButton} onClick={closeUpload}>
+                  Anuluj
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
     </>
   );
 }

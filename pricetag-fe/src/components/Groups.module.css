@@ -308,6 +308,7 @@
   right: 15%;
 }
 
+
 .onlineIndicator {
   width: 20px;
   height: 20px;
@@ -320,6 +321,17 @@
   box-shadow: var(--shadow-success);
   animation: pulse 2s infinite;
 }
+
+
+/* Dynamiczne kolory */
+.green {
+  background-color: #00c853; /* Zielona */
+}
+
+.red {
+  background-color: #d50000; /* Czerwona */
+}
+
 
 @keyframes pulse {
   0% { box-shadow: var(--shadow-success); }
@@ -1775,4 +1787,12 @@
 .editIcon2 {
   width: 40px;
   height: 40px;
+}
+
+
+
+.offline {
+  opacity: 0.5;
+  filter: grayscale(100%);
+  pointer-events: none; /* zablokuj kliknięcia */
 }

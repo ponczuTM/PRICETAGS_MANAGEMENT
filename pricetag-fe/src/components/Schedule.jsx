@@ -142,29 +142,38 @@ function Schedule() {
 
   const handleGroupSelectAllToggle = (groupId) => {
     const devicesInGroup = devices.filter(device =>
-      device.groups.includes(groupId)
+      groupId === null ? device.groups.length === 0 : device.groups.includes(groupId)
     );
-    const allSelectedInGroup = devicesInGroup.every(device =>
+  
+    const onlineDevicesInGroup = devicesInGroup.filter(device => device.isOnline);
+  
+    const allSelectedOnline = onlineDevicesInGroup.every(device =>
       selectedDevices.some(d => d._id === device._id)
     );
-
+  
     setSelectedDevices(prevSelected => {
       let newSelected = [...prevSelected];
-      if (allSelectedInGroup) {
+  
+      if (allSelectedOnline) {
+        // Odznacz wszystkie online
         newSelected = newSelected.filter(device =>
-          !devicesInGroup.some(d => d._id === device._id)
+          !onlineDevicesInGroup.some(d => d._id === device._id)
         );
       } else {
-        devicesInGroup.forEach(device => {
+        // Zaznacz tylko online
+        onlineDevicesInGroup.forEach(device => {
           if (!newSelected.some(d => d._id === device._id)) {
             newSelected.push(device);
           }
         });
       }
+  
       return newSelected;
     });
+  
     setErrorMsg(null);
   };
+  
 
   const openScheduleModal = () => {
     if (selectedDevices.length === 0) {
@@ -197,35 +206,35 @@ function Schedule() {
       setErrorMsg("Wybierz plik z galerii.");
       return;
     }
-  
+
     if (scheduleType === "fixed" && !dateTime) {
       setErrorMsg("Wybierz datę i godzinę dla harmonogramu.");
       return;
     }
-  
+
     const mediaType = getFileType(selectedGalleryFile);
     if (mediaType === "unknown") {
       setErrorMsg("Wybrany plik nie jest zdjęciem ani filmem.");
       return;
     }
-  
+
     const media = {
       filename: selectedGalleryFile,
       mediaType: mediaType,
     };
-  
+
     const scheduleData = {
       type: scheduleType,
       media: media,
       ...(scheduleType === "fixed"
         ? { date: dateTime?.toISOString() }
         : {
-            dayOfWeek: parseInt(dayOfWeek),
-            hour: parseInt(hour),
-            minute: parseInt(minute),
-          }),
+          dayOfWeek: parseInt(dayOfWeek),
+          hour: parseInt(hour),
+          minute: parseInt(minute),
+        }),
     };
-  
+
     try {
       const promises = selectedDevices.map((device) =>
         fetch(`${API_BASE_URL}/${locationId}/devices/${device._id}/schedules`, {
@@ -234,10 +243,10 @@ function Schedule() {
           body: JSON.stringify(scheduleData),
         })
       );
-  
+
       const results = await Promise.all(promises);
       const errors = results.filter((res) => !res.ok);
-  
+
       if (errors.length > 0) {
         const errorMessages = await Promise.all(
           errors.map(async (res) => {
@@ -249,7 +258,7 @@ function Schedule() {
           `Błędy podczas zapisywania harmonogramów: ${errorMessages.join(", ")}`
         );
       }
-  
+
       setErrorMsg(null);
       setIsModalOpen(false);
       setSelectedGalleryFile(null);
@@ -258,7 +267,7 @@ function Schedule() {
       setErrorMsg(err.message);
     }
   };
-  
+
 
   const fetchDeviceSchedules = async (deviceId) => {
     try {
@@ -277,7 +286,7 @@ function Schedule() {
       setErrorMsg("Wybierz dokładnie jedno urządzenie, aby zobaczyć jego harmonogramy.");
       return;
     }
-    
+
     try {
       const schedules = await fetchDeviceSchedules(selectedDevices[0]._id);
       setExistingSchedules(schedules);
@@ -289,16 +298,16 @@ function Schedule() {
 
   const handleDeleteSchedule = async (scheduleId) => {
     if (!selectedDevices.length) return;
-    
+
     try {
       const deviceId = selectedDevices[0]._id;
       const res = await fetch(
         `${API_BASE_URL}/${locationId}/devices/${deviceId}/schedules/${scheduleId}`,
         { method: "DELETE" }
       );
-      
+
       if (!res.ok) throw new Error("Błąd usuwania harmonogramu");
-      
+
       const updatedSchedules = await fetchDeviceSchedules(deviceId);
       setExistingSchedules(updatedSchedules);
       setErrorMsg(null);
@@ -365,10 +374,10 @@ function Schedule() {
                   {getDevicesInGroup(group._id).map((device) => (
                     <div
                       key={device._id}
-                      className={`${styles.deviceCard} ${
-                        selectedDevices.some((d) => d._id === device._id) ? styles.selected : ""
-                      }`}
-                      onClick={() => handleDeviceSelectToggle(device)}
+                      className={`${styles.deviceCard} ${device.isOnline ? "" : styles.offline} ${selectedDevices.some((d) => d._id === device._id) ? styles.selected : ""}`}
+
+                        onClick={() => device.isOnline && handleDeviceSelectToggle(device)}
+
                     >
                       <div className={styles.deviceIcons}>
                         <button
@@ -381,7 +390,7 @@ function Schedule() {
                           <img src={editIcon} alt="Edytuj" className={styles.editIcon} />
                         </button>
                       </div>
-                    
+
                       <div className={styles.deviceImageContainer}>
                         <div className={styles.hangingWrapper}>
                           <div className={styles.hangerBar}></div>
@@ -408,9 +417,14 @@ function Schedule() {
                             />
                           )}
                         </div>
-                        <div className={styles.onlineIndicator}></div>
+                        <div
+                          className={`${styles.onlineIndicator} ${device.isOnline ? styles.green : styles.red
+                            }`}
+                          title={device.isOnline ? "Online" : "Offline"}
+                        ></div>
+
                       </div>
-                    
+
                       <div className={styles.deviceInfo}>
                         {editingDeviceId === device._id ? (
                           <>
@@ -430,7 +444,7 @@ function Schedule() {
                           </div>
                         )}
                         <p className={styles.deviceId}>
-                          Status: <a style={{ color: "green", fontWeight: "bold" }}>Online</a>, {device.clientId}
+                        Client: {device.clientId}
                         </p>
                       </div>
                     </div>
@@ -467,10 +481,10 @@ function Schedule() {
               {getDevicesWithoutGroup().map((device) => (
                 <div
                   key={device._id}
-                  className={`${styles.deviceCard} ${
-                    selectedDevices.some((d) => d._id === device._id) ? styles.selected : ""
-                  }`}
-                  onClick={() => handleDeviceSelectToggle(device)}
+                  className={`${styles.deviceCard} ${device.isOnline ? "" : styles.offline} ${selectedDevices.some((d) => d._id === device._id) ? styles.selected : ""}`}
+
+                    onClick={() => device.isOnline && handleDeviceSelectToggle(device)}
+
                 >
                   <div className={styles.deviceIcons}>
                     <button
@@ -517,7 +531,12 @@ function Schedule() {
                         />
                       )}
                     </div>
-                    <div className={styles.onlineIndicator}></div>
+                    <div
+                      className={`${styles.onlineIndicator} ${device.isOnline ? styles.green : styles.red
+                        }`}
+                      title={device.isOnline ? "Online" : "Offline"}
+                    ></div>
+
                   </div>
 
                   <div className={styles.deviceInfo}>
@@ -581,7 +600,7 @@ function Schedule() {
                   ×
                 </button>
               </div>
-              
+
               <div className={styles.scheduleTypeSelector}>
                 <label className={styles.scheduleTypeLabel}>
                   <input
@@ -610,15 +629,15 @@ function Schedule() {
                   <label>
                     Data i godzina:
                     <DatePicker
-                        selected={dateTime}
-                        onChange={(date) => setDateTime(date)}
-                        showTimeSelect
-                        timeFormat="HH:mm"
-                        timeIntervals={5}
-                        dateFormat="Pp"
-                        timeCaption="Godzina"
-                        locale="pl"
-                        className={styles.dateTimeInput}
+                      selected={dateTime}
+                      onChange={(date) => setDateTime(date)}
+                      showTimeSelect
+                      timeFormat="HH:mm"
+                      timeIntervals={5}
+                      dateFormat="Pp"
+                      timeCaption="Godzina"
+                      locale="pl"
+                      className={styles.dateTimeInput}
                     />
                   </label>
                 </div>
@@ -689,9 +708,8 @@ function Schedule() {
                   Film
                 </button> */}
                 <button
-                  className={`${styles.tab} ${
-                    activeTab === "gallery" ? styles.activeTab : ""
-                  }`}
+                  className={`${styles.tab} ${activeTab === "gallery" ? styles.activeTab : ""
+                    }`}
                   onClick={() => {
                     setActiveTab("gallery");
                     setSelectedGalleryFile(null);
@@ -720,9 +738,8 @@ function Schedule() {
                           return (
                             <label
                               key={filename}
-                              className={`${styles.galleryItem} ${
-                                selectedGalleryFile === filename ? styles.selectedGalleryItem : ""
-                              }`}
+                              className={`${styles.galleryItem} ${selectedGalleryFile === filename ? styles.selectedGalleryItem : ""
+                                }`}
                             >
                               <input
                                 type="radio"
@@ -747,7 +764,7 @@ function Schedule() {
                                     muted
                                     playsInline
                                     className={styles.galleryMedia}
-                                    onError={(e) => { e.target.onerror = null; e.target.src="/src/assets/images/placeholder-video.png"; }}
+                                    onError={(e) => { e.target.onerror = null; e.target.src = "/src/assets/images/placeholder-video.png"; }}
                                   />
                                 ) : (
                                   <div className={styles.galleryPlaceholder}>
@@ -817,8 +834,8 @@ function Schedule() {
                 <h3 className={styles.modalTitle}>
                   Harmonogramy dla {selectedDevices.length > 0 ? getDisplayName(selectedDevices[0].clientName) : ''}
                 </h3>
-                <button 
-                  className={styles.closeButton} 
+                <button
+                  className={styles.closeButton}
                   onClick={() => setIsScheduleListOpen(false)}
                 >
                   ×
@@ -834,7 +851,7 @@ function Schedule() {
                           {schedule.type === 'fixed' ? 'Pojedynczy' : 'Cykliczny'}
                         </div>
                         <div className={styles.scheduleTime}>
-                          {schedule.type === 'fixed' 
+                          {schedule.type === 'fixed'
                             ? formatScheduleDate(schedule.date)
                             : formatWeeklySchedule(schedule)}
                         </div>
@@ -856,7 +873,7 @@ function Schedule() {
               )}
 
               <div className={styles.modalActions}>
-                <button 
+                <button
                   className={styles.closeButton}
                   onClick={() => setIsScheduleListOpen(false)}
                 >

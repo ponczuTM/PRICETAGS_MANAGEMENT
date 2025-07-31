@@ -41,7 +41,6 @@ class UserType(str, Enum):
 
 
 # Device model
-# Device model
 class Device(BaseModel):
     id: Optional[str] = Field(None, alias="_id", description="Unique ID of the device")
     clientId: str = Field(..., description="Unique device identifier")
@@ -52,6 +51,7 @@ class Device(BaseModel):
     changed: Optional[str] = Field("false", description="Has device been changed")
     thumbnail: Optional[str] = Field(None, description="Path to thumbnail")
     groups: Optional[List[PyObjectId]] = Field(default_factory=list, description="Lista ID grup")
+    isOnline: Optional[bool] = Field(default=None, description="Czy urządzenie jest online")  # ⬅️ NOWE
 
     class Config:
         allow_population_by_field_name = True

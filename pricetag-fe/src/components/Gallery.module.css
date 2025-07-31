@@ -232,3 +232,38 @@
   font-weight: 600;
   cursor: pointer;
 }
+
+
+
+.onlineIndicator {
+  width: 20px;
+  height: 20px;
+  background: var(--status-online);
+  border-radius: 50%;
+  position: absolute;
+  top: -2px;
+  left: 110px;
+  border: 2px solid var(--background-card);
+  box-shadow: var(--shadow-success);
+  animation: pulse 2s infinite;
+}
+
+
+/* Dynamiczne kolory */
+.green {
+  background-color: #00c853; /* Zielona */
+}
+
+.red {
+  background-color: #d50000; /* Czerwona */
+}
+
+
+/* Dynamiczne kolory */
+.green {
+  background-color: #00c853; /* Zielona */
+}
+
+.red {
+  background-color: #d50000; /* Czerwona */
+}

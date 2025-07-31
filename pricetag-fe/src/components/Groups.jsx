@@ -325,44 +325,55 @@ function Groups() {
   };
 
   const handleDeviceSelectToggle = (device) => {
+    if (!device.isOnline) return;
+  
     setSelectedDevices(prevSelected => {
       const newSelected = prevSelected.some(d => d._id === device._id)
         ? prevSelected.filter(d => d._id !== device._id)
         : [...prevSelected, device];
+  
       setUploadStatuses({});
       return newSelected;
     });
     setErrorMsg(null);
   };
+  
 
   const handleGroupSelectAllToggle = (groupId) => {
-    const devicesInGroup = devices.filter(device =>
-      device.groups.includes(groupId)
+    const devicesInGroup = devices.filter(
+      device => device.groups.includes(groupId)
     );
-    const allSelectedInGroup = devicesInGroup.every(device =>
+  
+    const onlineDevicesInGroup = devicesInGroup.filter(device => device.isOnline);
+  
+    const allSelectedOnline = onlineDevicesInGroup.every(device =>
       selectedDevices.some(d => d._id === device._id)
     );
-
+  
     setSelectedDevices(prevSelected => {
       let newSelected = [...prevSelected];
-      if (allSelectedInGroup) {
-        // Deselect all in this group
+  
+      if (allSelectedOnline) {
+        // Odznacz wszystkie online w tej grupie
         newSelected = newSelected.filter(device =>
-          !devicesInGroup.some(d => d._id === device._id)
+          !onlineDevicesInGroup.some(d => d._id === device._id)
         );
       } else {
-        // Select all in this group that are not already selected
-        devicesInGroup.forEach(device => {
+        // Zaznacz tylko online i niepowtórzone
+        onlineDevicesInGroup.forEach(device => {
           if (!newSelected.some(d => d._id === device._id)) {
             newSelected.push(device);
           }
         });
       }
+  
       setUploadStatuses({});
       return newSelected;
     });
+  
     setErrorMsg(null);
   };
+  
 
   // Group Management
   const openGroupManagementModal = (device) => {
@@ -484,49 +495,178 @@ function Groups() {
 
   return (
     <>
-    <Navbar/>
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <h2 className={styles.title}>Zarządzanie grupami i urządzeniami</h2>
-        {errorMsg && <div className={styles.errorMessage}>{errorMsg}</div>}
-      </div>
+      <Navbar />
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <h2 className={styles.title}>Zarządzanie grupami i urządzeniami</h2>
+          {errorMsg && <div className={styles.errorMessage}>{errorMsg}</div>}
+        </div>
 
-      {groups.length > 0 ? (
-        groups.map((group) => (
-          <div key={group._id} className={styles.groupSection}>
-            <div className={styles.groupHeader}>
-              <h3 className={styles.groupName}>
-                {group.name} ({getDevicesInGroup(group._id).length} urządzeń)
-              </h3>
-              <div className={styles.groupActions}>
-                <button
-                  className={styles.selectGroupButton}
-                  onClick={() => handleGroupSelectAllToggle(group._id)}
-                >
-                  {getDevicesInGroup(group._id).every(device =>
-                    selectedDevices.some(d => d._id === device._id)
-                  )
-                    ? "Odznacz wszystkie w grupie"
-                    : "Zaznacz wszystkie w grupie"}
-                </button>
-                <button
-                  className={styles.deleteGroupButton}
-                  onClick={() => handleDeleteGroup(group._id)}
-                >
-                  Usuń grupę
-                </button>
+        {groups.length > 0 ? (
+          groups.map((group) => (
+            <div key={group._id} className={styles.groupSection}>
+              <div className={styles.groupHeader}>
+                <h3 className={styles.groupName}>
+                  {group.name} ({getDevicesInGroup(group._id).length} urządzeń)
+                </h3>
+                <div className={styles.groupActions}>
+                  <button
+                    className={styles.selectGroupButton}
+                    onClick={() => handleGroupSelectAllToggle(group._id)}
+                  >
+                    {getDevicesInGroup(group._id).every(device =>
+                      selectedDevices.some(d => d._id === device._id)
+                    )
+                      ? "Odznacz wszystkie w grupie"
+                      : "Zaznacz wszystkie w grupie"}
+                  </button>
+                  <button
+                    className={styles.deleteGroupButton}
+                    onClick={() => handleDeleteGroup(group._id)}
+                  >
+                    Usuń grupę
+                  </button>
+                </div>
               </div>
+              {getDevicesInGroup(group._id).length > 0 ? (
+                <div className={styles.deviceGrid}>
+                  {getDevicesInGroup(group._id).map((device) => (
+                    <div
+                    key={device._id}
+                    className={`${styles.deviceCard} ${
+                      selectedDevices.some(d => d._id === device._id) ? styles.selected : ""
+                    } ${!device.isOnline ? styles.offline : ""}`}
+                    onClick={() => {
+                      if (device.isOnline) {
+                        handleDeviceSelectToggle(device);
+                      }
+                    }}
+                  >
+                  
+                      <div className={styles.deviceIcons}>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditClick(device);
+                          }}
+                          className={styles.editButton}
+                        >
+                          <img src={editIcon} alt="Edytuj" className={styles.editIcon} />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openGroupManagementModal(device);
+                          }}
+                          className={styles.editGroupButton}
+                        >
+                          <img src={groupIcon} alt="Grupuj" className={styles.editIcon2} />
+                        </button>
+                      </div>
+
+                      <div className={styles.deviceImageContainer}>
+                        <div className={styles.hangingWrapper}>
+                          <div className={styles.hangerBar}></div>
+                          <div className={styles.stick + " " + styles.left}></div>
+                          <div className={styles.stick + " " + styles.right}></div>
+                          {getFileType(device.thumbnail || '') === 'video' ? (
+                            <video
+                              src={device.thumbnail ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}` : null}
+                              autoPlay
+                              loop
+                              muted
+                              className={styles.deviceImage}
+                              onError={(e) => { e.target.onerror = null; e.target.src = "/src/assets/images/device.png" }}
+                            />
+                          ) : (
+                            <img
+                              src={
+                                device.thumbnail
+                                  ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}`
+                                  : "/src/assets/images/device.png"
+                              }
+                              alt="Device"
+                              className={styles.deviceImage}
+                            />
+                          )}
+                        </div>
+                        <div
+                          className={`${styles.onlineIndicator} ${device.isOnline ? styles.green : styles.red
+                            }`}
+                          title={device.isOnline ? "Online" : "Offline"}
+                        ></div>
+
+                      </div>
+
+                      {/* ▶️ INFORMACJE O URZĄDZENIU */}
+                      <div className={styles.deviceInfo}>
+                        {editingDeviceId === device._id ? (
+                          <>
+                            <input
+                              type="text"
+                              value={editInputValue}
+                              onChange={(e) => setEditInputValue(e.target.value)}
+                              className={styles.editInput}
+                            />
+                            <button onClick={() => handleEditSave(device.clientName)} className={styles.saveButton}>Zapisz</button>
+                            <button onClick={() => handleEditReset(device.clientName)} className={styles.resetButton}>Resetuj</button>
+                            <button onClick={handleEditCancel} className={styles.cancelButton}>Anuluj</button>
+                          </>
+                        ) : (
+                          <div className={styles.deviceNameEditWrapper}>
+                            <h3 className={styles.deviceName}>{getDisplayName(device.clientName)}</h3>
+                          </div>
+                        )}
+                        <p className={styles.deviceId}>
+                        Client: {device.clientId}
+                        </p>
+                      </div>
+                    </div>
+
+                  ))}
+                </div>
+              ) : (
+                <p className={styles.noDevicesMessage}>Brak urządzeń w tej grupie.</p>
+              )}
             </div>
-            {getDevicesInGroup(group._id).length > 0 ? (
-              <div className={styles.deviceGrid}>
-                {getDevicesInGroup(group._id).map((device) => (
-                  <div
-                  key={device._id}
-                  className={`${styles.deviceCard} ${
-                    selectedDevices.some((d) => d._id === device._id) ? styles.selected : ""
-                  }`}
-                  onClick={() => handleDeviceSelectToggle(device)}
-                >
+          ))
+        ) : (
+          <p className={styles.noGroupsMessage}>Brak zdefiniowanych grup dla tej lokalizacji.</p>
+        )}
+
+        {/* Devices without groups */}
+        <div className={styles.groupSection}>
+          <div className={styles.groupHeader}>
+            <h3 className={styles.groupName}>
+              Urządzenia bez grup ({getDevicesWithoutGroup().length} urządzeń)
+            </h3>
+            <button
+              className={styles.selectGroupButton}
+              onClick={() => handleGroupSelectAllToggle(null)} // Use null or a specific ID for "no group"
+            >
+              {getDevicesWithoutGroup().every(device =>
+                selectedDevices.some(d => d._id === device._id)
+              )
+                ? "Odznacz wszystkie bez grupy"
+                : "Zaznacz wszystkie bez grupy"}
+            </button>
+          </div>
+          {getDevicesWithoutGroup().length > 0 ? (
+            <div className={styles.deviceGrid}>
+              {getDevicesWithoutGroup().map((device) => (
+                <div
+                key={device._id}
+                className={`${styles.deviceCard} ${
+                  selectedDevices.some(d => d._id === device._id) ? styles.selected : ""
+                } ${!device.isOnline ? styles.offline : ""}`}
+                onClick={() => {
+                  if (device.isOnline) {
+                    handleDeviceSelectToggle(device);
+                  }
+                }}
+              >
+              
+                  {/* 🎯 Ikony w prawym górnym rogu */}
                   <div className={styles.deviceIcons}>
                     <button
                       onClick={(e) => {
@@ -547,20 +687,27 @@ function Groups() {
                       <img src={groupIcon} alt="Grupuj" className={styles.editIcon2} />
                     </button>
                   </div>
-                
+
                   <div className={styles.deviceImageContainer}>
                     <div className={styles.hangingWrapper}>
                       <div className={styles.hangerBar}></div>
-                      <div className={styles.stick + " " + styles.left}></div>
-                      <div className={styles.stick + " " + styles.right}></div>
+                      <div className={`${styles.stick} ${styles.left}`}></div>
+                      <div className={`${styles.stick} ${styles.right}`}></div>
                       {getFileType(device.thumbnail || '') === 'video' ? (
                         <video
-                          src={device.thumbnail ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}` : null}
+                          src={
+                            device.thumbnail
+                              ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}`
+                              : null
+                          }
                           autoPlay
                           loop
                           muted
                           className={styles.deviceImage}
-                          onError={(e) => { e.target.onerror = null; e.target.src = "/src/assets/images/device.png" }}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "/src/assets/images/device.png";
+                          }}
                         />
                       ) : (
                         <img
@@ -574,460 +721,340 @@ function Groups() {
                         />
                       )}
                     </div>
-                    <div className={styles.onlineIndicator}></div>
+                    <div
+                      className={`${styles.onlineIndicator} ${device.isOnline ? styles.green : styles.red
+                        }`}
+                      title={device.isOnline ? "Online" : "Offline"}
+                    ></div>
+
                   </div>
-                
-                  {/* ▶️ INFORMACJE O URZĄDZENIU */}
+
                   <div className={styles.deviceInfo}>
-                    {editingDeviceId === device._id ? (
-                      <>
-                        <input
-                          type="text"
-                          value={editInputValue}
-                          onChange={(e) => setEditInputValue(e.target.value)}
-                          className={styles.editInput}
-                        />
-                        <button onClick={() => handleEditSave(device.clientName)} className={styles.saveButton}>Zapisz</button>
-                        <button onClick={() => handleEditReset(device.clientName)} className={styles.resetButton}>Resetuj</button>
-                        <button onClick={handleEditCancel} className={styles.cancelButton}>Anuluj</button>
-                      </>
-                    ) : (
-                      <div className={styles.deviceNameEditWrapper}>
-                        <h3 className={styles.deviceName}>{getDisplayName(device.clientName)}</h3>
-                      </div>
-                    )}
+                    <div className={styles.deviceNameEditWrapper}>
+                      {editingDeviceId === device._id ? (
+                        <>
+                          <input
+                            type="text"
+                            value={editInputValue}
+                            onChange={(e) => setEditInputValue(e.target.value)}
+                            className={styles.editInput}
+                          />
+                          <button onClick={() => handleEditSave(device.clientName)} className={styles.saveButton}>Zapisz</button>
+                          <button onClick={() => handleEditReset(device.clientName)} className={styles.resetButton}>Resetuj</button>
+                          <button onClick={handleEditCancel} className={styles.cancelButton}>Anuluj</button>
+                        </>
+                      ) : (
+                        <h3 className={styles.deviceName}>
+                          {getDisplayName(device.clientName)}
+                        </h3>
+                      )}
+                    </div>
                     <p className={styles.deviceId}>
-                      Status: <a style={{ color: "green", fontWeight: "bold" }}>Online</a>,{device.clientId}
+                      Status: <a style={{ color: "green", fontWeight: "bold" }}>Online</a>, {device.clientId}
                     </p>
                   </div>
                 </div>
-                
-                ))}
-              </div>
-            ) : (
-              <p className={styles.noDevicesMessage}>Brak urządzeń w tej grupie.</p>
-            )}
-          </div>
-        ))
-      ) : (
-        <p className={styles.noGroupsMessage}>Brak zdefiniowanych grup dla tej lokalizacji.</p>
-      )}
+              ))}
 
-      {/* Devices without groups */}
-      <div className={styles.groupSection}>
-        <div className={styles.groupHeader}>
-          <h3 className={styles.groupName}>
-            Urządzenia bez grup ({getDevicesWithoutGroup().length} urządzeń)
-          </h3>
-          <button
-            className={styles.selectGroupButton}
-            onClick={() => handleGroupSelectAllToggle(null)} // Use null or a specific ID for "no group"
-          >
-            {getDevicesWithoutGroup().every(device =>
-              selectedDevices.some(d => d._id === device._id)
-            )
-              ? "Odznacz wszystkie bez grupy"
-              : "Zaznacz wszystkie bez grupy"}
-          </button>
+            </div>
+          ) : (
+            <p className={styles.noDevicesMessage}>Brak urządzeń bez przypisanych grup.</p>
+          )}
         </div>
-        {getDevicesWithoutGroup().length > 0 ? (
-          <div className={styles.deviceGrid}>
-            {getDevicesWithoutGroup().map((device) => (
-              <div
-                key={device._id}
-                className={`${styles.deviceCard} ${
-                  selectedDevices.some((d) => d._id === device._id) ? styles.selected : ""
-                }`}
-                onClick={() => handleDeviceSelectToggle(device)}
-              >
-                {/* 🎯 Ikony w prawym górnym rogu */}
-                <div className={styles.deviceIcons}>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEditClick(device);
-                    }}
-                    className={styles.editButton}
-                  >
-                    <img src={editIcon} alt="Edytuj" className={styles.editIcon} />
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openGroupManagementModal(device);
-                    }}
-                    className={styles.editGroupButton}
-                  >
-                    <img src={groupIcon} alt="Grupuj" className={styles.editIcon2} />
-                  </button>
-                </div>
 
-                <div className={styles.deviceImageContainer}>
-                  <div className={styles.hangingWrapper}>
-                    <div className={styles.hangerBar}></div>
-                    <div className={`${styles.stick} ${styles.left}`}></div>
-                    <div className={`${styles.stick} ${styles.right}`}></div>
-                    {getFileType(device.thumbnail || '') === 'video' ? (
-                      <video
-                        src={
-                          device.thumbnail
-                            ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}`
-                            : null
-                        }
-                        autoPlay
-                        loop
-                        muted
-                        className={styles.deviceImage}
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = "/src/assets/images/device.png";
-                        }}
-                      />
-                    ) : (
-                      <img
-                        src={
-                          device.thumbnail
-                            ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}`
-                            : "/src/assets/images/device.png"
-                        }
-                        alt="Device"
-                        className={styles.deviceImage}
-                      />
-                    )}
-                  </div>
-                  <div className={styles.onlineIndicator}></div>
-                </div>
-
-                <div className={styles.deviceInfo}>
-                  <div className={styles.deviceNameEditWrapper}>
-                    {editingDeviceId === device._id ? (
-                      <>
-                        <input
-                          type="text"
-                          value={editInputValue}
-                          onChange={(e) => setEditInputValue(e.target.value)}
-                          className={styles.editInput}
-                        />
-                        <button onClick={() => handleEditSave(device.clientName)} className={styles.saveButton}>Zapisz</button>
-                        <button onClick={() => handleEditReset(device.clientName)} className={styles.resetButton}>Resetuj</button>
-                        <button onClick={handleEditCancel} className={styles.cancelButton}>Anuluj</button>
-                      </>
-                    ) : (
-                      <h3 className={styles.deviceName}>
-                        {getDisplayName(device.clientName)}
-                      </h3>
-                    )}
-                  </div>
-                  <p className={styles.deviceId}>
-                    Status: <a style={{ color: "green", fontWeight: "bold" }}>Online</a>, {device.clientId}
-                  </p>
-                </div>
-              </div>
-            ))}
-
+        {selectedDevices.length > 0 && (
+          <div className={styles.manageButtonContainer}>
+            <button
+              className={styles.manageButton}
+              onClick={() => setIsModalOpen(true)}
+            >
+              Zarządzaj urządzeniami ({selectedDevices.length})
+            </button>
           </div>
-        ) : (
-          <p className={styles.noDevicesMessage}>Brak urządzeń bez przypisanych grup.</p>
         )}
-      </div>
 
-      {selectedDevices.length > 0 && (
-        <div className={styles.manageButtonContainer}>
-          <button
-            className={styles.manageButton}
-            onClick={() => setIsModalOpen(true)}
-          >
-            Zarządzaj urządzeniami ({selectedDevices.length})
-          </button>
-        </div>
-      )}
-
-      {isModalOpen && (
-        <div className={styles.uploadModal}>
-          <div className={styles.modalContent}>
-            <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>
-                Załaduj {activeTab === "photo" ? "zdjęcie" : (activeTab === "video" ? "film" : "plik")} dla wybranych urządzeń
-              </h3>
-              <button className={styles.closeButton} onClick={closeUploadModal}>
-                ×
-              </button>
-            </div>
-            <div className={styles.tabSwitcher}>
-              <button
-                className={`${styles.tab} ${
-                  activeTab === "photo" ? styles.activeTab : ""
-                }`}
-                onClick={() => {
-                  setActiveTab("photo");
-                  setFile(null);
-                  setPreviewUrl(null);
-                  setSelectedGalleryFile(null);
-                }}
-              >
-                Zdjęcie
-              </button>
-              <button
-                className={`${styles.tab} ${
-                  activeTab === "video" ? styles.activeTab : ""
-                }`}
-                onClick={() => {
-                  setActiveTab("video");
-                  setFile(null);
-                  setPreviewUrl(null);
-                  setSelectedGalleryFile(null);
-                }}
-              >
-                Film
-              </button>
-              <button
-                className={`${styles.tab} ${
-                  activeTab === "gallery" ? styles.activeTab : ""
-                }`}
-                onClick={() => {
-                  setActiveTab("gallery");
-                  setFile(null);
-                  setPreviewUrl(null);
-                }}
-              >
-                Galeria plików
-              </button>
-            </div>
-            {errorMsg && <div className={styles.errorMessage}>{errorMsg}</div>}
-            {Object.keys(uploadStatuses).length > 0 && (
-              <div className={styles.uploadStatusContainer}>
-                <h4>Statusy operacji:</h4>
-                <ul className={styles.uploadStatusList}>
-                  {selectedDevices.map(device => (
-                    <li key={device._id} className={`${styles.modalUploadStatusItem} ${styles[uploadStatuses[device._id]?.status || 'pending']}`}>
-                      <span className={styles.deviceNameInStatus}>{getDisplayName(device.clientName)}, {device.clientId}:</span> {uploadStatuses[device._id]?.message || 'Oczekuje...'}
-                    </li>
-                  ))}
-                </ul>
+        {isModalOpen && (
+          <div className={styles.uploadModal}>
+            <div className={styles.modalContent}>
+              <div className={styles.modalHeader}>
+                <h3 className={styles.modalTitle}>
+                  Załaduj {activeTab === "photo" ? "zdjęcie" : (activeTab === "video" ? "film" : "plik")} dla wybranych urządzeń
+                </h3>
+                <button className={styles.closeButton} onClick={closeUploadModal}>
+                  ×
+                </button>
               </div>
-            )}
-            {activeTab !== "gallery" ? (
-              <div
-                className={`${styles.dropZone} ${file ? styles.hasFile : ""}`}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={handleDrop}
-              >
-                {previewUrl ? (
-                  <div className={styles.previewContainer}>
-                    {activeTab === "photo" ? (
-                      <img
-                        src={previewUrl}
-                        alt="Preview"
-                        className={styles.previewImage}
-                      />
-                    ) : (
-                      <>
-                        <video
+              <div className={styles.tabSwitcher}>
+                <button
+                  className={`${styles.tab} ${activeTab === "photo" ? styles.activeTab : ""
+                    }`}
+                  onClick={() => {
+                    setActiveTab("photo");
+                    setFile(null);
+                    setPreviewUrl(null);
+                    setSelectedGalleryFile(null);
+                  }}
+                >
+                  Zdjęcie
+                </button>
+                <button
+                  className={`${styles.tab} ${activeTab === "video" ? styles.activeTab : ""
+                    }`}
+                  onClick={() => {
+                    setActiveTab("video");
+                    setFile(null);
+                    setPreviewUrl(null);
+                    setSelectedGalleryFile(null);
+                  }}
+                >
+                  Film
+                </button>
+                <button
+                  className={`${styles.tab} ${activeTab === "gallery" ? styles.activeTab : ""
+                    }`}
+                  onClick={() => {
+                    setActiveTab("gallery");
+                    setFile(null);
+                    setPreviewUrl(null);
+                  }}
+                >
+                  Galeria plików
+                </button>
+              </div>
+              {errorMsg && <div className={styles.errorMessage}>{errorMsg}</div>}
+              {Object.keys(uploadStatuses).length > 0 && (
+                <div className={styles.uploadStatusContainer}>
+                  <h4>Statusy operacji:</h4>
+                  <ul className={styles.uploadStatusList}>
+                    {selectedDevices.map(device => (
+                      <li key={device._id} className={`${styles.modalUploadStatusItem} ${styles[uploadStatuses[device._id]?.status || 'pending']}`}>
+                        <span className={styles.deviceNameInStatus}>{getDisplayName(device.clientName)}, {device.clientId}:</span> {uploadStatuses[device._id]?.message || 'Oczekuje...'}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {activeTab !== "gallery" ? (
+                <div
+                  className={`${styles.dropZone} ${file ? styles.hasFile : ""}`}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={handleDrop}
+                >
+                  {previewUrl ? (
+                    <div className={styles.previewContainer}>
+                      {activeTab === "photo" ? (
+                        <img
                           src={previewUrl}
-                          controls
-                          ref={videoRef}
+                          alt="Preview"
                           className={styles.previewImage}
                         />
-                      </>
-                    )}
-                    <div className={styles.fileInfo}>
-                      <span className={styles.fileName}>{file.name}</span>
-                      <span className={styles.fileSize}>
-                        {formatFileSize(file.size)}
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className={styles.dropZoneContent}>
-                    <div className={styles.uploadIcon}>📁</div>
-                    <p className={styles.dropText}>
-                      Przeciągnij i upuść plik{" "}
-                      {activeTab === "photo" ? "graficzny" : "wideo"} tutaj
-                    </p>
-                    <p className={styles.dropSubtext}>lub</p>
-                  </div>
-                )}
-                <input
-                  type="file"
-                  accept={activeTab === "photo" ? "image/*" : "video/*"}
-                  onChange={(e) =>
-                    e.target.files.length > 0 && handleFile(e.target.files[0])
-                  }
-                  className={styles.fileInput}
-                />
-              </div>
-            ) : (
-              <div className={styles.galleryContainer}>
-                {galleryFiles.length > 0 ? (
-                  <div className={styles.fileGrid}>
-                    {galleryFiles.map((filename) => {
-                      const fileType = getFileType(filename);
-                      const fileUrl = `${API_BASE_URL}/${locationId}/files/${filename}`;
-                      return (
-                        <label
-                          key={filename}
-                          className={`${styles.galleryItem} ${
-                            selectedGalleryFile === filename ? styles.selectedGalleryItem : ""
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            name="galleryFile"
-                            value={filename}
-                            checked={selectedGalleryFile === filename}
-                            onChange={() => handleGalleryFileSelect(filename)}
-                            className={styles.galleryRadioButton}
+                      ) : (
+                        <>
+                          <video
+                            src={previewUrl}
+                            controls
+                            ref={videoRef}
+                            className={styles.previewImage}
                           />
-                          <div className={styles.galleryMediaWrapper}>
-                            {fileType === 'image' ? (
-                              <img
-                                src={fileUrl}
-                                alt={filename}
-                                className={styles.galleryMedia}
-                              />
-                            ) : fileType === 'video' ? (
-                              <video
-                                src={fileUrl}
-                                autoPlay
-                                loop
-                                muted
-                                playsInline
-                                className={styles.galleryMedia}
-                                onError={(e) => { e.target.onerror = null; e.target.src="/src/assets/images/placeholder-video.png"; }}
-                              />
-                            ) : (
-                              <div className={styles.galleryPlaceholder}>
-                                <span className={styles.fileIcon}>📄</span>
-                              </div>
+                        </>
+                      )}
+                      <div className={styles.fileInfo}>
+                        <span className={styles.fileName}>{file.name}</span>
+                        <span className={styles.fileSize}>
+                          {formatFileSize(file.size)}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className={styles.dropZoneContent}>
+                      <div className={styles.uploadIcon}>📁</div>
+                      <p className={styles.dropText}>
+                        Przeciągnij i upuść plik{" "}
+                        {activeTab === "photo" ? "graficzny" : "wideo"} tutaj
+                      </p>
+                      <p className={styles.dropSubtext}>lub</p>
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept={activeTab === "photo" ? "image/*" : "video/*"}
+                    onChange={(e) =>
+                      e.target.files.length > 0 && handleFile(e.target.files[0])
+                    }
+                    className={styles.fileInput}
+                  />
+                </div>
+              ) : (
+                <div className={styles.galleryContainer}>
+                  {galleryFiles.length > 0 ? (
+                    <div className={styles.fileGrid}>
+                      {galleryFiles.map((filename) => {
+                        const fileType = getFileType(filename);
+                        const fileUrl = `${API_BASE_URL}/${locationId}/files/${filename}`;
+                        return (
+                          <label
+                            key={filename}
+                            className={`${styles.galleryItem} ${selectedGalleryFile === filename ? styles.selectedGalleryItem : ""
+                              }`}
+                          >
+                            <input
+                              type="radio"
+                              name="galleryFile"
+                              value={filename}
+                              checked={selectedGalleryFile === filename}
+                              onChange={() => handleGalleryFileSelect(filename)}
+                              className={styles.galleryRadioButton}
+                            />
+                            <div className={styles.galleryMediaWrapper}>
+                              {fileType === 'image' ? (
+                                <img
+                                  src={fileUrl}
+                                  alt={filename}
+                                  className={styles.galleryMedia}
+                                />
+                              ) : fileType === 'video' ? (
+                                <video
+                                  src={fileUrl}
+                                  autoPlay
+                                  loop
+                                  muted
+                                  playsInline
+                                  className={styles.galleryMedia}
+                                  onError={(e) => { e.target.onerror = null; e.target.src = "/src/assets/images/placeholder-video.png"; }}
+                                />
+                              ) : (
+                                <div className={styles.galleryPlaceholder}>
+                                  <span className={styles.fileIcon}>📄</span>
+                                </div>
+                              )}
+                            </div>
+                            <span className={styles.galleryFileName}>
+                              {filename}{" "}
+                              {fileType === 'image' && "(zdjęcie)"}
+                              {fileType === 'video' && "(film)"}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p>Brak plików w galerii dla tej lokalizacji.</p>
+                  )}
+                </div>
+              )}
+              <div className={styles.modalActions}>
+                <button
+                  className={styles.uploadButton}
+                  onClick={handleMassUpload}
+                  disabled={!(file || selectedGalleryFile) || selectedDevices.length === 0}
+                >
+                  {activeTab === "gallery" ? "Wybierz plik" : "Wyślij plik"} dla {selectedDevices.length} urządzeń
+                </button>
+                <button className={styles.cancelButton} onClick={closeUploadModal}>
+                  Anuluj
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Group Management Modal for Individual Device */}
+        {isGroupModalOpen && deviceToManageGroups && (
+          <div className={styles.groupModal}>
+            <div className={styles.modalContent}>
+              <div className={styles.modalHeader}>
+                <h3 className={styles.modalTitle}>Zarządzaj grupami dla {getDisplayName(deviceToManageGroups.clientName)}</h3>
+                <button className={styles.closeButton} onClick={closeGroupManagementModal}>×</button>
+              </div>
+              {errorMsg && <div className={styles.errorMessage}>{errorMsg}</div>}
+              <div className={styles.groupListContainer}>
+                <h4>Grupy, do których należy urządzenie:</h4>
+                {deviceToManageGroups.groups.length > 0 ? (
+                  <ul className={styles.currentGroupList}>
+                    {deviceToManageGroups.groups.map(groupId => {
+                      const group = groups.find(g => g._id === groupId);
+                      return group ? (
+                        <li key={group._id} className={styles.groupListItem}>
+                          <span className={styles.groupNameInList}>{group.name}</span>
+                          <div className={styles.groupListItemActions}>
+                            <button
+                              className={styles.removeGroupButton}
+                              onClick={() => handleRemoveDeviceFromGroup(group._id)}
+                            >
+                              Usuń
+                            </button>
+                          </div>
+                        </li>
+
+                      ) : null;
+                    })}
+                  </ul>
+                ) : (
+                  <p>Urządzenie nie należy do żadnej grupy.</p>
+                )}
+
+                <h4>Dodaj do istniejącej grupy:</h4>
+                <ul className={styles.availableGroupList}>
+                  {groups.length > 0 ? (
+                    groups.map(group => {
+                      const isAssigned = deviceToManageGroups.groups.includes(group._id);
+                      return (
+                        <li key={group._id} className={styles.groupListItem}>
+                          <div className={styles.groupNameInList}>
+                            {group.name}
+                            {group.description && (
+                              <span className={styles.groupDescriptionInList}> ({group.description})</span>
                             )}
                           </div>
-                          <span className={styles.galleryFileName}>
-                            {filename}{" "}
-                            {fileType === 'image' && "(zdjęcie)"}
-                            {fileType === 'video' && "(film)"}
-                          </span>
-                        </label>
+
+                          <div className={styles.groupListItemActions}>
+                            <button
+                              className={styles.addGroupButton}
+                              onClick={() => handleAddDeviceToGroup(group._id)}
+                              disabled={isAssigned}
+                            >
+                              {isAssigned ? "Przypisano" : "Dodaj"}
+                            </button>
+                          </div>
+                        </li>
+
                       );
-                    })}
-                  </div>
-                ) : (
-                  <p>Brak plików w galerii dla tej lokalizacji.</p>
-                )}
-              </div>
-            )}
-            <div className={styles.modalActions}>
-              <button
-                className={styles.uploadButton}
-                onClick={handleMassUpload}
-                disabled={!(file || selectedGalleryFile) || selectedDevices.length === 0}
-              >
-                {activeTab === "gallery" ? "Wybierz plik" : "Wyślij plik"} dla {selectedDevices.length} urządzeń
-              </button>
-              <button className={styles.cancelButton} onClick={closeUploadModal}>
-                Anuluj
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Group Management Modal for Individual Device */}
-      {isGroupModalOpen && deviceToManageGroups && (
-        <div className={styles.groupModal}>
-          <div className={styles.modalContent}>
-            <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>Zarządzaj grupami dla {getDisplayName(deviceToManageGroups.clientName)}</h3>
-              <button className={styles.closeButton} onClick={closeGroupManagementModal}>×</button>
-            </div>
-            {errorMsg && <div className={styles.errorMessage}>{errorMsg}</div>}
-            <div className={styles.groupListContainer}>
-              <h4>Grupy, do których należy urządzenie:</h4>
-              {deviceToManageGroups.groups.length > 0 ? (
-                <ul className={styles.currentGroupList}>
-                  {deviceToManageGroups.groups.map(groupId => {
-                    const group = groups.find(g => g._id === groupId);
-                    return group ? (
-                      <li key={group._id} className={styles.groupListItem}>
-                      <span className={styles.groupNameInList}>{group.name}</span>
-                      <div className={styles.groupListItemActions}>
-                        <button
-                          className={styles.removeGroupButton}
-                          onClick={() => handleRemoveDeviceFromGroup(group._id)}
-                        >
-                          Usuń
-                        </button>
-                      </div>
-                    </li>
-
-                    ) : null;
-                  })}
+                    })
+                  ) : (
+                    <p>Brak dostępnych grup do dodania. Utwórz nową.</p>
+                  )}
                 </ul>
-              ) : (
-                <p>Urządzenie nie należy do żadnej grupy.</p>
-              )}
+              </div>
 
-              <h4>Dodaj do istniejącej grupy:</h4>
-              <ul className={styles.availableGroupList}>
-                {groups.length > 0 ? (
-                  groups.map(group => {
-                    const isAssigned = deviceToManageGroups.groups.includes(group._id);
-                    return (
-                      <li key={group._id} className={styles.groupListItem}>
-                        <div className={styles.groupNameInList}>
-                        {group.name}
-                        {group.description && (
-                          <span className={styles.groupDescriptionInList}> ({group.description})</span>
-                        )}
-                      </div>
+              <div className={styles.createNewGroupSection}>
+                <h4>Dodaj nową grupę:</h4>
+                <input
+                  type="text"
+                  placeholder="Nazwa nowej grupy"
+                  value={newGroupName}
+                  onChange={(e) => setNewGroupName(e.target.value)}
+                  className={styles.newGroupInput}
+                />
+                <textarea
+                  placeholder="Opis nowej grupy (opcjonalnie)"
+                  value={newGroupDescription}
+                  onChange={(e) => setNewGroupDescription(e.target.value)}
+                  className={styles.newGroupTextarea}
+                />
+                <button onClick={handleCreateNewGroup} className={styles.createGroupButton}>
+                  Utwórz nową grupę i dodaj do urządzenia
+                </button>
+              </div>
 
-                        <div className={styles.groupListItemActions}>
-                          <button
-                            className={styles.addGroupButton}
-                            onClick={() => handleAddDeviceToGroup(group._id)}
-                            disabled={isAssigned}
-                          >
-                            {isAssigned ? "Przypisano" : "Dodaj"}
-                          </button>
-                        </div>
-                      </li>
-
-                    );
-                  })
-                ) : (
-                  <p>Brak dostępnych grup do dodania. Utwórz nową.</p>
-                )}
-              </ul>
-            </div>
-
-            <div className={styles.createNewGroupSection}>
-              <h4>Dodaj nową grupę:</h4>
-              <input
-                type="text"
-                placeholder="Nazwa nowej grupy"
-                value={newGroupName}
-                onChange={(e) => setNewGroupName(e.target.value)}
-                className={styles.newGroupInput}
-              />
-              <textarea
-                placeholder="Opis nowej grupy (opcjonalnie)"
-                value={newGroupDescription}
-                onChange={(e) => setNewGroupDescription(e.target.value)}
-                className={styles.newGroupTextarea}
-              />
-              <button onClick={handleCreateNewGroup} className={styles.createGroupButton}>
-                Utwórz nową grupę i dodaj do urządzenia
-              </button>
-            </div>
-
-            <div className={styles.modalActions}>
-              <button className={styles.cancelButton} onClick={closeGroupManagementModal}>
-                Zamknij
-              </button>
+              <div className={styles.modalActions}>
+                <button className={styles.cancelButton} onClick={closeGroupManagementModal}>
+                  Zamknij
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
     </>
   );
 }

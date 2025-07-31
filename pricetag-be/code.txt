@@ -30,11 +30,11 @@ async def startup_db_client():
         app.mongodb = app.mongodb_client[settings.DATABASE_NAME]
         # Test connection
         await app.mongodb_client.admin.command('ping')
-        print(f"✅ Connected to MongoDB at {settings.MONGODB_URI}")
-        print(f"📁 Using database: {settings.DATABASE_NAME}")
+        print(f"‚úÖ Connected to MongoDB at {settings.MONGODB_URI}")
+        print(f"üìÅ Using database: {settings.DATABASE_NAME}")
     except Exception as e:
-        print(f"❌ Failed to connect to MongoDB: {e}")
-        print(f"🔧 Check your MONGODB_URI in .env: {settings.MONGODB_URI}")
+        print(f"‚ùå Failed to connect to MongoDB: {e}")
+        print(f"üîß Check your MONGODB_URI in .env: {settings.MONGODB_URI}")
         raise e
 
 @app.on_event("shutdown")
@@ -93,7 +93,7 @@ import json
 async def dump_database(request: Request):
     """
     Returns the entire database content as JSON.
-    ⚠️ Use only for debugging! Disable in production!
+    ‚ö†Ô∏è Use only for debugging! Disable in production!
     """
     db = request.app.mongodb
     dump = {}
@@ -122,7 +122,6 @@ async def dump_database(request: Request):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
-
 mam taki models.py:
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict
@@ -293,7 +292,6 @@ class UserDevicesResponse(BaseModel):
     user_id: str
     login: str
     devices: List[Device]
-
 
 
 
@@ -733,7 +731,6 @@ if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run(app, host="0.0.0.0", port=8000)
-
 
 mam taki api/locations.py:
 
@@ -1522,6 +1519,42 @@ async def remove_all_devices_from_location(location_id: str, db=Depends(get_data
             detail=f"Error removing devices: {str(e)}"
         )
 
+
+from fastapi import status
+
+@router.delete("/{location_id}/files/{filename}", status_code=status.HTTP_200_OK)
+async def delete_file_from_location(location_id: str, filename: str):
+    """
+    Usuwa fizyczny plik z lokalizacji (i opcjonalnie także miniaturkę, jeśli istnieje).
+    """
+    try:
+        file_path = UPLOAD_DIR / location_id / filename
+        thumbnail_path = UPLOAD_DIR / location_id / ".thumbnails" / f"{Path(filename).stem}.png"
+
+        # Sprawdź czy plik istnieje
+        if not file_path.exists():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Plik nie istnieje"
+            )
+
+        # Usuń plik
+        file_path.unlink()
+
+        # Usuń miniaturkę, jeśli istnieje
+        if thumbnail_path.exists():
+            thumbnail_path.unlink()
+
+        return {
+            "message": f"Plik {filename} został usunięty",
+            "location_id": location_id
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Błąd podczas usuwania pliku: {str(e)}"
+        )
 
 mam taki api/users.py:
 from fastapi import APIRouter, HTTPException, Depends, Request, status

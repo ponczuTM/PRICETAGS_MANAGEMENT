@@ -1,9 +1,16 @@
 import os
 
 # Funkcja do odczytu zawartości pliku
+import chardet
+
 def read_file(file_path):
-    with open(file_path, 'r') as file:
-        return file.read()
+    with open(file_path, 'rb') as f:
+        raw = f.read()
+        result = chardet.detect(raw)
+        encoding = result['encoding']
+        return raw.decode(encoding, errors='replace')
+
+
 
 # Ścieżki do plików
 main_py = 'main.py'
@@ -14,7 +21,7 @@ api_users_py = 'api/users.py'
 api_groups_py = 'api/groups.py'
 
 # Tworzymy plik tekstowy 'code.txt'
-with open('code.txt', 'w') as output_file:
+with open('code.txt', 'w', encoding='utf-8') as output_file:
     output_file.write(f"mam taki {main_py}:\n")
     output_file.write(read_file(main_py))
     output_file.write("\n\n")

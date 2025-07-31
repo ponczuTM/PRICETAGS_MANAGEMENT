@@ -88,7 +88,8 @@ async def add_device_to_location(location_id: str, device: Device, db=Depends(ge
             "photo": device.photo,
             "video": device.video,
             "changed": "false",
-            "thumbnail": None  # ⬅️ DODANE
+            "thumbnail": None,
+            "isOnline": True
         }
 
 
@@ -820,3 +821,18 @@ async def delete_file_from_location(location_id: str, filename: str):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Błąd podczas usuwania pliku: {str(e)}"
         )
+
+
+@router.put("/{location_id}/devices/{device_id}/online", status_code=200)
+async def set_device_online(location_id: str, device_id: str, db=Depends(get_database)):
+    """
+    Ustawia isOnline = true dla danego urządzenia
+    """
+    return await _update_device_field(location_id, device_id, {"isOnline": True}, db)
+
+@router.put("/{location_id}/devices/{device_id}/offline", status_code=200)
+async def set_device_offline(location_id: str, device_id: str, db=Depends(get_database)):
+    """
+    Ustawia isOnline = false dla danego urządzenia
+    """
+    return await _update_device_field(location_id, device_id, {"isOnline": False}, db)
