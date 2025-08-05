@@ -92,3 +92,18 @@
     font-size: 1.2rem;
   }
 }
+
+.logoutButton {
+  background-color: #dc3545; /* czerwony */
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-left: 12px;
+  font-size: 14px;
+}
+
+.logoutButton:hover {
+  background-color: #c82333;
+}

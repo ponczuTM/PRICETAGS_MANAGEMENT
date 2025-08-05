@@ -169,3 +169,60 @@ class UserDevicesResponse(BaseModel):
     devices: List[Device]
 
 
+class PriceUser(BaseModel):
+    id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias="_id")
+    first_name: str
+    last_name: str
+    email: str
+    locationName: str
+    locationId: str
+    passwordHash: str
+
+    class Config:
+        allow_population_by_field_name = True
+        json_encoders = {ObjectId: str}
+
+class PriceUserCreate(BaseModel):
+    first_name: str
+    last_name: str
+    email: str
+    password: str
+    locationName: str
+    locationId: Optional[str]
+
+class PriceUserLogin(BaseModel):
+    email: str
+    password: str
+
+class PriceUserUpdate(BaseModel):
+    first_name: Optional[str]
+    last_name: Optional[str]
+    locationName: Optional[str]
+    password: Optional[str]
+
+class PriceUserResponse(BaseModel):
+    id: str = Field(alias="_id")
+    first_name: str
+    last_name: str
+    email: str
+    locationName: str
+    locationId: str
+
+    class Config:
+        json_encoders = {ObjectId: str}
+
+class PriceUserLogin(BaseModel):
+    email: str
+    password: str
+
+
+from pydantic import BaseModel, EmailStr
+from typing import Optional
+
+class PriceUserUpdate(BaseModel):
+    first_name: Optional[str]
+    last_name: Optional[str]
+    email: Optional[EmailStr]
+    password: Optional[str]
+    locationName: Optional[str]
+    locationId: Optional[str]  # ← DODAJ TO

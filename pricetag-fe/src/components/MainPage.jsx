@@ -2,8 +2,13 @@ import React, { useEffect, useRef, useState } from "react";
 import styles from "./MainPage.module.css";
 import Navbar from "./Navbar";
 import edit from './../assets/images/edit.png'
+import { useNavigate } from "react-router-dom";
 
-const locationId = "685003cbf071eb1bb4304cd2";
+const storedUser = localStorage.getItem("user");
+const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+const locationId = parsedUser?.locationId;
+
+
 const API_BASE_URL = "http://localhost:8000/api/locations";
 
 function MainPage() {
@@ -62,6 +67,18 @@ function MainPage() {
     setEditingDeviceId(null);
     setOriginalValue("");
   };
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    const parsed = user ? JSON.parse(user) : null;
+
+    if (!parsed || !parsed.locationId) {
+      console.warn("Brak użytkownika lub locationId – przekierowanie do logowania.");
+      navigate("/");
+    }
+  }, []);
 
 
   useEffect(() => {
@@ -342,7 +359,7 @@ function MainPage() {
 
   const handleSelectAllToggle = () => {
     const onlineDevices = devices.filter(device => device.isOnline);
-  
+
     if (selectedDevices.length === onlineDevices.length) {
       // Jeśli wszystkie ONLINE są zaznaczone → odznacz wszystkie
       setSelectedDevices([]);
@@ -350,11 +367,11 @@ function MainPage() {
       // W przeciwnym razie zaznacz tylko ONLINE
       setSelectedDevices(onlineDevices);
     }
-  
+
     setUploadStatuses({});
     setErrorMsg(null);
   };
-  
+
 
   return (
     <>
@@ -379,17 +396,16 @@ function MainPage() {
         <div className={styles.deviceGrid}>
           {devices.map((device) => (
             <div
-            key={device._id}
-            className={`${styles.deviceCard} ${
-              selectedDevices.some(d => d._id === device._id) ? styles.selected : ""
-            } ${!device.isOnline ? styles.offline : ""}`}
-            onClick={() => {
-              if (device.isOnline) {
-                handleDeviceSelectToggle(device);
-              }
-            }}
-          >
-          
+              key={device._id}
+              className={`${styles.deviceCard} ${selectedDevices.some(d => d._id === device._id) ? styles.selected : ""
+                } ${!device.isOnline ? styles.offline : ""}`}
+              onClick={() => {
+                if (device.isOnline) {
+                  handleDeviceSelectToggle(device);
+                }
+              }}
+            >
+
               <div className={styles.deviceImageContainer}>
                 <div className={styles.hangingWrapper}>
                   <div className={styles.hangerBar}></div>
@@ -452,7 +468,7 @@ function MainPage() {
                 </div>
 
                 <p className={styles.deviceId}>
-                Client: {device.clientId}
+                  Client: {device.clientId}
                 </p>
               </div>
             </div>

@@ -3,8 +3,12 @@ import styles from "./Groups.module.css";
 import Navbar from "./Navbar";
 import editIcon from './../assets/images/edit.png';
 import groupIcon from './../assets/images/group.png';
+import { useNavigate } from "react-router-dom";
 
-const locationId = "685003cbf071eb1bb4304cd2";
+const storedUser = localStorage.getItem("user");
+const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+const locationId = parsedUser?.locationId;
+
 const API_BASE_URL = "http://localhost:8000/api/locations";
 
 function Groups() {
@@ -65,6 +69,19 @@ function Groups() {
     setEditingDeviceId(null);
     setOriginalValue("");
   };
+
+  
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    const parsed = user ? JSON.parse(user) : null;
+
+    if (!parsed || !parsed.locationId) {
+      console.warn("Brak użytkownika lub locationId – przekierowanie do logowania.");
+      navigate("/");
+    }
+  }, []);
 
   useEffect(() => {
     fetchDevicesAndGroups();

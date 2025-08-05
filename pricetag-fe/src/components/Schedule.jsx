@@ -5,12 +5,16 @@ import editIcon from './../assets/images/edit.png';
 import DatePicker, { registerLocale } from "react-datepicker";
 import pl from "date-fns/locale/pl";
 import "react-datepicker/dist/react-datepicker.css";
+import { useNavigate } from "react-router-dom";
 
 registerLocale("pl", pl);
 
 
 
-const locationId = "685003cbf071eb1bb4304cd2";
+const storedUser = localStorage.getItem("user");
+const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+const locationId = parsedUser?.locationId;
+
 const API_BASE_URL = "http://localhost:8000/api/locations";
 
 function Schedule() {
@@ -70,6 +74,19 @@ function Schedule() {
     setEditingDeviceId(null);
     setOriginalValue("");
   };
+
+  
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    const parsed = user ? JSON.parse(user) : null;
+
+    if (!parsed || !parsed.locationId) {
+      console.warn("Brak użytkownika lub locationId – przekierowanie do logowania.");
+      navigate("/");
+    }
+  }, []);
 
   useEffect(() => {
     fetchDevicesAndGroups();

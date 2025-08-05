@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from "react";
 import styles from "./Gallery.module.css";
 import Navbar from "./Navbar";
+import { useNavigate } from "react-router-dom";
 
-const locationId = "685003cbf071eb1bb4304cd2";
+const storedUser = localStorage.getItem("user");
+const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+const locationId = parsedUser?.locationId;
+
 const API_BASE_URL = "http://localhost:8000/api/locations";
 
 function Gallery() {
@@ -12,6 +16,19 @@ function Gallery() {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [fileToDelete, setFileToDelete] = useState(null);
+
+  
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    const parsed = user ? JSON.parse(user) : null;
+
+    if (!parsed || !parsed.locationId) {
+      console.warn("Brak użytkownika lub locationId – przekierowanie do logowania.");
+      navigate("/");
+    }
+  }, []);
 
   useEffect(() => {
     fetchGalleryFiles();
@@ -173,8 +190,8 @@ function Gallery() {
         {showModal && (
           <div className={styles.modalOverlay}>
             <div className={styles.modalBox}>
-            <p>Czy na pewno chcesz usunąć plik "{fileToDelete}" z galerii?</p>
-            <p>Jeśli plik znajduje się w dowolnym harmonogramie, plik zostanie pominięty podczas aktualizacji contentu na urządzeniach</p>
+              <p>Czy na pewno chcesz usunąć plik "{fileToDelete}" z galerii?</p>
+              <p>Jeśli plik znajduje się w dowolnym harmonogramie, plik zostanie pominięty podczas aktualizacji contentu na urządzeniach</p>
               <div className={styles.modalActions}>
                 <button onClick={handleDelete} className={styles.confirmButton}>Tak</button>
                 <button onClick={() => setShowModal(false)} className={styles.cancelButton}>Nie</button>

@@ -1,0 +1,128 @@
+.loginContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: #f0f4f8; /* Jasnoniebieskie tło */
+    font-family: sans-serif;
+    padding: 2rem;
+    box-sizing: border-box;
+  }
+  
+  .loginContainer h2 {
+    color: #1a237e; /* Ciemnoniebieski nagłówek */
+    margin-bottom: 1.5rem;
+    font-size: 2rem;
+    font-weight: 600;
+  }
+  
+  .loginContainer form {
+    background: #ffffff;
+    padding: 2.5rem 3rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  
+  .loginContainer form div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .loginContainer label {
+    color: #3949ab; /* Jasnoniebieska etykieta */
+    font-weight: 500;
+    font-size: 1rem;
+  }
+  
+  .loginContainer input {
+    padding: 0.75rem 1rem;
+    border: 2px solid #e0e7ff; /* Jasnoniebieska ramka */
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    color: #1a237e;
+  }
+  
+  .loginContainer input::placeholder {
+    color: #aeb8c3;
+  }
+  
+  .loginContainer input:focus {
+    border-color: #3949ab; /* Ramka zmienia kolor na ciemniejszy przy focusie */
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(57, 73, 171, 0.2);
+  }
+  
+  .loginContainer button {
+    background-color: #3949ab; /* Niebieski przycisk */
+    color: #ffffff;
+    border: none;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-top: 0.5rem;
+  }
+  
+  .loginContainer button:hover {
+    background-color: #1a237e; /* Ciemniejszy niebieski na hover */
+    transform: translateY(-2px);
+  }
+  
+  .errorMessage {
+    color: #d32f2f; /* Czerwony kolor błędu */
+    background-color: #ffebee;
+    padding: 0.75rem;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 500;
+    border: 1px solid #ef9a9a;
+  }
+  
+  .userInfo {
+    margin-top: 2rem;
+    background-color: #e3f2fd; /* Bardzo jasnoniebieskie tło dla informacji */
+    color: #1a237e;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+  
+  .userInfo h3 {
+    color: #1a237e;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+  }
+  
+  .userInfo p {
+    margin: 0.5rem 0;
+    font-size: 1rem;
+  }
+  
+  .userInfo strong {
+    font-weight: 600;
+  }
+  
+  .redirectMessage {
+    margin-top: 1.5rem;
+    font-style: italic;
+    color: #5c6bc0;
+  }
+
+  .logo {
+    width: 350px;
+    margin-bottom: 50px;
+  }

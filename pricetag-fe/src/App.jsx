@@ -4,12 +4,14 @@ import MainPage from "./components/MainPage";
 import Groups from "./components/Groups";
 import Schedule from "./components/Schedule";
 import Gallery from "./components/Gallery";
+import Login from "./components/Login";
 
 function App() {
   return (
     <Router>
       <Routes>
-      <Route path="/" element={<MainPage />} />
+      <Route path="/" element={<Login />} />
+      <Route path="/mainpage" element={<MainPage />} />
       <Route path="/groups" element={<Groups />} />
       <Route path="/schedule" element={<Schedule />} />
       <Route path="/gallery" element={<Gallery />} />
