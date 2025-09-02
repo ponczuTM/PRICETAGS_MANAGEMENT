@@ -23,7 +23,7 @@ def get_devices_from_database():
 
 # Dodawanie urządzenia
 def add_device_to_location(device):
-    url = f"{API_BASE}/{LOCATION_ID}/devices/"
+    url = f"{API_BASE}/{LOCATION_ID}/devices"
     device_data = {
         "clientId": device["clientid"],
         "clientName": device["name"],

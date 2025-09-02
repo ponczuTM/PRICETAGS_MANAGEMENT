@@ -299,7 +299,7 @@ async def delete_location(location_id: str):
 
 # ==================== ENDPOINTS URZĄDZEŃ ====================
 
-@app.post("/locations/{location_id}/devices/", response_model=LocationResponse)
+@app.post("/locations/{location_id}/devices", response_model=LocationResponse)
 async def add_device_to_location(location_id: str, device: Device):
     """Dodaje urządzenie do lokalizacji"""
     if not validate_object_id(location_id):

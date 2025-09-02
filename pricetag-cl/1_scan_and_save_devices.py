@@ -30,8 +30,7 @@ def add_device_to_location(device):
         "ip": device["ip"],
         "photo": "",
         "video": "",
-        "thumbnail": "",
-        "changed": False,  # Jeśli backend oczekuje booleana – rozważ dodanie
+        "thumbnail": ""
     }
     try:
         response = requests.post(url, json=payload, headers={"Content-Type": "application/json"}, timeout=10)
@@ -103,55 +102,88 @@ def update_device_ip_in_db(device_id: str, new_ip: str) -> bool:
 
 
 # Zapisywanie zdjęcia lub filmu jako <clientId>.png / <clientId>.mp4
+import re
+import base64
+from binascii import Error as B64Error
+
+DATA_URL_RE = re.compile(r'^\s*data:(?:image|video)/[^;]+;base64,(.*)$', re.IGNORECASE)
+
+def _maybe_decode_b64(s: str) -> bytes | None:
+    if not s:
+        return None
+    s = s.strip()
+
+    # Jeśli to URL lub ścieżka – nie dekodujemy
+    if s.startswith(("http://", "https://", "/", "./", "../")):
+        return None
+
+    # Usuń nagłówek data:*;base64,
+    m = DATA_URL_RE.match(s)
+    if m:
+        s = m.group(1).strip()
+
+    # Zamień URL-safe na standardowe
+    s = s.replace('-', '+').replace('_', '/')
+
+    # Dopełnienie =
+    rem = len(s) % 4
+    if rem:
+        s += '=' * (4 - rem)
+
+    try:
+        return base64.b64decode(s, validate=True)
+    except (B64Error, ValueError):
+        return None
+
 def save_device_media(device):
     device_id = device.get("_id")
-    client_id = device.get("clientId")
+    client_id = device.get("clientId") or "unknown"
+
     changed = device.get("changed")
-    photo = device.get("photo")
-    video = device.get("video")
+    changed_flag = (changed is True) or (isinstance(changed, str) and changed.strip().lower() == "true")
+    if not changed_flag:
+        return
 
-    if changed == "true":
-        try:
-            if photo and photo.strip():
-                if photo.startswith("data:image"):
-                    photo = photo.split(",", 1)[1]
-                missing_padding = len(photo) % 4
-                if missing_padding:
-                    photo += "=" * (4 - missing_padding)
-                photo_data = base64.b64decode(photo)
-                with open(f"{client_id}.png", "wb") as f:
-                    f.write(photo_data)
-                print(f"📷 Zapisano zdjęcie urządzenia {device_id} jako {client_id}.png")
+    try:
+        photo = device.get("photo") or ""
+        video = device.get("video") or ""
 
-            if video and video.strip():
-                if video.startswith("data:video"):
-                    video = video.split(",", 1)[1]
-                missing_padding = len(video) % 4
-                if missing_padding:
-                    video += "=" * (4 - missing_padding)
-                video_data = base64.b64decode(video)
-                with open(f"{client_id}.mp4", "wb") as f:
-                    f.write(video_data)
-                print(f"🎞️ Zapisano video urządzenia {device_id} jako {client_id}.mp4")
+        photo_bytes = _maybe_decode_b64(photo)
+        if photo_bytes:
+            with open(f"{client_id}.png", "wb") as f:
+                f.write(photo_bytes)
+            print(f"📷 Zapisano zdjęcie urządzenia {device_id} jako {client_id}.png")
 
-            # Usunięcie photo i video z bazy
-            delete_url = f"{API_BASE}/{LOCATION_ID}/devices/{device_id}/delete-files"
-            delete_response = requests.delete(delete_url)
-            if delete_response.status_code == 200:
-                print(f"🗑️ Usunięto pliki photo i video dla {device_id}")
-            else:
-                print(f"❌ Błąd usuwania plików dla {device_id}: {delete_response.status_code}")
+        video_bytes = _maybe_decode_b64(video)
+        if video_bytes:
+            with open(f"{client_id}.mp4", "wb") as f:
+                f.write(video_bytes)
+            print(f"🎞️ Zapisano video urządzenia {device_id} jako {client_id}.mp4")
 
-            # Ustawienie flagi changed na false
-            change_url = f"{API_BASE}/{LOCATION_ID}/devices/{device_id}/changed-false"
-            change_response = requests.put(change_url)
-            if change_response.status_code == 200:
-                print(f"✅ Flaga 'changed' ustawiona na false dla {device_id}")
-            else:
-                print(f"❌ Błąd ustawiania flagi 'changed' dla {device_id}: {change_response.status_code}")
+        # Jeżeli nic nie zapisaliśmy, nie kasuj z bazy
+        if not (photo_bytes or video_bytes):
+            print(f"ℹ️ {device_id}: brak poprawnych danych base64 – pomijam kasowanie.")
+            return
 
-        except Exception as e:
-            print(f"⚠️ Błąd przetwarzania urządzenia {device_id}: {e}")
+        # Kasowanie pól w bazie
+        delete_url = f"{API_BASE}/{LOCATION_ID}/devices/{device_id}/delete-files"
+        delete_response = requests.delete(delete_url, timeout=10)
+        if delete_response.status_code == 200:
+            print(f"🗑️ Usunięto pliki photo i video dla {device_id}")
+        else:
+            print(f"❌ Błąd usuwania plików dla {device_id}: {delete_response.status_code} | {delete_response.text}")
+
+        # Flaga changed=false
+        change_url = f"{API_BASE}/{LOCATION_ID}/devices/{device_id}/changed-false"
+        change_response = requests.put(change_url, timeout=10)
+        if change_response.status_code == 200:
+            print(f"✅ Flaga 'changed' ustawiona na false dla {device_id}")
+        else:
+            print(f"❌ Błąd ustawiania flagi 'changed' dla {device_id}: {change_response.status_code} | {change_response.text}")
+
+    except Exception as e:
+        print(f"⚠️ Błąd przetwarzania urządzenia {device_id}: {e}")
+
 
 # Wyświetlanie
 def print_devices(devices):

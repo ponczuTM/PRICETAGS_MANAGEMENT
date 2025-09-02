@@ -60,7 +60,7 @@ def get_database(request: Request):
 # Endpoint to add a device to a location
 # api.py
 
-@router.post("/{location_id}/devices/", status_code=status.HTTP_201_CREATED)
+@router.post("/{location_id}/devices", status_code=status.HTTP_201_CREATED)
 async def add_device_to_location(location_id: str, device: Device, db=Depends(get_database)):
     """
     Add a device to a location
