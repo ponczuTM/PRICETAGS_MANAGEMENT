@@ -35,10 +35,14 @@ def calculate_md5(file_path):
 def clear_device_space(ip):
     url = f"http://{ip}/control?action=clearspace&sign=sign"
     try:
-        response = requests.get(url, timeout=20)
-        return response.status_code == 200
-    except:
-        return False
+        response = requests.get(url, timeout=5)
+        if response.status_code == 200:
+            return True, "OK"
+        else:
+            return False, f"Status: {response.status_code}, Odpowiedź: {response.text}"
+    except Exception as e:
+        return False, str(e)
+
 
 # Wysyłanie pliku binarnego z podpisem
 def upload_file_to_device(ip, file_path, remote_path):
@@ -71,8 +75,8 @@ def main():
     if not devices:
         print("❌ Brak urządzeń do przetworzenia.")
         return
-
     for device in devices:
+        time.sleep(2)
         clientid = device.get("clientId")
         clientname = device.get("clientName")
         ip = device.get("ip")
@@ -92,11 +96,13 @@ def main():
             print(f"❌ Brak plików PNG/MP4 dla {clientid}")
             continue
 
-        if clear_device_space(ip):
+        success, msg = clear_device_space(ip)
+        if success:
             print(f"🧹 Pamięć wyczyszczona dla {clientid} ({ip})")
         else:
-            print(f"❌ Nie udało się wyczyścić pamięci dla {clientid} ({ip})")
+            print(f"❌ Nie udało się wyczyścić pamięci dla {clientid} ({ip}). Błąd: {msg}")
             continue
+
 
         js_data = {
             "Id": clientid,

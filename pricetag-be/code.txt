@@ -1900,3 +1900,7 @@ async def delete_group(location_id: str, group_id: str, db=Depends(get_database)
     )
 
     return {"message": "Group deleted and removed from devices"}
+
+
+
+WYPISZ MI WSZYSTKIE ENDPOINTY W MOIM BACKENDZIE
