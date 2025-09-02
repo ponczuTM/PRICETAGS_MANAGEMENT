@@ -23,23 +23,29 @@ def get_devices_from_database():
 
 # Dodawanie urządzenia
 def add_device_to_location(device):
-    url = f"{API_BASE}/{LOCATION_ID}/devices/"
-    device_data = {
+    url = f"{API_BASE}/{LOCATION_ID}/devices"
+    payload = {
         "clientId": device["clientid"],
-        "clientName": device["name"],
+        "clientName": device["name"].strip(),
         "ip": device["ip"],
         "photo": "",
         "video": "",
-        "thumbnail": ""
+        "thumbnail": "",
+        "changed": False,  # Jeśli backend oczekuje booleana – rozważ dodanie
     }
     try:
-        response = requests.post(url, json=device_data)
+        response = requests.post(url, json=payload, headers={"Content-Type": "application/json"}, timeout=10)
         if response.status_code == 201:
-            print(f"✅ Dodano nowe urządzenie: {device['name']}")
+            print(f"✅ Dodano nowe urządzenie: {device['name']} ({device['ip']})")
+            return True
         else:
-            print(f"❌ Nie udało się dodać {device['name']}. Status: {response.status_code}")
+            print(f"❌ Nie udało się dodać {device['name']} ({device['ip']}). "
+                  f"Status: {response.status_code} | Body: {response.text}")
+            return False
     except requests.RequestException as e:
-        print(f"❌ Błąd POST dla {device['name']}: {e}")
+        print(f"❌ Błąd POST dla {device['name']} ({device['ip']}): {e}")
+        return False
+
 
 # Usuwanie urządzenia
 def delete_device_from_location(device_id):
@@ -79,6 +85,21 @@ def scan_network():
     with ThreadPoolExecutor(max_workers=20) as executor:
         results = executor.map(check_device, enumerate(ip_range))
     return [device for device in results if device is not None]
+
+def update_device_ip_in_db(device_id: str, new_ip: str) -> bool:
+    """Ustawia w bazie pole `ip` dla urządzenia po jego _id (device_id)."""
+    url = f"{API_BASE}/{LOCATION_ID}/devices/{device_id}/ip"
+    try:
+        resp = requests.put(url, json={"ip": new_ip}, headers={"Content-Type": "application/json"}, timeout=10)
+        if resp.status_code == 200:
+            print(f"🔧 Zmieniono IP w bazie: device_id={device_id} -> {new_ip}")
+            return True
+        else:
+            print(f"❌ Nie udało się zmienić IP dla {device_id}. Status: {resp.status_code} | Body: {resp.text}")
+            return False
+    except requests.RequestException as e:
+        print(f"❌ Błąd PUT (update IP) dla {device_id}: {e}")
+        return False
 
 
 # Zapisywanie zdjęcia lub filmu jako <clientId>.png / <clientId>.mp4
@@ -147,25 +168,43 @@ def main():
 
     # Krok 1: synchronizacja sieci z bazą
     db_devices = get_devices_from_database()
-    db_client_ids = {d["clientId"]: d["_id"] for d in db_devices}
+    # Mapy: clientId -> device_id, clientId -> ip_z_bazy
+    db_clientid_to_id   = {d["clientId"]: d["_id"] for d in db_devices}
+    db_clientid_to_ip   = {d["clientId"]: (d.get("ip") or "") for d in db_devices}
 
     scanned_devices = scan_network()
-    scanned_client_ids = {d["clientid"] for d in scanned_devices}
+    # Mapy: clientid -> ip_ze_skana (i full rekord dla wygody)
+    scanned_clientid_to_ip = {d["clientid"]: d["ip"] for d in scanned_devices}
+    scanned_client_ids     = set(scanned_clientid_to_ip.keys())
 
+    # Dodaj nieistniejące w bazie (jak dotychczas)
     for device in scanned_devices:
-        if device["clientid"] not in db_client_ids:
+        if device["clientid"] not in db_clientid_to_id:
             add_device_to_location(device)
 
-    for client_id, device_id in db_client_ids.items():
+    # Usuń z bazy te, których nie było w skanie (jak dotychczas)
+    for client_id, device_id in db_clientid_to_id.items():
         if client_id not in scanned_client_ids:
             delete_device_from_location(device_id)
 
     print_devices(scanned_devices)
 
-    # Krok 2: zapis zdjęć i filmów
+    # 🔁 Krok 1.1: AKTUALIZACJA IP — jeżeli clientId jest w bazie i zeskanowane IP ≠ IP w bazie
+    for client_id, device_id in db_clientid_to_id.items():
+        scanned_ip = scanned_clientid_to_ip.get(client_id)
+        if not scanned_ip:
+            continue  # tego urządzenia nie było w skanie (już wyżej usuwamy), pomiń
+
+        db_ip = db_clientid_to_ip.get(client_id, "")
+        if db_ip != scanned_ip:
+            # Nadpisz IP w bazie po _id urządzenia
+            update_device_ip_in_db(device_id, scanned_ip)
+
+    # Krok 2: zapis zdjęć i filmów (bez zmian)
     db_devices = get_devices_from_database()
     for device in db_devices:
         save_device_media(device)
+
 
 if __name__ == "__main__":
     main()

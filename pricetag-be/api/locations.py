@@ -836,3 +836,26 @@ async def set_device_offline(location_id: str, device_id: str, db=Depends(get_da
     Ustawia isOnline = false dla danego urządzenia
     """
     return await _update_device_field(location_id, device_id, {"isOnline": False}, db)
+
+
+@router.put("/{location_id}/devices/{device_id}/ip", status_code=200)
+async def update_device_ip(
+    location_id: str,
+    device_id: str,
+    body: dict,
+    db=Depends(get_database)
+):
+    """
+    Ustawia/IP aktualizuje pole `ip` dla wskazanego urządzenia (po _id urządzenia).
+    Przykład body: { "ip": "192.168.68.201" }
+    """
+    ip = body.get("ip")
+    if not ip:
+        raise HTTPException(status_code=400, detail="Missing 'ip' field in body")
+
+    # (opcjonalnie) prosta walidacja IPv4
+    import re
+    if not re.fullmatch(r"(?:\d{1,3}\.){3}\d{1,3}", ip):
+        raise HTTPException(status_code=400, detail="Invalid IPv4 format")
+
+    return await _update_device_field(location_id, device_id, {"ip": ip}, db)

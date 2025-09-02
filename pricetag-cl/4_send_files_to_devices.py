@@ -35,7 +35,7 @@ def calculate_md5(file_path):
 def clear_device_space(ip):
     url = f"http://{ip}/control?action=clearspace&sign=sign"
     try:
-        response = requests.get(url, timeout=5)
+        response = requests.get(url, timeout=25)
         if response.status_code == 200:
             return True, "OK"
         else:
@@ -64,7 +64,7 @@ def trigger_device(ip, js_name):
     sign = calculate_md5(js_name)
     url = f"http://{ip}/replay?task={js_path}&sign={sign}"
     try:
-        response = requests.get(url, timeout=15)
+        response = requests.get(url, timeout=25)
         return response.status_code == 200
     except:
         return False
