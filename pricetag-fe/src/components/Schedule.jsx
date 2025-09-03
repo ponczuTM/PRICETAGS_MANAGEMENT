@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import styles from "./Schedule.module.css";
 import Navbar from "./Navbar";
 import editIcon from './../assets/images/edit.png';
@@ -40,6 +40,26 @@ function Schedule() {
   const [originalValue, setOriginalValue] = useState("");
   const [existingSchedules, setExistingSchedules] = useState([]);
   const [isScheduleListOpen, setIsScheduleListOpen] = useState(false);
+  // >>> DODAJ pod importami i przed komponentem albo w jego wnętrzu, byle przed użyciem:
+  const getNowInWarsaw = () => {
+    const parts = new Intl.DateTimeFormat('pl-PL', {
+      timeZone: 'Europe/Warsaw',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).formatToParts(new Date());
+
+    const take = (t) => parseInt(parts.find(p => p.type === t)?.value, 10);
+    return new Date(take('year'), take('month') - 1, take('day'), take('hour'), take('minute'));
+  };
+
+  // >>> DODAJ te dwa stany (np. pod innymi useState):
+  const [isFixedPickerOpen, setIsFixedPickerOpen] = useState(false);
+  const [isWeeklyTimeOpen, setIsWeeklyTimeOpen] = useState(false);
+
+
 
   const getDisplayName = (clientName) => {
     return editedNames[clientName] || clientName;
@@ -191,6 +211,12 @@ function Schedule() {
     setErrorMsg(null);
   };
   
+  useEffect(() => {
+    // zamknij oba dymki gdy zmienimy typ harmonogramu lub zamkniemy modal
+    setIsFixedPickerOpen(false);
+    setIsWeeklyTimeOpen(false);
+  }, [scheduleType, isModalOpen]);
+  
 
   const openScheduleModal = () => {
     if (selectedDevices.length === 0) {
@@ -199,7 +225,9 @@ function Schedule() {
     }
     setIsModalOpen(true);
     setScheduleType("fixed");
-    setDateTime("");
+    setDateTime(getNowInWarsaw());
+    setIsFixedPickerOpen(false);
+    setIsWeeklyTimeOpen(false);
     setDayOfWeek(1);
     setHour(8);
     setMinute(0);
@@ -646,8 +674,19 @@ function Schedule() {
                   <label>
                     Data i godzina:
                     <DatePicker
-                      selected={dateTime}
-                      onChange={(date) => setDateTime(date)}
+                      selected={dateTime || getNowInWarsaw()}
+                      onChange={(next) => {
+                        if (!next) return;
+                        // wykryj zmianę samej godziny/minuty -> wtedy zamknij dymek
+                        const prev = dateTime || getNowInWarsaw();
+                        const prevHM = prev.getHours() * 60 + prev.getMinutes();
+                        const nextHM = next.getHours() * 60 + next.getMinutes();
+                        setDateTime(next);
+                        if (nextHM !== prevHM) {
+                          // użytkownik zatwierdził godzinę -> chowamy dymek
+                          setIsFixedPickerOpen(false);
+                        }
+                      }}
                       showTimeSelect
                       timeFormat="HH:mm"
                       timeIntervals={5}
@@ -655,7 +694,15 @@ function Schedule() {
                       timeCaption="Godzina"
                       locale="pl"
                       className={styles.dateTimeInput}
+                      // ręczne sterowanie otwarciem:
+                      open={isFixedPickerOpen}
+                      onInputClick={() => setIsFixedPickerOpen(true)}   // otwieraj tylko po kliknięciu w pole
+                      onClickOutside={() => setIsFixedPickerOpen(false)}
+                      onCalendarClose={() => setIsFixedPickerOpen(false)}
+                      // Nie zamykaj po kliknięciu daty — dopiero po wyborze godziny (robimy to wyżej):
+                      shouldCloseOnSelect={false}
                     />
+
                   </label>
                 </div>
               ) : (
@@ -684,8 +731,11 @@ function Schedule() {
                       <DatePicker
                         selected={new Date(0, 0, 0, hour, minute)}
                         onChange={(time) => {
+                          if (!time) return;
                           setHour(time.getHours());
                           setMinute(time.getMinutes());
+                          // po wyborze godziny chowamy dymek:
+                          setIsWeeklyTimeOpen(false);
                         }}
                         showTimeSelect
                         showTimeSelectOnly
@@ -694,7 +744,14 @@ function Schedule() {
                         dateFormat="HH:mm"
                         locale="pl"
                         className={styles.dateTimeInput}
+                        // ręczne sterowanie otwarciem:
+                        open={isWeeklyTimeOpen}
+                        onInputClick={() => setIsWeeklyTimeOpen(true)}
+                        onClickOutside={() => setIsWeeklyTimeOpen(false)}
+                        onCalendarClose={() => setIsWeeklyTimeOpen(false)}
+                        shouldCloseOnSelect
                       />
+
                     </label>
                   </div>
 
