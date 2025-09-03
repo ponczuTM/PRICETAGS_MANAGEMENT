@@ -1,2 +1,2 @@
-scan_interval_minutes=60
-pipeline_interval_minutes=3
+scan_interval_minutes=3600
+pipeline_interval_minutes=120
