@@ -258,10 +258,9 @@
 .deviceImage {
   width: 117px;
   height: 192px;
-  object-fit: contain; /* Zmienione na contain, aby obraz nie był zniekształcony */
+  object-fit: fill;
   border: #000 solid 6px;
   position: relative;
-  background-color: #000; /* Tło dla obrazów z przezroczystością */
 }
 
 .hangerBar {

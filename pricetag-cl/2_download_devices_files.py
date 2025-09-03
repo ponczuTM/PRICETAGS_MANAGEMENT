@@ -3,11 +3,26 @@ import os
 import json
 from datetime import datetime
 import pytz
+from pathlib import Path
 
 LOCATION_ID = "685003cbf071eb1bb4304cd2"
 API_BASE = "http://localhost:8000/api/locations"
 script_dir = os.path.dirname(os.path.abspath(__file__))
 LAST_CHECK_PATH = os.path.join(script_dir, "lastHourCheck.txt")
+
+def set_thumbnail_from_schedule(location_id: str, device_id: str, filename: str, media_type: str):
+    """
+    Ustawia pole 'thumbnail' na SAMĄ nazwę pliku z harmonogramu (np. 'price_tag_konwencja.mp4').
+    UWAGA: ignoruje media_type oraz nie generuje żadnych miniaturek.
+    """
+    try:
+        put_url = f"{API_BASE}/{location_id}/devices/{device_id}/thumbnail"
+        res = requests.put(put_url, json={"thumbnail": filename})
+        res.raise_for_status()
+        print(f"🖼️ Ustawiono thumbnail na: {filename}")
+    except Exception as e:
+        print(f"❌ Błąd aktualizacji thumbnail: {e}")
+
 
 # Wczytaj zapisane czasy wykonania harmonogramów weekly
 if os.path.exists(LAST_CHECK_PATH):
@@ -99,6 +114,9 @@ for device in devices:
                     f.write(chunk)
             print(f"📥 ({media_type}) Zapisano wg harmonogramu: {local_filename}")
 
+            # --- NOWE: ustaw miniaturkę w bazie dla pliku z harmonogramu ---
+            set_thumbnail_from_schedule(LOCATION_ID, device_id, filename, media_type)
+
             other_ext = ".mp4" if extension == ".png" else ".png"
             old_path = os.path.join(script_dir, f"{client_id}{other_ext}")
             if os.path.exists(old_path):
@@ -136,6 +154,9 @@ for device in devices:
                         for chunk in r.iter_content(chunk_size=8192):
                             f.write(chunk)
                     print(f"✅ Zapisano {media_type} jako {local_filename}")
+
+                    # --- NOWE: ustaw miniaturkę spójną z pobranym plikiem ---
+                    set_thumbnail_from_schedule(LOCATION_ID, device_id, filename, media_type)
 
                     other_path = os.path.join(script_dir, f"{client_id}{'.mp4' if ext == '.png' else '.png'}")
                     if os.path.exists(other_path):
