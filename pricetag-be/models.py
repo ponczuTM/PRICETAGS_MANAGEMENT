@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 from typing import Optional, List, Dict
 from bson import ObjectId
 from enum import Enum
@@ -197,8 +197,10 @@ class PriceUserLogin(BaseModel):
 class PriceUserUpdate(BaseModel):
     first_name: Optional[str]
     last_name: Optional[str]
-    locationName: Optional[str]
+    email: Optional[EmailStr]
     password: Optional[str]
+    locationName: Optional[str]
+    locationId: Optional[str]  # ← DODAJ TO
 
 class PriceUserResponse(BaseModel):
     id: str = Field(alias="_id")
@@ -211,18 +213,5 @@ class PriceUserResponse(BaseModel):
     class Config:
         json_encoders = {ObjectId: str}
 
-class PriceUserLogin(BaseModel):
-    email: str
-    password: str
 
 
-from pydantic import BaseModel, EmailStr
-from typing import Optional
-
-class PriceUserUpdate(BaseModel):
-    first_name: Optional[str]
-    last_name: Optional[str]
-    email: Optional[EmailStr]
-    password: Optional[str]
-    locationName: Optional[str]
-    locationId: Optional[str]  # ← DODAJ TO
