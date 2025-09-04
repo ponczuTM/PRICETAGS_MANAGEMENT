@@ -2,6 +2,8 @@ import requests
 import time
 import base64
 from concurrent.futures import ThreadPoolExecutor
+import re
+from binascii import Error as B64Error
 
 # Konfiguracja
 LOCATION_ID = "685003cbf071eb1bb4304cd2"
@@ -102,10 +104,6 @@ def update_device_ip_in_db(device_id: str, new_ip: str) -> bool:
 
 
 # Zapisywanie zdjęcia lub filmu jako <clientId>.png / <clientId>.mp4
-import re
-import base64
-from binascii import Error as B64Error
-
 DATA_URL_RE = re.compile(r'^\s*data:(?:image|video)/[^;]+;base64,(.*)$', re.IGNORECASE)
 
 def _maybe_decode_b64(s: str) -> bytes | None:
