@@ -136,15 +136,13 @@ if __name__ == "__main__":
 
 mam taki models.py:
 from pydantic import BaseModel, Field, EmailStr
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any
 from bson import ObjectId
 from enum import Enum
 
 class PyObjectId(ObjectId):
     @classmethod
-    def __get_pydantic_core_schema__(
-            cls, _source_type, _handler
-    ):
+    def __get_pydantic_core_schema__(cls, _source_type, _handler):
         from pydantic_core import core_schema
         return core_schema.json_or_python_schema(
             json_schema=core_schema.str_schema(),
@@ -171,13 +169,13 @@ class PyObjectId(ObjectId):
         raise ValueError("Invalid ObjectId")
 
 
-# Enum to define user types
+# ======= Users (admin/user) =======
+
 class UserType(str, Enum):
     admin = "admin"
     user = "user"
 
 
-# Device model
 class Device(BaseModel):
     id: Optional[str] = Field(None, alias="_id", description="Unique ID of the device")
     clientId: str = Field(..., description="Unique device identifier")
@@ -188,7 +186,7 @@ class Device(BaseModel):
     changed: Optional[str] = Field("false", description="Has device been changed")
     thumbnail: Optional[str] = Field(None, description="Path to thumbnail")
     groups: Optional[List[PyObjectId]] = Field(default_factory=list, description="Lista ID grup")
-    isOnline: Optional[bool] = Field(default=None, description="Czy urządzenie jest online")  # ⬅️ NOWE
+    isOnline: Optional[bool] = Field(default=None, description="Czy urządzenie jest online")
 
     class Config:
         allow_population_by_field_name = True
@@ -201,8 +199,7 @@ class DeviceUpdate(BaseModel):
     photo: Optional[str] = None
     video: Optional[str] = None
     ip: Optional[str] = None
-    thumbnail: Optional[str] = None  # ⬅️ DODANE
-
+    thumbnail: Optional[str] = None
 
 
 class DeviceMediaUpdate(BaseModel):
@@ -210,65 +207,48 @@ class DeviceMediaUpdate(BaseModel):
     video: Optional[str] = None
 
 
-
-
-# LocationData model
 class LocationData(BaseModel):
     name: str = Field(..., description="Location name")
     address: str = Field(..., description="Location address")
     devices: List[Device] = Field(default_factory=list, description="List of devices")
 
 
-# Location model
 class Location(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias="_id")
-    locations: Dict[str, LocationData]  # A dictionary of location names to LocationData
+    locations: Dict[str, LocationData]
 
     class Config:
-        json_encoders = {
-            ObjectId: str  # Convert ObjectId to string before returning in response
-        }
+        json_encoders = {ObjectId: str}
 
 
-# User model
 class User(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias="_id")
-    login: str = Field(..., min_length=3, max_length=50)
-    password: str = Field(..., min_length=6)
+    login: str
+    password: str
     user_type: UserType = Field(default=UserType.user)
 
     class Config:
-        json_encoders = {
-            ObjectId: str
-        }
+        json_encoders = {ObjectId: str}
 
 
-# Model for creating a new User (excluding ID and automatic fields)
 class UserCreate(BaseModel):
-    login: str = Field(..., min_length=3, max_length=50)
-    password: str = Field(..., min_length=6)
+    login: str
+    password: str
     user_type: UserType = Field(default=UserType.user)
 
     class Config:
-        json_encoders = {
-            ObjectId: str  # Ensure ObjectId is serialized properly
-        }
+        json_encoders = {ObjectId: str}
 
 
-
-# Response model for User
 class UserResponse(BaseModel):
     id: str = Field(alias="_id")
     login: str
     user_type: UserType
 
     class Config:
-        json_encoders = {
-            ObjectId: str
-        }
+        json_encoders = {ObjectId: str}
 
 
-# Model for the response when creating a new Location
 class LocationResponse(BaseModel):
     id: str = Field(alias="_id")
     name: str
@@ -276,27 +256,21 @@ class LocationResponse(BaseModel):
     devices: List[Device]
 
     class Config:
-        json_encoders = {
-            ObjectId: str  # Convert ObjectId to string before returning in response
-        }
+        json_encoders = {ObjectId: str}
 
 
-# Model for creating a new Location
 class LocationCreate(BaseModel):
     name: str
     address: str
-    devices: List[Device] = []  # Optional, defaults to an empty list
+    devices: List[Device] = []
 
     class Config:
-        json_encoders = {
-            ObjectId: str
-        }
+        json_encoders = {ObjectId: str}
 
 
 from pydantic import BaseModel
 from typing import List
 
-# Model dla ID lokalizacji
 class LocationIdsRequest(BaseModel):
     location_ids: List[str]
 
@@ -306,18 +280,60 @@ class UserDevicesResponse(BaseModel):
     devices: List[Device]
 
 
+# ======= PRICE USERS – tu zmieniamy locationId -> locationIds =======
+
+def _to_location_ids(value: Any) -> List[str]:
+    """
+    Akceptuje:
+    - None -> []
+    - "abc" -> ["abc"]
+    - ["a","b"] -> ["a","b"]
+    - dict z legacy kluczem {"locationId": "abc"} (na wszelki wypadek) -> ["abc"]
+    """
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, list):
+        # przefiltruj tylko str
+        return [str(x) for x in value if isinstance(x, (str, bytes, int))]
+    if isinstance(value, dict):
+        legacy = value.get("locationId")
+        if isinstance(legacy, str):
+            return [legacy]
+    return []
+
+
 class PriceUser(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias="_id")
     first_name: str
     last_name: str
     email: str
     locationName: str
-    locationId: str
+    # >>> ZAMIANA: było 'locationId: str' -> teraz:
+    locationIds: List[str] = Field(default_factory=list)
     passwordHash: str
 
     class Config:
         allow_population_by_field_name = True
         json_encoders = {ObjectId: str}
+
+    # Wsteczna kompatybilność (gdy ktoś wyśle locationId zamiast locationIds)
+    @classmethod
+    def model_validate(cls, obj, *args, **kwargs):
+        # Skopiuj, nie modyfikuj oryginału
+        if isinstance(obj, dict):
+            data = dict(obj)
+            if "locationIds" not in data:
+                # jeśli legacy:
+                if "locationId" in data:
+                    data["locationIds"] = _to_location_ids(data.get("locationId"))
+                    data.pop("locationId", None)
+            else:
+                data["locationIds"] = _to_location_ids(data.get("locationIds"))
+            return super().model_validate(data, *args, **kwargs)
+        return super().model_validate(obj, *args, **kwargs)
+
 
 class PriceUserCreate(BaseModel):
     first_name: str
@@ -325,19 +341,24 @@ class PriceUserCreate(BaseModel):
     email: str
     password: str
     locationName: str
-    locationId: Optional[str]
+    # można przesłać 1 lub wiele; akceptujemy też legacy "locationId" (obsłużymy w routerze)
+    locationIds: Optional[List[str]] = None
+
 
 class PriceUserLogin(BaseModel):
     email: str
     password: str
 
+
 class PriceUserUpdate(BaseModel):
-    first_name: Optional[str]
-    last_name: Optional[str]
-    email: Optional[EmailStr]
-    password: Optional[str]
-    locationName: Optional[str]
-    locationId: Optional[str]  # ← DODAJ TO
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    password: Optional[str] = None
+    locationName: Optional[str] = None
+    # >>> NOWE pole (zamiast locationId)
+    locationIds: Optional[List[str]] = None
+
 
 class PriceUserResponse(BaseModel):
     id: str = Field(alias="_id")
@@ -345,13 +366,10 @@ class PriceUserResponse(BaseModel):
     last_name: str
     email: str
     locationName: str
-    locationId: str
+    locationIds: List[str]
 
     class Config:
         json_encoders = {ObjectId: str}
-
-
-
 
 
 mam taki api.py:

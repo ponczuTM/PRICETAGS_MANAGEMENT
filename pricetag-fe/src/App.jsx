@@ -5,6 +5,7 @@ import Groups from "./components/Groups";
 import Schedule from "./components/Schedule";
 import Gallery from "./components/Gallery";
 import Login from "./components/Login";
+import Register from "./components/Register";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
       <Route path="/groups" element={<Groups />} />
       <Route path="/schedule" element={<Schedule />} />
       <Route path="/gallery" element={<Gallery />} />
+      <Route path="/register" element={<Register />} />
       </Routes>
     </Router>
   );

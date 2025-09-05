@@ -3,13 +3,34 @@ import styles from "./Gallery.module.css";
 import Navbar from "./Navbar";
 import { useNavigate } from "react-router-dom";
 
-const storedUser = localStorage.getItem("user");
-const parsedUser = storedUser ? JSON.parse(storedUser) : null;
-const locationId = parsedUser?.locationId;
-
 const API_BASE_URL = "http://localhost:8000/api/locations";
 
 function Gallery() {
+  const navigate = useNavigate();
+
+  // === Pobranie usera i locationIds z localStorage (z fallbackiem na legacy) ===
+  const storedUser = localStorage.getItem("user");
+  const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+
+  const initialLocationIds = (() => {
+    try {
+      const arr = JSON.parse(localStorage.getItem("locationIds") || "[]");
+      if (Array.isArray(arr) && arr.length > 0) return arr;
+    } catch {}
+    const legacy = localStorage.getItem("locationId");
+    if (legacy) return [legacy];
+    if (parsedUser?.locationIds && Array.isArray(parsedUser.locationIds) && parsedUser.locationIds.length > 0) {
+      return parsedUser.locationIds;
+    }
+    return [];
+  })();
+
+  const [locationIds, setLocationIds] = useState(initialLocationIds);
+  const [currentLocationId, setCurrentLocationId] = useState(() => {
+    const legacy = localStorage.getItem("locationId");
+    return legacy || (initialLocationIds.length > 0 ? initialLocationIds[0] : null);
+  });
+
   const [galleryFiles, setGalleryFiles] = useState([]);
   const [errorMsg, setErrorMsg] = useState(null);
   const [file, setFile] = useState(null);
@@ -17,29 +38,41 @@ function Gallery() {
   const [showModal, setShowModal] = useState(false);
   const [fileToDelete, setFileToDelete] = useState(null);
 
-  
-  const navigate = useNavigate();
-
+  // Guard: wymuś logowanie i posiadanie lokalizacji
   useEffect(() => {
-    const user = localStorage.getItem("user");
-    const parsed = user ? JSON.parse(user) : null;
-
-    if (!parsed || !parsed.locationId) {
-      console.warn("Brak użytkownika lub locationId – przekierowanie do logowania.");
+    if (!parsedUser) {
       navigate("/");
+      return;
     }
-  }, []);
+    if (!locationIds || locationIds.length === 0) {
+      console.warn("Użytkownik nie ma przypisanych lokalizacji.");
+      navigate("/");
+      return;
+    }
+    if (!currentLocationId) {
+      setCurrentLocationId(locationIds[0]);
+      localStorage.setItem("locationId", locationIds[0]); // legacy zgodność
+    }
+  }, [parsedUser, locationIds, currentLocationId, navigate]);
 
+  // Reaguj na zmianę currentLocationId
   useEffect(() => {
-    fetchGalleryFiles();
-  }, []);
+    if (!currentLocationId) return;
+    fetchGalleryFiles(currentLocationId);
+    setErrorMsg(null);
+  }, [currentLocationId]);
 
-  const fetchGalleryFiles = async () => {
+  const handleSwitchLocation = (locId) => {
+    setCurrentLocationId(locId);
+    localStorage.setItem("locationId", locId); // legacy zgodność
+  };
+
+  const fetchGalleryFiles = async (locId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/${locationId}/files/`);
+      const res = await fetch(`${API_BASE_URL}/${locId}/files/`);
       if (!res.ok) throw new Error("Błąd podczas pobierania plików galerii");
       const data = await res.json();
-      setGalleryFiles(data.files);
+      setGalleryFiles(data.files || []);
     } catch (err) {
       console.error("Błąd pobierania plików galerii:", err);
       setErrorMsg("Nie udało się załadować plików galerii.");
@@ -47,8 +80,8 @@ function Gallery() {
   };
 
   const getFileType = (filename) => {
-    const ext = filename.split(".").pop().toLowerCase();
-    if (["jpg", "jpeg", "png", "gif", "bmp"].includes(ext)) return "image";
+    const ext = (filename || "").split(".").pop().toLowerCase();
+    if (["jpg", "jpeg", "png", "gif", "bmp", "webp"].includes(ext)) return "image";
     if (["mp4", "mov", "avi", "mkv", "webm"].includes(ext)) return "video";
     return "unknown";
   };
@@ -71,19 +104,19 @@ function Gallery() {
   };
 
   const handleUpload = async () => {
-    if (!file) return;
+    if (!file || !currentLocationId) return;
     const formData = new FormData();
     formData.append("file", file);
 
     try {
-      const res = await fetch(`${API_BASE_URL}/${locationId}/upload-file/`, {
+      const res = await fetch(`${API_BASE_URL}/${currentLocationId}/upload-file/`, {
         method: "POST",
         body: formData,
       });
       if (!res.ok) throw new Error("Błąd podczas przesyłania pliku");
       setFile(null);
       setPreviewUrl(null);
-      fetchGalleryFiles();
+      fetchGalleryFiles(currentLocationId);
     } catch (err) {
       console.error("Upload error:", err);
       alert("Nie udało się wysłać pliku.");
@@ -96,15 +129,15 @@ function Gallery() {
   };
 
   const handleDelete = async () => {
-    if (!fileToDelete) return;
+    if (!fileToDelete || !currentLocationId) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/${locationId}/files/${fileToDelete}`, {
+      const res = await fetch(`${API_BASE_URL}/${currentLocationId}/files/${fileToDelete}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Błąd usuwania pliku");
       setShowModal(false);
       setFileToDelete(null);
-      fetchGalleryFiles();
+      fetchGalleryFiles(currentLocationId);
     } catch (err) {
       console.error("Delete error:", err);
       alert("Nie udało się usunąć pliku.");
@@ -115,8 +148,31 @@ function Gallery() {
     <>
       <Navbar />
       <div className={styles.container}>
+        {/* Switcher lokalizacji */}
+        <div style={{ marginBottom: 12 }}>
+          <strong>Wybierz lokalizację: </strong>
+          {locationIds.map((locId) => (
+            <button
+              key={locId}
+              onClick={() => handleSwitchLocation(locId)}
+              style={{
+                marginRight: 8,
+                padding: "6px 10px",
+                border: "1px solid #ccc",
+                background: currentLocationId === locId ? "#e8f0fe" : "white",
+                cursor: "pointer",
+              }}
+              title={locId}
+            >
+              {locId}
+            </button>
+          ))}
+        </div>
+
         <div className={styles.header}>
-          <h2 className={styles.title}>Galeria plików</h2>
+          <h2 className={styles.title}>
+            Galeria plików {currentLocationId ? `– ${currentLocationId}` : ""}
+          </h2>
           <div className={styles.deviceCount}>{galleryFiles.length} plików</div>
         </div>
 
@@ -128,13 +184,14 @@ function Gallery() {
           <div className={styles.fileGrid}>
             {galleryFiles.map((filename) => {
               const fileType = getFileType(filename);
-              const fileUrl = `${API_BASE_URL}/${locationId}/files/${filename}`;
+              const fileUrl = `${API_BASE_URL}/${currentLocationId}/files/${filename}`;
 
               return (
                 <div key={filename} className={styles.galleryItem}>
                   <button
                     className={styles.deleteButton}
                     onClick={() => confirmDelete(filename)}
+                    title="Usuń plik"
                   >
                     ×
                   </button>
@@ -169,7 +226,7 @@ function Gallery() {
           />
         </div>
 
-        {previewUrl && (
+        {previewUrl && file && (
           <div className={styles.previewContainer}>
             {getFileType(file.name) === "image" ? (
               <img src={previewUrl} alt="Podgląd" className={styles.previewImage} />
@@ -191,10 +248,17 @@ function Gallery() {
           <div className={styles.modalOverlay}>
             <div className={styles.modalBox}>
               <p>Czy na pewno chcesz usunąć plik "{fileToDelete}" z galerii?</p>
-              <p>Jeśli plik znajduje się w dowolnym harmonogramie, plik zostanie pominięty podczas aktualizacji contentu na urządzeniach</p>
+              <p>
+                Jeśli plik znajduje się w dowolnym harmonogramie, plik zostanie
+                pominięty podczas aktualizacji contentu na urządzeniach
+              </p>
               <div className={styles.modalActions}>
-                <button onClick={handleDelete} className={styles.confirmButton}>Tak</button>
-                <button onClick={() => setShowModal(false)} className={styles.cancelButton}>Nie</button>
+                <button onClick={handleDelete} className={styles.confirmButton}>
+                  Tak
+                </button>
+                <button onClick={() => setShowModal(false)} className={styles.cancelButton}>
+                  Nie
+                </button>
               </div>
             </div>
           </div>

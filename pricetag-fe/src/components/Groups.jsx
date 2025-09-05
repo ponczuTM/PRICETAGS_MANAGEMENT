@@ -7,7 +7,16 @@ import { useNavigate } from "react-router-dom";
 
 const storedUser = localStorage.getItem("user");
 const parsedUser = storedUser ? JSON.parse(storedUser) : null;
-const locationId = parsedUser?.locationId;
+
+const storedLocationIds = (() => {
+  // preferuj klucz 'locationIds' (tablica); fallback: jeśli ktoś zostawił stary 'locationId'
+  try {
+    const arr = JSON.parse(localStorage.getItem("locationIds") || "[]");
+    if (Array.isArray(arr) && arr.length > 0) return arr;
+  } catch (_) {}
+  const legacy = localStorage.getItem("locationId");
+  return legacy ? [legacy] : (parsedUser?.locationIds || []);
+})();
 
 const API_BASE_URL = "http://localhost:8000/api/locations";
 
@@ -35,6 +44,7 @@ function Groups() {
   const [deviceToManageGroups, setDeviceToManageGroups] = useState(null);
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupDescription, setNewGroupDescription] = useState("");
+  const [selectedLocationId, setSelectedLocationId] = useState(storedLocationIds[0] || null);
 
   const getDisplayName = (clientName) => {
     return editedNames[clientName] || clientName;
@@ -70,34 +80,37 @@ function Groups() {
     setOriginalValue("");
   };
 
-  
   const navigate = useNavigate();
 
   useEffect(() => {
     const user = localStorage.getItem("user");
     const parsed = user ? JSON.parse(user) : null;
 
-    if (!parsed || !parsed.locationId) {
-      console.warn("Brak użytkownika lub locationId – przekierowanie do logowania.");
+    if (!parsed || storedLocationIds.length === 0) {
+      console.warn("Brak użytkownika lub locationIds – przekierowanie do logowania.");
       navigate("/");
     }
   }, []);
 
   useEffect(() => {
-    fetchDevicesAndGroups();
-  }, []);
+    if (selectedLocationId) {
+      fetchDevicesAndGroups();
+    }
+  }, [selectedLocationId]);
 
   useEffect(() => {
-    if (selectedDevices.length > 0 && activeTab === "gallery") {
+    if (selectedDevices.length > 0 && activeTab === "gallery" && selectedLocationId) {
       fetchGalleryFiles();
     }
-  }, [selectedDevices, activeTab]);
+  }, [selectedDevices, activeTab, selectedLocationId]);
 
   const fetchDevicesAndGroups = async () => {
+    if (!selectedLocationId) return;
+    
     try {
       const [devicesRes, groupsRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/${locationId}/devices`),
-        fetch(`${API_BASE_URL}/${locationId}/groups`),
+        fetch(`${API_BASE_URL}/${selectedLocationId}/devices`),
+        fetch(`${API_BASE_URL}/${selectedLocationId}/groups`),
       ]);
 
       const devicesData = await devicesRes.json();
@@ -116,12 +129,10 @@ function Groups() {
       const filesInfo = {};
       for (const device of processedDevices) {
         filesInfo[device._id] = {
-          photoUrl: device.photo ? `${API_BASE_URL}/${locationId}/files/${device.photo}` : null,
-          videoUrl: device.video ? `${API_BASE_URL}/${locationId}/files/${device.video}` : null,
+          photoUrl: device.photo ? `${API_BASE_URL}/${selectedLocationId}/files/${device.photo}` : null,
+          videoUrl: device.video ? `${API_BASE_URL}/${selectedLocationId}/files/${device.video}` : null,
         };
       }
-      // This is not used in the provided MainPage code for display, but it's good to keep if needed
-      // setUploadedFiles(filesInfo);
     } catch (err) {
       console.error("Błąd pobierania urządzeń lub grup:", err);
       setErrorMsg("Nie udało się załadować urządzeń lub grup.");
@@ -129,8 +140,10 @@ function Groups() {
   };
 
   const fetchGalleryFiles = async () => {
+    if (!selectedLocationId) return;
+    
     try {
-      const res = await fetch(`${API_BASE_URL}/${locationId}/files/`);
+      const res = await fetch(`${API_BASE_URL}/${selectedLocationId}/files/`);
       if (!res.ok) {
         throw new Error("Błąd podczas pobierania listy plików z galerii");
       }
@@ -177,6 +190,7 @@ function Groups() {
   };
 
   const handleMassUpload = async () => {
+    if (!selectedLocationId) return;
     if (selectedDevices.length === 0) {
       setErrorMsg("Wybierz urządzenia, dla których chcesz zaktualizować pliki.");
       return;
@@ -204,7 +218,7 @@ function Groups() {
       formData.append("file", file);
       try {
         const uploadResponse = await fetch(
-          `${API_BASE_URL}/${locationId}/upload-file/`,
+          `${API_BASE_URL}/${selectedLocationId}/upload-file/`,
           {
             method: "POST",
             body: formData,
@@ -253,12 +267,12 @@ function Groups() {
         try {
           // Delete existing files (photo/video)
           await fetch(
-            `${API_BASE_URL}/${locationId}/devices/${device._id}/delete-files`,
+            `${API_BASE_URL}/${selectedLocationId}/devices/${device._id}/delete-files`,
             { method: "DELETE" }
           );
 
           const updateFieldResponse = await fetch(
-            `${API_BASE_URL}/${locationId}/devices/${device._id}/${fieldToUpdate}`,
+            `${API_BASE_URL}/${selectedLocationId}/devices/${device._id}/${fieldToUpdate}`,
             {
               method: "PUT",
               headers: { "Content-Type": "application/json" },
@@ -269,14 +283,14 @@ function Groups() {
             throw new Error(`Błąd podczas aktualizacji pola ${fieldToUpdate}`);
           }
           const updateChangedFlagResponse = await fetch(
-            `${API_BASE_URL}/${locationId}/devices/${device._id}/changed-true`,
+            `${API_BASE_URL}/${selectedLocationId}/devices/${device._id}/changed-true`,
             { method: "PUT" }
           );
           if (!updateChangedFlagResponse.ok) {
             throw new Error("Błąd podczas ustawiania flagi 'changed' na true");
           }
           const updateThumbnailResponse = await fetch(
-            `${API_BASE_URL}/${locationId}/devices/${device._id}/thumbnail`,
+            `${API_BASE_URL}/${selectedLocationId}/devices/${device._id}/thumbnail`,
             {
               method: "PUT",
               headers: { "Content-Type": "application/json" },
@@ -406,10 +420,10 @@ function Groups() {
   };
 
   const handleAddDeviceToGroup = async (groupId) => {
-    if (!deviceToManageGroups) return;
+    if (!deviceToManageGroups || !selectedLocationId) return;
     try {
       const response = await fetch(
-        `${API_BASE_URL}/${locationId}/devices/${deviceToManageGroups._id}/groups`,
+        `${API_BASE_URL}/${selectedLocationId}/devices/${deviceToManageGroups._id}/groups`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -432,10 +446,10 @@ function Groups() {
   };
 
   const handleRemoveDeviceFromGroup = async (groupId) => {
-    if (!deviceToManageGroups) return;
+    if (!deviceToManageGroups || !selectedLocationId) return;
     try {
       const response = await fetch(
-        `${API_BASE_URL}/${locationId}/devices/${deviceToManageGroups._id}/groups/${groupId}`,
+        `${API_BASE_URL}/${selectedLocationId}/devices/${deviceToManageGroups._id}/groups/${groupId}`,
         {
           method: "DELETE",
         }
@@ -456,12 +470,12 @@ function Groups() {
   };
 
   const handleCreateNewGroup = async () => {
-    if (!newGroupName.trim()) {
+    if (!newGroupName.trim() || !selectedLocationId) {
       setErrorMsg("Nazwa nowej grupy nie może być pusta.");
       return;
     }
     try {
-      const response = await fetch(`${API_BASE_URL}/${locationId}/groups`, {
+      const response = await fetch(`${API_BASE_URL}/${selectedLocationId}/groups`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newGroupName.trim(), description: newGroupDescription.trim() }),
@@ -485,9 +499,10 @@ function Groups() {
   };
 
   const handleDeleteGroup = async (groupId) => {
+    if (!selectedLocationId) return;
     if (window.confirm("Czy na pewno chcesz usunąć tę grupę? Spowoduje to również usunięcie jej z przypisanych urządzeń.")) {
       try {
-        const response = await fetch(`${API_BASE_URL}/${locationId}/groups/${groupId}`, {
+        const response = await fetch(`${API_BASE_URL}/${selectedLocationId}/groups/${groupId}`, {
           method: "DELETE",
         });
         if (!response.ok) {
@@ -514,12 +529,43 @@ function Groups() {
     <>
       <Navbar />
       <div className={styles.container}>
+        {/* Przyciski wyboru lokalizacji */}
+        {storedLocationIds.length > 1 && (
+          <div className={styles.locationSelector}>
+            <h3>Wybierz lokalizację:</h3>
+            <div className={styles.locationButtons}>
+              {storedLocationIds.map((locationId) => (
+                <button
+                  key={locationId}
+                  className={`${styles.locationButton} ${
+                    selectedLocationId === locationId ? styles.activeLocation : ""
+                  }`}
+                  onClick={() => setSelectedLocationId(locationId)}
+                >
+                  {locationId}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className={styles.header}>
           <h2 className={styles.title}>Zarządzanie grupami i urządzeniami</h2>
+          {selectedLocationId && (
+            <p className={styles.currentLocation}>
+              Aktualna lokalizacja: {selectedLocationId === "685003cbf071eb1bb4304cd2" ? "Toronto" : 
+                                   selectedLocationId === "685003cbf071eb1bb4304cd3" ? "Montreal" : 
+                                   selectedLocationId}
+            </p>
+          )}
           {errorMsg && <div className={styles.errorMessage}>{errorMsg}</div>}
         </div>
 
-        {groups.length > 0 ? (
+        {!selectedLocationId ? (
+          <div className={styles.noLocationSelected}>
+            <p>Wybierz lokalizację z powyższych przycisków, aby zobaczyć urządzenia i grupy.</p>
+          </div>
+        ) : groups.length > 0 ? (
           groups.map((group) => (
             <div key={group._id} className={styles.groupSection}>
               <div className={styles.groupHeader}>
@@ -588,7 +634,7 @@ function Groups() {
                           <div className={styles.stick + " " + styles.right}></div>
                           {getFileType(device.thumbnail || '') === 'video' ? (
                             <video
-                              src={device.thumbnail ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}` : null}
+                              src={device.thumbnail ? `${API_BASE_URL}/${selectedLocationId}/files/${device.thumbnail}` : null}
                               autoPlay
                               loop
                               muted
@@ -599,7 +645,7 @@ function Groups() {
                             <img
                               src={
                                 device.thumbnail
-                                  ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}`
+                                  ? `${API_BASE_URL}/${selectedLocationId}/files/${device.thumbnail}`
                                   : "/src/assets/images/device.png"
                               }
                               alt="Device"
@@ -652,132 +698,134 @@ function Groups() {
         )}
 
         {/* Devices without groups */}
-        <div className={styles.groupSection}>
-          <div className={styles.groupHeader}>
-            <h3 className={styles.groupName}>
-              Urządzenia bez grup ({getDevicesWithoutGroup().length} urządzeń)
-            </h3>
-            <button
-              className={styles.selectGroupButton}
-              onClick={() => handleGroupSelectAllToggle(null)} // Use null or a specific ID for "no group"
-            >
-              {getDevicesWithoutGroup().every(device =>
-                selectedDevices.some(d => d._id === device._id)
-              )
-                ? "Odznacz wszystkie bez grupy"
-                : "Zaznacz wszystkie bez grupy"}
-            </button>
-          </div>
-          {getDevicesWithoutGroup().length > 0 ? (
-            <div className={styles.deviceGrid}>
-              {getDevicesWithoutGroup().map((device) => (
-                <div
-                key={device._id}
-                className={`${styles.deviceCard} ${
-                  selectedDevices.some(d => d._id === device._id) ? styles.selected : ""
-                } ${!device.isOnline ? styles.offline : ""}`}
-                onClick={() => {
-                  if (device.isOnline) {
-                    handleDeviceSelectToggle(device);
-                  }
-                }}
+        {selectedLocationId && (
+          <div className={styles.groupSection}>
+            <div className={styles.groupHeader}>
+              <h3 className={styles.groupName}>
+                Urządzenia bez grup ({getDevicesWithoutGroup().length} urządzeń)
+              </h3>
+              <button
+                className={styles.selectGroupButton}
+                onClick={() => handleGroupSelectAllToggle(null)} // Use null or a specific ID for "no group"
               >
-              
-                  {/* 🎯 Ikony w prawym górnym rogu */}
-                  <div className={styles.deviceIcons}>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEditClick(device);
-                      }}
-                      className={styles.editButton}
-                    >
-                      <img src={editIcon} alt="Edytuj" className={styles.editIcon} />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openGroupManagementModal(device);
-                      }}
-                      className={styles.editGroupButton}
-                    >
-                      <img src={groupIcon} alt="Grupuj" className={styles.editIcon2} />
-                    </button>
-                  </div>
-
-                  <div className={styles.deviceImageContainer}>
-                    <div className={styles.hangingWrapper}>
-                      <div className={styles.hangerBar}></div>
-                      <div className={`${styles.stick} ${styles.left}`}></div>
-                      <div className={`${styles.stick} ${styles.right}`}></div>
-                      {getFileType(device.thumbnail || '') === 'video' ? (
-                        <video
-                          src={
-                            device.thumbnail
-                              ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}`
-                              : null
-                          }
-                          autoPlay
-                          loop
-                          muted
-                          className={styles.deviceImage}
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = "/src/assets/images/device.png";
-                          }}
-                        />
-                      ) : (
-                        <img
-                          src={
-                            device.thumbnail
-                              ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}`
-                              : "/src/assets/images/device.png"
-                          }
-                          alt="Device"
-                          className={styles.deviceImage}
-                        />
-                      )}
-                    </div>
-                    <div
-                      className={`${styles.onlineIndicator} ${device.isOnline ? styles.green : styles.red
-                        }`}
-                      title={device.isOnline ? "Online" : "Offline"}
-                    ></div>
-
-                  </div>
-
-                  <div className={styles.deviceInfo}>
-                    <div className={styles.deviceNameEditWrapper}>
-                      {editingDeviceId === device._id ? (
-                        <>
-                          <input
-                            type="text"
-                            value={editInputValue}
-                            onChange={(e) => setEditInputValue(e.target.value)}
-                            className={styles.editInput}
-                          />
-                          <button onClick={() => handleEditSave(device.clientName)} className={styles.saveButton}>Zapisz</button>
-                          <button onClick={() => handleEditReset(device.clientName)} className={styles.resetButton}>Resetuj</button>
-                          <button onClick={handleEditCancel} className={styles.cancelButton}>Anuluj</button>
-                        </>
-                      ) : (
-                        <h3 className={styles.deviceName}>
-                          {getDisplayName(device.clientName)}
-                        </h3>
-                      )}
-                    </div>
-                    <p className={styles.deviceId}>
-                      Status: <a style={{ color: "green", fontWeight: "bold" }}>Online</a>, {device.clientId}
-                    </p>
-                  </div>
-                </div>
-              ))}
-
+                {getDevicesWithoutGroup().every(device =>
+                  selectedDevices.some(d => d._id === device._id)
+                )
+                  ? "Odznacz wszystkie bez grupy"
+                  : "Zaznacz wszystkie bez grupy"}
+              </button>
             </div>
-          ) : (
-            <p className={styles.noDevicesMessage}>Brak urządzeń bez przypisanych grup.</p>
-          )}
-        </div>
+            {getDevicesWithoutGroup().length > 0 ? (
+              <div className={styles.deviceGrid}>
+                {getDevicesWithoutGroup().map((device) => (
+                  <div
+                  key={device._id}
+                  className={`${styles.deviceCard} ${
+                    selectedDevices.some(d => d._id === device._id) ? styles.selected : ""
+                  } ${!device.isOnline ? styles.offline : ""}`}
+                  onClick={() => {
+                    if (device.isOnline) {
+                      handleDeviceSelectToggle(device);
+                    }
+                  }}
+                >
+                
+                    {/* 🎯 Ikony w prawym górnym rogu */}
+                    <div className={styles.deviceIcons}>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditClick(device);
+                        }}
+                        className={styles.editButton}
+                      >
+                        <img src={editIcon} alt="Edytuj" className={styles.editIcon} />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openGroupManagementModal(device);
+                        }}
+                        className={styles.editGroupButton}
+                      >
+                        <img src={groupIcon} alt="Grupuj" className={styles.editIcon2} />
+                      </button>
+                    </div>
+
+                    <div className={styles.deviceImageContainer}>
+                      <div className={styles.hangingWrapper}>
+                        <div className={styles.hangerBar}></div>
+                        <div className={`${styles.stick} ${styles.left}`}></div>
+                        <div className={`${styles.stick} ${styles.right}`}></div>
+                        {getFileType(device.thumbnail || '') === 'video' ? (
+                          <video
+                            src={
+                              device.thumbnail
+                                ? `${API_BASE_URL}/${selectedLocationId}/files/${device.thumbnail}`
+                                : null
+                            }
+                            autoPlay
+                            loop
+                            muted
+                            className={styles.deviceImage}
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = "/src/assets/images/device.png";
+                            }}
+                          />
+                        ) : (
+                          <img
+                            src={
+                              device.thumbnail
+                                ? `${API_BASE_URL}/${selectedLocationId}/files/${device.thumbnail}`
+                                : "/src/assets/images/device.png"
+                            }
+                            alt="Device"
+                            className={styles.deviceImage}
+                          />
+                        )}
+                      </div>
+                      <div
+                        className={`${styles.onlineIndicator} ${device.isOnline ? styles.green : styles.red
+                          }`}
+                        title={device.isOnline ? "Online" : "Offline"}
+                      ></div>
+
+                    </div>
+
+                    <div className={styles.deviceInfo}>
+                      <div className={styles.deviceNameEditWrapper}>
+                        {editingDeviceId === device._id ? (
+                          <>
+                            <input
+                              type="text"
+                              value={editInputValue}
+                              onChange={(e) => setEditInputValue(e.target.value)}
+                              className={styles.editInput}
+                            />
+                            <button onClick={() => handleEditSave(device.clientName)} className={styles.saveButton}>Zapisz</button>
+                            <button onClick={() => handleEditReset(device.clientName)} className={styles.resetButton}>Resetuj</button>
+                            <button onClick={handleEditCancel} className={styles.cancelButton}>Anuluj</button>
+                          </>
+                        ) : (
+                          <h3 className={styles.deviceName}>
+                            {getDisplayName(device.clientName)}
+                          </h3>
+                        )}
+                      </div>
+                      <p className={styles.deviceId}>
+                        Status: <a style={{ color: "green", fontWeight: "bold" }}>Online</a>, {device.clientId}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+
+              </div>
+            ) : (
+              <p className={styles.noDevicesMessage}>Brak urządzeń bez przypisanych grup.</p>
+            )}
+          </div>
+        )}
 
         {selectedDevices.length > 0 && (
           <div className={styles.manageButtonContainer}>
@@ -907,7 +955,7 @@ function Groups() {
                     <div className={styles.fileGrid}>
                       {galleryFiles.map((filename) => {
                         const fileType = getFileType(filename);
-                        const fileUrl = `${API_BASE_URL}/${locationId}/files/${filename}`;
+                        const fileUrl = `${API_BASE_URL}/${selectedLocationId}/files/${filename}`;
                         return (
                           <label
                             key={filename}

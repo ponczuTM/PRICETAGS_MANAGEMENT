@@ -1,17 +1,36 @@
 import React, { useEffect, useRef, useState } from "react";
 import styles from "./MainPage.module.css";
 import Navbar from "./Navbar";
-import edit from './../assets/images/edit.png'
+import edit from "./../assets/images/edit.png";
 import { useNavigate } from "react-router-dom";
-
-const storedUser = localStorage.getItem("user");
-const parsedUser = storedUser ? JSON.parse(storedUser) : null;
-const locationId = parsedUser?.locationId;
-
 
 const API_BASE_URL = "http://localhost:8000/api/locations";
 
 function MainPage() {
+  const navigate = useNavigate();
+
+  // === NOWE: pobieramy z localStorage tablicę locationIds i wybieramy bieżącą lokalizację ===
+  const storedUser = localStorage.getItem("user");
+  const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+
+  const storedLocationIds = (() => {
+    // preferuj klucz 'locationIds' (tablica); fallback: jeśli ktoś zostawił stary 'locationId'
+    try {
+      const arr = JSON.parse(localStorage.getItem("locationIds") || "[]");
+      if (Array.isArray(arr) && arr.length > 0) return arr;
+    } catch (_) {}
+    const legacy = localStorage.getItem("locationId");
+    return legacy ? [legacy] : (parsedUser?.locationIds || []);
+  })();
+
+  const [locationIds, setLocationIds] = useState(storedLocationIds);
+  const [currentLocationId, setCurrentLocationId] = useState(() => {
+    // weź ostatnio wybraną (legacy) albo pierwszą z listy
+    const legacy = localStorage.getItem("locationId");
+    return legacy || (storedLocationIds.length > 0 ? storedLocationIds[0] : null);
+  });
+
+  // === RESZTA STANÓW ===
   const [devices, setDevices] = useState([]);
   const [selectedDevices, setSelectedDevices] = useState([]);
   const [file, setFile] = useState(null);
@@ -34,9 +53,26 @@ function MainPage() {
   const [editInputValue, setEditInputValue] = useState("");
   const [originalValue, setOriginalValue] = useState("");
 
-  const getDisplayName = (clientName) => {
-    return editedNames[clientName] || clientName;
-  };
+  // === GUARD: brak użytkownika albo brak lokalizacji -> do logowania ===
+  useEffect(() => {
+    if (!parsedUser) {
+      navigate("/");
+      return;
+    }
+    if (!locationIds || locationIds.length === 0) {
+      console.warn("Użytkownik nie ma przypisanych lokalizacji.");
+      navigate("/");
+      return;
+    }
+    // gdy nie ma currentLocationId (np. pierwszy raz) – ustaw pierwszy
+    if (!currentLocationId) {
+      setCurrentLocationId(locationIds[0]);
+      localStorage.setItem("locationId", locationIds[0]); // legacy zgodność
+    }
+  }, [parsedUser, locationIds, currentLocationId, navigate]);
+
+  // === przełączanie nazwy wyświetlanej urządzenia ===
+  const getDisplayName = (clientName) => editedNames[clientName] || clientName;
 
   const handleEditClick = (device) => {
     setEditingDeviceId(device._id);
@@ -68,62 +104,68 @@ function MainPage() {
     setOriginalValue("");
   };
 
-  const navigate = useNavigate();
-
+  // === POBIERANIE DANYCH – teraz reaguje na zmianę currentLocationId ===
   useEffect(() => {
-    const user = localStorage.getItem("user");
-    const parsed = user ? JSON.parse(user) : null;
-
-    if (!parsed || !parsed.locationId) {
-      console.warn("Brak użytkownika lub locationId – przekierowanie do logowania.");
-      navigate("/");
+    if (!currentLocationId) return;
+    fetchDevices(currentLocationId);
+    // jeżeli aktywna karta to 'gallery', dociągnij galerie dla tej lokalizacji
+    if (activeTab === "gallery") {
+      fetchGalleryFiles(currentLocationId);
     }
-  }, []);
-
+    // wyczyść wybory przy zmianie lokalizacji
+    setSelectedDevices([]);
+    setUploadStatuses({});
+    setErrorMsg(null);
+  }, [currentLocationId]);
 
   useEffect(() => {
-    fetchDevices();
-  }, []);
-
-  useEffect(() => {
-    if (selectedDevices.length > 0 && activeTab === "gallery") {
-      fetchGalleryFiles();
+    if (selectedDevices.length > 0 && activeTab === "gallery" && currentLocationId) {
+      fetchGalleryFiles(currentLocationId);
     }
-  }, [selectedDevices, activeTab]);
+  }, [selectedDevices, activeTab, currentLocationId]);
 
-  const fetchDevices = async () => {
+  const fetchDevices = async (locId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/${locationId}/devices`);
+      const res = await fetch(`${API_BASE_URL}/${locId}/devices`);
+      if (!res.ok) throw new Error("Błąd pobierania urządzeń");
       const devicesData = await res.json();
       setDevices(devicesData);
 
       const filesInfo = {};
       for (const device of devicesData) {
         filesInfo[device._id] = {
-          photoUrl: device.photo ? `${API_BASE_URL}/${locationId}/files/${device.photo}` : null,
-          videoUrl: device.video ? `${API_BASE_URL}/${locationId}/files/${device.video}` : null,
+          photoUrl: device.photo ? `${API_BASE_URL}/${locId}/files/${device.photo}` : null,
+          videoUrl: device.video ? `${API_BASE_URL}/${locId}/files/${device.video}` : null,
         };
       }
       setUploadedFiles(filesInfo);
     } catch (err) {
       console.error("Błąd pobierania urządzeń:", err);
+      setErrorMsg("Nie udało się pobrać urządzeń.");
     }
   };
 
-  const fetchGalleryFiles = async () => {
+  const fetchGalleryFiles = async (locId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/${locationId}/files/`);
+      const res = await fetch(`${API_BASE_URL}/${locId}/files/`);
       if (!res.ok) {
         throw new Error("Błąd podczas pobierania listy plików z galerii");
       }
       const data = await res.json();
-      setGalleryFiles(data.files);
+      setGalleryFiles(data.files || []);
     } catch (err) {
       console.error("Błąd pobierania plików galerii:", err);
       setErrorMsg("Nie udało się załadować plików galerii.");
     }
   };
 
+  // === SWITCHER LOKALIZACJI (proste przyciski) ===
+  const handleSwitchLocation = (locId) => {
+    setCurrentLocationId(locId);
+    localStorage.setItem("locationId", locId); // legacy zgodność (inne ekrany mogą tego używać)
+  };
+
+  // === drag & drop / wybór pliku ===
   const handleDrop = (e) => {
     e.preventDefault();
     if (e.dataTransfer.files.length > 0) {
@@ -160,7 +202,13 @@ function MainPage() {
     setErrorMsg(null);
   };
 
+  // === upload masowy ===
   const handleMassUpload = async () => {
+    if (!currentLocationId) {
+      setErrorMsg("Brak wybranej lokalizacji.");
+      return;
+    }
+
     if (selectedDevices.length === 0) {
       setErrorMsg("Wybierz urządzenia, dla których chcesz zaktualizować pliki.");
       return;
@@ -174,33 +222,34 @@ function MainPage() {
     setErrorMsg(null);
 
     const initialStatuses = {};
-    selectedDevices.forEach(device => {
-      initialStatuses[device._id] = { status: 'pending', message: 'Oczekuje...' };
+    selectedDevices.forEach((device) => {
+      initialStatuses[device._id] = { status: "pending", message: "Oczekuje..." };
     });
     setUploadStatuses(initialStatuses);
 
     let filenameToUse = null;
 
+    // 1) upload nowego pliku
     if (file) {
-      setUploadStatuses(prev => {
-        const newStatuses = { ...prev };
-        selectedDevices.forEach(device => {
-          newStatuses[device._id] = { status: 'uploading_file', message: `${device.clientName}, ${device.clientId}: Wysyłanie pliku głównego...` };
+      setUploadStatuses((prev) => {
+        const ns = { ...prev };
+        selectedDevices.forEach((device) => {
+          ns[device._id] = {
+            status: "uploading_file",
+            message: `${device.clientName}, ${device.clientId}: Wysyłanie pliku głównego...`,
+          };
         });
-        return newStatuses;
+        return ns;
       });
 
       const formData = new FormData();
       formData.append("file", file);
 
       try {
-        const uploadResponse = await fetch(
-          `${API_BASE_URL}/${locationId}/upload-file/`,
-          {
-            method: "POST",
-            body: formData,
-          }
-        );
+        const uploadResponse = await fetch(`${API_BASE_URL}/${currentLocationId}/upload-file/`, {
+          method: "POST",
+          body: formData,
+        });
 
         if (!uploadResponse.ok) {
           throw new Error("Błąd podczas przesyłania pliku");
@@ -211,12 +260,15 @@ function MainPage() {
       } catch (err) {
         console.error("Błąd wysyłania pliku:", err);
         setErrorMsg("Wystąpił błąd podczas przesyłania pliku: " + err.message);
-        setUploadStatuses(prev => {
-          const newStatuses = { ...prev };
-          selectedDevices.forEach(device => {
-            newStatuses[device._id] = { status: 'error', message: `${device.clientName}, ${device.clientId}: Błąd uploadu pliku: ${err.message}` };
+        setUploadStatuses((prev) => {
+          const ns = { ...prev };
+          selectedDevices.forEach((device) => {
+            ns[device._id] = {
+              status: "error",
+              message: `${device.clientName}, ${device.clientId}: Błąd uploadu pliku: ${err.message}`,
+            };
           });
-          return newStatuses;
+          return ns;
         });
         return;
       }
@@ -227,89 +279,75 @@ function MainPage() {
       return;
     }
 
+    // 2) przypisanie do urządzeń
     if (filenameToUse) {
       const fileTypeActual = getFileType(filenameToUse);
       let fieldToUpdate = null;
 
-      if (fileTypeActual === 'image') {
-        fieldToUpdate = 'photo';
-      } else if (fileTypeActual === 'video') {
-        fieldToUpdate = 'video';
-      } else {
+      if (fileTypeActual === "image") fieldToUpdate = "photo";
+      else if (fileTypeActual === "video") fieldToUpdate = "video";
+      else {
         setErrorMsg("Wybrany plik z galerii nie jest zdjęciem ani filmem i nie może zostać przypisany.");
         return;
       }
 
       for (let i = 0; i < selectedDevices.length; i++) {
         const device = selectedDevices[i];
-        setUploadStatuses(prev => ({
+        setUploadStatuses((prev) => ({
           ...prev,
-          [device._id]: { status: 'in_progress', message: `${device.clientName}, ${device.clientId}: Aktualizowanie...` }
+          [device._id]: { status: "in_progress", message: `${device.clientName}, ${device.clientId}: Aktualizowanie...` },
         }));
 
         try {
-          await fetch(
-            `${API_BASE_URL}/${locationId}/devices/${device._id}/delete-files`,
-            { method: "DELETE" }
-          );
+          await fetch(`${API_BASE_URL}/${currentLocationId}/devices/${device._id}/delete-files`, { method: "DELETE" });
 
           const updateFieldResponse = await fetch(
-            `${API_BASE_URL}/${locationId}/devices/${device._id}/${fieldToUpdate}`,
+            `${API_BASE_URL}/${currentLocationId}/devices/${device._id}/${fieldToUpdate}`,
             {
               method: "PUT",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ [fieldToUpdate]: filenameToUse }),
             }
           );
-
-          if (!updateFieldResponse.ok) {
-            throw new Error(`Błąd podczas aktualizacji pola ${fieldToUpdate}`);
-          }
+          if (!updateFieldResponse.ok) throw new Error(`Błąd podczas aktualizacji pola ${fieldToUpdate}`);
 
           const updateChangedFlagResponse = await fetch(
-            `${API_BASE_URL}/${locationId}/devices/${device._id}/changed-true`,
+            `${API_BASE_URL}/${currentLocationId}/devices/${device._id}/changed-true`,
             { method: "PUT" }
           );
-
-          if (!updateChangedFlagResponse.ok) {
-            throw new Error("Błąd podczas ustawiania flagi 'changed' na true");
-          }
+          if (!updateChangedFlagResponse.ok) throw new Error("Błąd podczas ustawiania flagi 'changed' na true");
 
           const updateThumbnailResponse = await fetch(
-            `${API_BASE_URL}/${locationId}/devices/${device._id}/thumbnail`,
+            `${API_BASE_URL}/${currentLocationId}/devices/${device._id}/thumbnail`,
             {
               method: "PUT",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                thumbnail: filenameToUse,
-              }),
+              body: JSON.stringify({ thumbnail: filenameToUse }),
             }
           );
+          if (!updateThumbnailResponse.ok) throw new Error("Błąd podczas aktualizacji miniaturki urządzenia");
 
-          if (!updateThumbnailResponse.ok) {
-            throw new Error("Błąd podczas aktualizacji miniaturki urządzenia");
-          }
-
-          setUploadStatuses(prev => ({
+          setUploadStatuses((prev) => ({
             ...prev,
-            [device._id]: { status: 'success', message: `${device.clientName}, ${device.clientId}: Zakończono sukcesem` }
+            [device._id]: { status: "success", message: `${device.clientName}, ${device.clientId}: Zakończono sukcesem` },
           }));
-
         } catch (err) {
           console.error(`Błąd podczas aktualizacji urządzenia ${device.clientName}:`, err);
-          setUploadStatuses(prev => ({
+          setUploadStatuses((prev) => ({
             ...prev,
-            [device._id]: { status: 'error', message: `${device.clientName}, ${device.clientId}: Błąd: ${err.message}` }
+            [device._id]: { status: "error", message: `${device.clientName}, ${device.clientId}: Błąd: ${err.message}` },
           }));
         }
       }
-      fetchDevices();
+
+      // odśwież listę urządzeń
+      fetchDevices(currentLocationId);
       setIsModalOpen(false);
       setSelectedDevices([]);
       setFile(null);
       setPreviewUrl(null);
       setSelectedGalleryFile(null);
-      setUploadStatuses({}); // Wyczyść statusy po zakończeniu uploadu
+      setUploadStatuses({});
     }
   };
 
@@ -321,7 +359,7 @@ function MainPage() {
     setActiveTab("photo");
     setGalleryFiles([]);
     setSelectedGalleryFile(null);
-    setUploadStatuses({}); // Wyczyść statusy przy zamykaniu modala
+    setUploadStatuses({});
     setIsModalOpen(false);
   };
 
@@ -334,62 +372,71 @@ function MainPage() {
   };
 
   const getFileType = (filename) => {
-    const ext = filename.split('.').pop().toLowerCase();
-    if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(ext)) {
-      return 'image';
-    }
-    if (['mp4', 'mov', 'avi', 'mkv', 'webm'].includes(ext)) { // Added webm for broader video support
-      return 'video';
-    }
-    return 'unknown';
+    const ext = (filename || "").split(".").pop().toLowerCase();
+    if (["jpg", "jpeg", "png", "gif", "bmp", "webp"].includes(ext)) return "image";
+    if (["mp4", "mov", "avi", "mkv", "webm"].includes(ext)) return "video";
+    return "unknown";
   };
 
   const handleDeviceSelectToggle = (device) => {
-    setSelectedDevices(prevSelected => {
-      const newSelected = prevSelected.some(d => d._id === device._id)
-        ? prevSelected.filter(d => d._id !== device._id)
+    setSelectedDevices((prevSelected) => {
+      const newSelected = prevSelected.some((d) => d._id === device._id)
+        ? prevSelected.filter((d) => d._id !== device._id)
         : [...prevSelected, device];
-
-      // Wyczyść statusy uploadu za każdym razem, gdy zmieniasz zaznaczone urządzenia
       setUploadStatuses({});
       return newSelected;
     });
-    setErrorMsg(null); // Wyczyść błąd, jeśli był
-  };
-
-  const handleSelectAllToggle = () => {
-    const onlineDevices = devices.filter(device => device.isOnline);
-
-    if (selectedDevices.length === onlineDevices.length) {
-      // Jeśli wszystkie ONLINE są zaznaczone → odznacz wszystkie
-      setSelectedDevices([]);
-    } else {
-      // W przeciwnym razie zaznacz tylko ONLINE
-      setSelectedDevices(onlineDevices);
-    }
-
-    setUploadStatuses({});
     setErrorMsg(null);
   };
 
+  const handleSelectAllToggle = () => {
+    const onlineDevices = devices.filter((device) => device.isOnline);
+    if (selectedDevices.length === onlineDevices.length) {
+      setSelectedDevices([]);
+    } else {
+      setSelectedDevices(onlineDevices);
+    }
+    setUploadStatuses({});
+    setErrorMsg(null);
+  };
 
   return (
     <>
       <Navbar />
       <div className={styles.container}>
+        {/* === SWITCHER LOKALIZACJI (proste przyciski nad wszystkim) === */}
+        <div style={{ marginBottom: 12 }}>
+          <strong>Wybierz lokalizację: </strong>
+          {locationIds.map((locId) => (
+            <button
+              key={locId}
+              onClick={() => handleSwitchLocation(locId)}
+              style={{
+                marginRight: 8,
+                padding: "6px 10px",
+                border: "1px solid #ccc",
+                background: currentLocationId === locId ? "#e8f0fe" : "white",
+                cursor: "pointer",
+              }}
+              title={locId}
+            >
+              {locId}
+            </button>
+          ))}
+        </div>
+
         <div className={styles.header}>
-          <h2 className={styles.title}>Lista urządzeń</h2>
+          <h2 className={styles.title}>
+            Lista urządzeń {currentLocationId ? `– ${currentLocationId}` : ""}
+          </h2>
           <div className={styles.deviceCount}>{devices.length} urządzeń</div>
         </div>
 
         <div className={styles.selectAllContainer}>
-          <button
-            className={styles.selectButton}
-            onClick={handleSelectAllToggle}
-          >
-            {selectedDevices.length === devices.length
-              ? "Odznacz wszystkie"
-              : "Zaznacz wszystkie"}
+          <button className={styles.selectButton} onClick={handleSelectAllToggle}>
+            {selectedDevices.length === devices.filter((d) => d.isOnline).length
+              ? "Odznacz wszystkie (ONLINE)"
+              : "Zaznacz wszystkie (ONLINE)"}
           </button>
         </div>
 
@@ -397,35 +444,41 @@ function MainPage() {
           {devices.map((device) => (
             <div
               key={device._id}
-              className={`${styles.deviceCard} ${selectedDevices.some(d => d._id === device._id) ? styles.selected : ""
-                } ${!device.isOnline ? styles.offline : ""}`}
+              className={`${styles.deviceCard} ${
+                selectedDevices.some((d) => d._id === device._id) ? styles.selected : ""
+              } ${!device.isOnline ? styles.offline : ""}`}
               onClick={() => {
                 if (device.isOnline) {
                   handleDeviceSelectToggle(device);
                 }
               }}
             >
-
               <div className={styles.deviceImageContainer}>
                 <div className={styles.hangingWrapper}>
                   <div className={styles.hangerBar}></div>
                   <div className={styles.stick + " " + styles.left}></div>
                   <div className={styles.stick + " " + styles.right}></div>
-                  {getFileType(device.thumbnail || '') === 'video' ? (
+                  {getFileType(device.thumbnail || "") === "video" ? (
                     <video
-                      src={device.thumbnail ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}` : null}
+                      src={
+                        device.thumbnail
+                          ? `${API_BASE_URL}/${currentLocationId}/files/${device.thumbnail}`
+                          : null
+                      }
                       autoPlay
                       loop
                       muted
                       className={styles.deviceImage}
-                      // For devices, you might want to show a default image if no video/thumbnail
-                      onError={(e) => { e.target.onerror = null; e.target.src = "/src/assets/images/device.png" }}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "/src/assets/images/device.png";
+                      }}
                     />
                   ) : (
                     <img
                       src={
                         device.thumbnail
-                          ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}`
+                          ? `${API_BASE_URL}/${currentLocationId}/files/${device.thumbnail}`
                           : "/src/assets/images/device.png"
                       }
                       alt="Device"
@@ -434,11 +487,11 @@ function MainPage() {
                   )}
                 </div>
                 <div
-                  className={`${styles.onlineIndicator} ${device.isOnline ? styles.green : styles.red
-                    }`}
+                  className={`${styles.onlineIndicator} ${
+                    device.isOnline ? styles.green : styles.red
+                  }`}
                   title={device.isOnline ? "Online" : "Offline"}
                 ></div>
-
               </div>
 
               <div className={styles.deviceInfo}>
@@ -451,25 +504,36 @@ function MainPage() {
                         onChange={(e) => setEditInputValue(e.target.value)}
                         className={styles.editInput}
                       />
-                      <button onClick={() => handleEditSave(device.clientName)} className={styles.saveButton}>Zapisz</button>
-                      <button onClick={() => handleEditReset(device.clientName)} className={styles.resetButton}>Resetuj</button>
-                      <button onClick={handleEditCancel} className={styles.cancelButton}>Anuluj</button>
+                      <button
+                        onClick={() => handleEditSave(device.clientName)}
+                        className={styles.saveButton}
+                      >
+                        Zapisz
+                      </button>
+                      <button
+                        onClick={() => handleEditReset(device.clientName)}
+                        className={styles.resetButton}
+                      >
+                        Resetuj
+                      </button>
+                      <button onClick={handleEditCancel} className={styles.cancelButton}>
+                        Anuluj
+                      </button>
                     </>
                   ) : (
                     <>
-                      <h3 className={styles.deviceName}>
-                        {getDisplayName(device.clientName)}
-                      </h3>
-                      <button onClick={() => handleEditClick(device)} className={styles.editButton}>
+                      <h3 className={styles.deviceName}>{getDisplayName(device.clientName)}</h3>
+                      <button
+                        onClick={() => handleEditClick(device)}
+                        className={styles.editButton}
+                      >
                         <img src={edit} alt="Edytuj" className={styles.editIcon} />
                       </button>
                     </>
                   )}
                 </div>
 
-                <p className={styles.deviceId}>
-                  Client: {device.clientId}
-                </p>
+                <p className={styles.deviceId}>Client: {device.clientId}</p>
               </div>
             </div>
           ))}
@@ -477,10 +541,7 @@ function MainPage() {
 
         {selectedDevices.length > 0 && (
           <div className={styles.manageButtonContainer}>
-            <button
-              className={styles.manageButton}
-              onClick={() => setIsModalOpen(true)}
-            >
+            <button className={styles.manageButton} onClick={() => setIsModalOpen(true)}>
               Zarządzaj urządzeniami ({selectedDevices.length})
             </button>
           </div>
@@ -491,7 +552,8 @@ function MainPage() {
             <div className={styles.modalContent}>
               <div className={styles.modalHeader}>
                 <h3 className={styles.modalTitle}>
-                  Załaduj {activeTab === "photo" ? "zdjęcie" : (activeTab === "video" ? "film" : "plik")} dla wybranych urządzeń
+                  Załaduj {activeTab === "photo" ? "zdjęcie" : activeTab === "video" ? "film" : "plik"} dla
+                  wybranych urządzeń
                 </h3>
                 <button className={styles.closeButton} onClick={closeUpload}>
                   ×
@@ -500,8 +562,7 @@ function MainPage() {
 
               <div className={styles.tabSwitcher}>
                 <button
-                  className={`${styles.tab} ${activeTab === "photo" ? styles.activeTab : ""
-                    }`}
+                  className={`${styles.tab} ${activeTab === "photo" ? styles.activeTab : ""}`}
                   onClick={() => {
                     setActiveTab("photo");
                     setFile(null);
@@ -512,8 +573,7 @@ function MainPage() {
                   Zdjęcie
                 </button>
                 <button
-                  className={`${styles.tab} ${activeTab === "video" ? styles.activeTab : ""
-                    }`}
+                  className={`${styles.tab} ${activeTab === "video" ? styles.activeTab : ""}`}
                   onClick={() => {
                     setActiveTab("video");
                     setFile(null);
@@ -524,12 +584,12 @@ function MainPage() {
                   Film
                 </button>
                 <button
-                  className={`${styles.tab} ${activeTab === "gallery" ? styles.activeTab : ""
-                    }`}
+                  className={`${styles.tab} ${activeTab === "gallery" ? styles.activeTab : ""}`}
                   onClick={() => {
                     setActiveTab("gallery");
                     setFile(null);
                     setPreviewUrl(null);
+                    if (currentLocationId) fetchGalleryFiles(currentLocationId);
                   }}
                 >
                   Galeria plików
@@ -542,9 +602,17 @@ function MainPage() {
                 <div className={styles.uploadStatusContainer}>
                   <h4>Statusy operacji:</h4>
                   <ul className={styles.uploadStatusList}>
-                    {selectedDevices.map(device => (
-                      <li key={device._id} className={`${styles.modalUploadStatusItem} ${styles[uploadStatuses[device._id]?.status || 'pending']}`}>
-                        <span className={styles.deviceNameInStatus}>{getDisplayName(device.clientName)}, {device.clientId}:</span> {uploadStatuses[device._id]?.message || 'Oczekuje...'}
+                    {selectedDevices.map((device) => (
+                      <li
+                        key={device._id}
+                        className={`${styles.modalUploadStatusItem} ${
+                          styles[uploadStatuses[device._id]?.status || "pending"]
+                        }`}
+                      >
+                        <span className={styles.deviceNameInStatus}>
+                          {getDisplayName(device.clientName)}, {device.clientId}:
+                        </span>{" "}
+                        {uploadStatuses[device._id]?.message || "Oczekuje..."}
                       </li>
                     ))}
                   </ul>
@@ -560,25 +628,14 @@ function MainPage() {
                   {previewUrl ? (
                     <div className={styles.previewContainer}>
                       {activeTab === "photo" ? (
-                        <img
-                          src={previewUrl}
-                          alt="Preview"
-                          className={styles.previewImage}
-                        />
+                        <img src={previewUrl} alt="Preview" className={styles.previewImage} />
                       ) : (
-                        <>
-                          <video
-                            src={previewUrl}
-                            controls
-                            ref={videoRef}
-                            className={styles.previewImage}
-                          />
-                        </>
+                        <video src={previewUrl} controls ref={videoRef} className={styles.previewImage} />
                       )}
                       <div className={styles.fileInfo}>
-                        <span className={styles.fileName}>{file.name}</span>
+                        <span className={styles.fileName}>{file?.name}</span>
                         <span className={styles.fileSize}>
-                          {formatFileSize(file.size)}
+                          {file ? formatFileSize(file.size) : ""}
                         </span>
                       </div>
                     </div>
@@ -586,8 +643,7 @@ function MainPage() {
                     <div className={styles.dropZoneContent}>
                       <div className={styles.uploadIcon}>📁</div>
                       <p className={styles.dropText}>
-                        Przeciągnij i upuść plik{" "}
-                        {activeTab === "photo" ? "graficzny" : "wideo"} tutaj
+                        Przeciągnij i upuść plik {activeTab === "photo" ? "graficzny" : "wideo"} tutaj
                       </p>
                       <p className={styles.dropSubtext}>lub</p>
                     </div>
@@ -596,9 +652,7 @@ function MainPage() {
                   <input
                     type="file"
                     accept={activeTab === "photo" ? "image/*" : "video/*"}
-                    onChange={(e) =>
-                      e.target.files.length > 0 && handleFile(e.target.files[0])
-                    }
+                    onChange={(e) => e.target.files.length > 0 && handleFile(e.target.files[0])}
                     className={styles.fileInput}
                   />
                 </div>
@@ -608,14 +662,13 @@ function MainPage() {
                     <div className={styles.fileGrid}>
                       {galleryFiles.map((filename) => {
                         const fileType = getFileType(filename);
-                        const fileUrl = `${API_BASE_URL}/${locationId}/files/${filename}`;
-                        // const thumbnailUrl = `${API_BASE_URL}/${locationId}/files/${filename}/thumbnail`; // This line is not strictly needed if video directly plays
-
+                        const fileUrl = `${API_BASE_URL}/${currentLocationId}/files/${filename}`;
                         return (
                           <label
                             key={filename}
-                            className={`${styles.galleryItem} ${selectedGalleryFile === filename ? styles.selectedGalleryItem : ""
-                              }`}
+                            className={`${styles.galleryItem} ${
+                              selectedGalleryFile === filename ? styles.selectedGalleryItem : ""
+                            }`}
                           >
                             <input
                               type="radio"
@@ -626,21 +679,20 @@ function MainPage() {
                               className={styles.galleryRadioButton}
                             />
                             <div className={styles.galleryMediaWrapper}>
-                              {fileType === 'image' ? (
-                                <img
-                                  src={fileUrl}
-                                  alt={filename}
-                                  className={styles.galleryMedia}
-                                />
-                              ) : fileType === 'video' ? (
+                              {fileType === "image" ? (
+                                <img src={fileUrl} alt={filename} className={styles.galleryMedia} />
+                              ) : fileType === "video" ? (
                                 <video
                                   src={fileUrl}
-                                  autoPlay // Autoplay the video
-                                  loop     // Loop the video
-                                  muted    // Mute the video for autoplay
-                                  playsInline // Important for iOS to play videos inline
+                                  autoPlay
+                                  loop
+                                  muted
+                                  playsInline
                                   className={styles.galleryMedia}
-                                  onError={(e) => { e.target.onerror = null; e.target.src = "/src/assets/images/placeholder-video.png"; }} // Fallback image if video fails to load
+                                  onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = "/src/assets/images/placeholder-video.png";
+                                  }}
                                 />
                               ) : (
                                 <div className={styles.galleryPlaceholder}>
@@ -649,9 +701,7 @@ function MainPage() {
                               )}
                             </div>
                             <span className={styles.galleryFileName}>
-                              {filename}{" "}
-                              {fileType === 'image' && "(zdjęcie)"}
-                              {fileType === 'video' && "(film)"}
+                              {filename} {fileType === "image" && "(zdjęcie)"} {fileType === "video" && "(film)"}
                             </span>
                           </label>
                         );

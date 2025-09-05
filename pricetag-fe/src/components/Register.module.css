@@ -1,0 +1,130 @@
+.registerContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: #f0f4f8;
+    font-family: sans-serif;
+    padding: 2rem;
+    box-sizing: border-box;
+  }
+  
+  .registerContainer h2 {
+    color: #1a237e;
+    margin-bottom: 1.5rem;
+    font-size: 2rem;
+    font-weight: 600;
+  }
+  
+  .form {
+    background: #ffffff;
+    padding: 2.5rem 3rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  
+  .row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  label {
+    color: #3949ab;
+    font-weight: 500;
+    font-size: 1rem;
+  }
+  
+  input {
+    padding: 0.75rem 1rem;
+    border: 2px solid #e0e7ff;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    color: #1a237e;
+  }
+  
+  input::placeholder {
+    color: #aeb8c3;
+  }
+  
+  input:focus {
+    border-color: #3949ab;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(57, 73, 171, 0.2);
+  }
+  
+  button[type="submit"] {
+    background-color: #3949ab;
+    color: #ffffff;
+    border: none;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-top: 0.5rem;
+  }
+  
+  button[type="submit"]:hover {
+    background-color: #1a237e;
+    transform: translateY(-2px);
+  }
+  
+  .errorMessage {
+    color: #d32f2f;
+    background-color: #ffebee;
+    padding: 0.75rem;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 500;
+    border: 1px solid #ef9a9a;
+  }
+  
+  .smallNote {
+    text-align: center;
+    font-size: 0.95rem;
+    color: #5c6bc0;
+    margin-top: 0.25rem;
+  }
+  
+  .hint {
+    font-weight: 400;
+    color: #5c6bc0;
+    font-size: 0.9rem;
+  }
+  
+  .logo {
+    width: 250px;
+    margin-bottom: 0px;
+  }
+  
+  /* Pokaz/ukryj hasło */
+  .passwordWrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  
+  .pwdToggle {
+    position: absolute;
+    right: 8px;
+    background: transparent;
+    border: none;
+    font-size: 0.9rem;
+    color: #3949ab;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+  }
+  
+  .pwdToggle:hover {
+    text-decoration: underline;
+  }
+  

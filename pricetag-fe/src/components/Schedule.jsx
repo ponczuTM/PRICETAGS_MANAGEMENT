@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import styles from "./Schedule.module.css";
 import Navbar from "./Navbar";
-import editIcon from './../assets/images/edit.png';
+import editIcon from "./../assets/images/edit.png";
 import DatePicker, { registerLocale } from "react-datepicker";
 import pl from "date-fns/locale/pl";
 import "react-datepicker/dist/react-datepicker.css";
@@ -9,28 +9,52 @@ import { useNavigate } from "react-router-dom";
 
 registerLocale("pl", pl);
 
-
-
-const storedUser = localStorage.getItem("user");
-const parsedUser = storedUser ? JSON.parse(storedUser) : null;
-const locationId = parsedUser?.locationId;
-
 const API_BASE_URL = "http://localhost:8000/api/locations";
 
 function Schedule() {
+  const navigate = useNavigate();
+
+  // === Pobranie usera i locationIds z localStorage (z fallbackiem na legacy) ===
+  const storedUser = localStorage.getItem("user");
+  const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+
+  const storedLocationIds = (() => {
+    try {
+      const arr = JSON.parse(localStorage.getItem("locationIds") || "[]");
+      if (Array.isArray(arr) && arr.length > 0) return arr;
+    } catch {}
+    const legacy = localStorage.getItem("locationId");
+    if (legacy) return [legacy];
+    if (parsedUser?.locationIds && Array.isArray(parsedUser.locationIds) && parsedUser.locationIds.length > 0) {
+      return parsedUser.locationIds;
+    }
+    return [];
+  })();
+
+  const [locationIds, setLocationIds] = useState(storedLocationIds);
+  const [currentLocationId, setCurrentLocationId] = useState(() => {
+    const legacy = localStorage.getItem("locationId");
+    return legacy || (storedLocationIds.length > 0 ? storedLocationIds[0] : null);
+  });
+
+  // === Stany komponentu ===
   const [devices, setDevices] = useState([]);
   const [groups, setGroups] = useState([]);
   const [selectedDevices, setSelectedDevices] = useState([]);
-  const [activeTab, setActiveTab] = useState("photo");
+  const [activeTab, setActiveTab] = useState("gallery"); // domyślnie galeria
   const [errorMsg, setErrorMsg] = useState(null);
   const [galleryFiles, setGalleryFiles] = useState([]);
   const [selectedGalleryFile, setSelectedGalleryFile] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Harmonogram
   const [scheduleType, setScheduleType] = useState("fixed");
   const [dateTime, setDateTime] = useState(null);
   const [dayOfWeek, setDayOfWeek] = useState(1);
   const [hour, setHour] = useState(8);
   const [minute, setMinute] = useState(0);
+
+  // Edycja nazw
   const [editingDeviceId, setEditingDeviceId] = useState(null);
   const [editedNames, setEditedNames] = useState(() => {
     const stored = localStorage.getItem("deviceNames");
@@ -38,33 +62,121 @@ function Schedule() {
   });
   const [editInputValue, setEditInputValue] = useState("");
   const [originalValue, setOriginalValue] = useState("");
+
+  // Listowanie istniejących harmonogramów
   const [existingSchedules, setExistingSchedules] = useState([]);
   const [isScheduleListOpen, setIsScheduleListOpen] = useState(false);
-  // >>> DODAJ pod importami i przed komponentem albo w jego wnętrzu, byle przed użyciem:
-  const getNowInWarsaw = () => {
-    const parts = new Intl.DateTimeFormat('pl-PL', {
-      timeZone: 'Europe/Warsaw',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    }).formatToParts(new Date());
 
-    const take = (t) => parseInt(parts.find(p => p.type === t)?.value, 10);
-    return new Date(take('year'), take('month') - 1, take('day'), take('hour'), take('minute'));
-  };
-
-  // >>> DODAJ te dwa stany (np. pod innymi useState):
+  // Kontrola otwierania dymków DatePicker
   const [isFixedPickerOpen, setIsFixedPickerOpen] = useState(false);
   const [isWeeklyTimeOpen, setIsWeeklyTimeOpen] = useState(false);
 
+  const videoRef = useRef(null);
 
-
-  const getDisplayName = (clientName) => {
-    return editedNames[clientName] || clientName;
+  // Pomocnicze
+  const getNowInWarsaw = () => {
+    const parts = new Intl.DateTimeFormat("pl-PL", {
+      timeZone: "Europe/Warsaw",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).formatToParts(new Date());
+    const take = (t) => parseInt(parts.find((p) => p.type === t)?.value, 10);
+    return new Date(take("year"), take("month") - 1, take("day"), take("hour"), take("minute"));
   };
 
+  const getDisplayName = (clientName) => editedNames[clientName] || clientName;
+
+  // Guard: wymuś logowanie i posiadanie lokalizacji
+  useEffect(() => {
+    if (!parsedUser) {
+      navigate("/");
+      return;
+    }
+    if (!locationIds || locationIds.length === 0) {
+      console.warn("Użytkownik nie ma przypisanych lokalizacji.");
+      navigate("/");
+      return;
+    }
+    if (!currentLocationId) {
+      setCurrentLocationId(locationIds[0]);
+      localStorage.setItem("locationId", locationIds[0]); // legacy zgodność
+    }
+  }, [parsedUser, locationIds, currentLocationId, navigate]);
+
+  // Reaguj na zmianę lokalizacji
+  useEffect(() => {
+    if (!currentLocationId) return;
+    fetchDevicesAndGroups(currentLocationId);
+    if (isModalOpen && activeTab === "gallery") {
+      fetchGalleryFiles(currentLocationId);
+    }
+    setSelectedDevices([]);
+    setErrorMsg(null);
+  }, [currentLocationId]);
+
+  // Doładowuj galerię, gdy trzeba
+  useEffect(() => {
+    if (selectedDevices.length > 0 && isModalOpen && activeTab === "gallery" && currentLocationId) {
+      fetchGalleryFiles(currentLocationId);
+    }
+  }, [selectedDevices, isModalOpen, activeTab, currentLocationId]);
+
+  // Zamknij dymki przy przełączeniach
+  useEffect(() => {
+    setIsFixedPickerOpen(false);
+    setIsWeeklyTimeOpen(false);
+  }, [scheduleType, isModalOpen]);
+
+  // ==== FETCH ====
+  const fetchDevicesAndGroups = async (locId) => {
+    try {
+      const [devicesRes, groupsRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/${locId}/devices`),
+        fetch(`${API_BASE_URL}/${locId}/groups`),
+      ]);
+
+      if (!devicesRes.ok || !groupsRes.ok) {
+        throw new Error("Błąd pobierania urządzeń lub grup");
+      }
+
+      const devicesData = await devicesRes.json();
+      const groupsData = await groupsRes.json();
+
+      const processedDevices = (devicesData || []).map((device) => ({
+        ...device,
+        groups: device.groups || [],
+      }));
+
+      setDevices(processedDevices);
+      setGroups(groupsData || []);
+    } catch (err) {
+      console.error("Błąd pobierania urządzeń lub grup:", err);
+      setErrorMsg("Nie udało się załadować urządzeń lub grup.");
+    }
+  };
+
+  const fetchGalleryFiles = async (locId) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/${locId}/files/`);
+      if (!res.ok) throw new Error("Błąd podczas pobierania listy plików z galerii");
+      const data = await res.json();
+      setGalleryFiles(data.files || []);
+    } catch (err) {
+      console.error("Błąd pobierania plików galerii:", err);
+      setErrorMsg("Nie udało się załadować plików galerii.");
+    }
+  };
+
+  // === Switcher lokalizacji (przyciski) ===
+  const handleSwitchLocation = (locId) => {
+    setCurrentLocationId(locId);
+    localStorage.setItem("locationId", locId); // legacy zgodność
+  };
+
+  // === Edycja nazw ===
   const handleEditClick = (device) => {
     setEditingDeviceId(device._id);
     const currentName = editedNames[device.clientName] || "";
@@ -95,82 +207,11 @@ function Schedule() {
     setOriginalValue("");
   };
 
-  
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const user = localStorage.getItem("user");
-    const parsed = user ? JSON.parse(user) : null;
-
-    if (!parsed || !parsed.locationId) {
-      console.warn("Brak użytkownika lub locationId – przekierowanie do logowania.");
-      navigate("/");
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchDevicesAndGroups();
-  }, []);
-
-  useEffect(() => {
-    if (selectedDevices.length > 0 && isModalOpen && activeTab === "gallery") {
-      fetchGalleryFiles();
-    }
-  }, [selectedDevices, isModalOpen, activeTab]);
-
-  const fetchDevicesAndGroups = async () => {
-    try {
-      const [devicesRes, groupsRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/${locationId}/devices`),
-        fetch(`${API_BASE_URL}/${locationId}/groups`),
-      ]);
-
-      const devicesData = await devicesRes.json();
-      const groupsData = await groupsRes.json();
-
-      const processedDevices = devicesData.map(device => ({
-        ...device,
-        groups: device.groups || []
-      }));
-
-      setDevices(processedDevices);
-      setGroups(groupsData);
-    } catch (err) {
-      console.error("Błąd pobierania urządzeń lub grup:", err);
-      setErrorMsg("Nie udało się załadować urządzeń lub grup.");
-    }
-  };
-
-  const fetchGalleryFiles = async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/${locationId}/files/`);
-      if (!res.ok) {
-        throw new Error("Błąd podczas pobierania listy plików z galerii");
-      }
-      const data = await res.json();
-      setGalleryFiles(data.files);
-    } catch (err) {
-      console.error("Błąd pobierania plików galerii:", err);
-      setErrorMsg("Nie udało się załadować plików galerii.");
-    }
-  };
-
-  const getFileType = (filename) => {
-    if (!filename) return 'unknown';
-    const ext = filename.split('.').pop().toLowerCase();
-    if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(ext)) {
-      return 'image';
-    }
-    if (['mp4', 'mov', 'avi', 'mkv', 'webm'].includes(ext)) {
-      return 'video';
-    }
-    return 'unknown';
-  };
-
+  // === Selekcja urządzeń ===
   const handleDeviceSelectToggle = (device) => {
-    setSelectedDevices(prevSelected => {
-      const newSelected = prevSelected.some(d => d._id === device._id)
-        ? prevSelected.filter(d => d._id !== device._id)
+    setSelectedDevices((prevSelected) => {
+      const newSelected = prevSelected.some((d) => d._id === device._id)
+        ? prevSelected.filter((d) => d._id !== device._id)
         : [...prevSelected, device];
       return newSelected;
     });
@@ -178,46 +219,33 @@ function Schedule() {
   };
 
   const handleGroupSelectAllToggle = (groupId) => {
-    const devicesInGroup = devices.filter(device =>
-      groupId === null ? device.groups.length === 0 : device.groups.includes(groupId)
+    const devicesInGroup = devices.filter((device) =>
+      groupId === null ? (device.groups || []).length === 0 : (device.groups || []).includes(groupId)
     );
-  
-    const onlineDevicesInGroup = devicesInGroup.filter(device => device.isOnline);
-  
-    const allSelectedOnline = onlineDevicesInGroup.every(device =>
-      selectedDevices.some(d => d._id === device._id)
-    );
-  
-    setSelectedDevices(prevSelected => {
+
+    const onlineDevicesInGroup = devicesInGroup.filter((d) => d.isOnline);
+    const allSelectedOnline = onlineDevicesInGroup.every((d) => selectedDevices.some((s) => s._id === d._id));
+
+    setSelectedDevices((prevSelected) => {
       let newSelected = [...prevSelected];
-  
+
       if (allSelectedOnline) {
         // Odznacz wszystkie online
-        newSelected = newSelected.filter(device =>
-          !onlineDevicesInGroup.some(d => d._id === device._id)
-        );
+        newSelected = newSelected.filter((d) => !onlineDevicesInGroup.some((x) => x._id === d._id));
       } else {
-        // Zaznacz tylko online
-        onlineDevicesInGroup.forEach(device => {
-          if (!newSelected.some(d => d._id === device._id)) {
-            newSelected.push(device);
-          }
+        // Zaznacz tylko online i niepowtórzone
+        onlineDevicesInGroup.forEach((d) => {
+          if (!newSelected.some((x) => x._id === d._id)) newSelected.push(d);
         });
       }
-  
+
       return newSelected;
     });
-  
+
     setErrorMsg(null);
   };
-  
-  useEffect(() => {
-    // zamknij oba dymki gdy zmienimy typ harmonogramu lub zamkniemy modal
-    setIsFixedPickerOpen(false);
-    setIsWeeklyTimeOpen(false);
-  }, [scheduleType, isModalOpen]);
-  
 
+  // === Modal harmonogramu ===
   const openScheduleModal = () => {
     if (selectedDevices.length === 0) {
       setErrorMsg("Wybierz przynajmniej jedno urządzenie.");
@@ -232,7 +260,8 @@ function Schedule() {
     setHour(8);
     setMinute(0);
     setSelectedGalleryFile(null);
-    setActiveTab("photo");
+    setActiveTab("gallery");
+    if (currentLocationId) fetchGalleryFiles(currentLocationId);
   };
 
   const closeScheduleModal = () => {
@@ -241,17 +270,32 @@ function Schedule() {
     setErrorMsg(null);
   };
 
+  const getFileType = (filename) => {
+    if (!filename) return "unknown";
+    const ext = filename.split(".").pop().toLowerCase();
+    if (["jpg", "jpeg", "png", "gif", "bmp", "webp"].includes(ext)) return "image";
+    if (["mp4", "mov", "avi", "mkv", "webm"].includes(ext)) return "video";
+    return "unknown";
+  };
+
   const handleGalleryFileSelect = (filename) => {
     setSelectedGalleryFile(filename);
     setErrorMsg(null);
   };
 
   const handleSaveSchedule = async () => {
+    if (!currentLocationId) {
+      setErrorMsg("Brak wybranej lokalizacji.");
+      return;
+    }
+    if (selectedDevices.length === 0) {
+      setErrorMsg("Wybierz urządzenia.");
+      return;
+    }
     if (!selectedGalleryFile) {
       setErrorMsg("Wybierz plik z galerii.");
       return;
     }
-
     if (scheduleType === "fixed" && !dateTime) {
       setErrorMsg("Wybierz datę i godzinę dla harmonogramu.");
       return;
@@ -268,21 +312,14 @@ function Schedule() {
       mediaType: mediaType,
     };
 
-    const scheduleData = {
-      type: scheduleType,
-      media: media,
-      ...(scheduleType === "fixed"
-        ? { date: dateTime?.toISOString() }
-        : {
-          dayOfWeek: parseInt(dayOfWeek),
-          hour: parseInt(hour),
-          minute: parseInt(minute),
-        }),
-    };
+    const scheduleData =
+      scheduleType === "fixed"
+        ? { type: "fixed", media, date: dateTime?.toISOString() }
+        : { type: "weekly", media, dayOfWeek: parseInt(dayOfWeek), hour: parseInt(hour), minute: parseInt(minute) };
 
     try {
       const promises = selectedDevices.map((device) =>
-        fetch(`${API_BASE_URL}/${locationId}/devices/${device._id}/schedules`, {
+        fetch(`${API_BASE_URL}/${currentLocationId}/devices/${device._id}/schedules`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(scheduleData),
@@ -295,13 +332,15 @@ function Schedule() {
       if (errors.length > 0) {
         const errorMessages = await Promise.all(
           errors.map(async (res) => {
-            const errData = await res.json();
-            return errData.message || "Nieznany błąd";
+            try {
+              const errData = await res.json();
+              return errData.detail || errData.message || "Nieznany błąd";
+            } catch {
+              return "Nieznany błąd";
+            }
           })
         );
-        throw new Error(
-          `Błędy podczas zapisywania harmonogramów: ${errorMessages.join(", ")}`
-        );
+        throw new Error(`Błędy podczas zapisywania harmonogramów: ${errorMessages.join(", ")}`);
       }
 
       setErrorMsg(null);
@@ -313,10 +352,10 @@ function Schedule() {
     }
   };
 
-
+  // === Listowanie/Usuwanie istniejących harmonogramów jednego urządzenia ===
   const fetchDeviceSchedules = async (deviceId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/${locationId}/devices/${deviceId}/schedules`);
+      const res = await fetch(`${API_BASE_URL}/${currentLocationId}/devices/${deviceId}/schedules`);
       if (!res.ok) throw new Error("Błąd pobierania harmonogramów");
       const data = await res.json();
       return data;
@@ -331,7 +370,6 @@ function Schedule() {
       setErrorMsg("Wybierz dokładnie jedno urządzenie, aby zobaczyć jego harmonogramy.");
       return;
     }
-
     try {
       const schedules = await fetchDeviceSchedules(selectedDevices[0]._id);
       setExistingSchedules(schedules);
@@ -343,16 +381,12 @@ function Schedule() {
 
   const handleDeleteSchedule = async (scheduleId) => {
     if (!selectedDevices.length) return;
-
     try {
       const deviceId = selectedDevices[0]._id;
-      const res = await fetch(
-        `${API_BASE_URL}/${locationId}/devices/${deviceId}/schedules/${scheduleId}`,
-        { method: "DELETE" }
-      );
-
+      const res = await fetch(`${API_BASE_URL}/${currentLocationId}/devices/${deviceId}/schedules/${scheduleId}`, {
+        method: "DELETE",
+      });
       if (!res.ok) throw new Error("Błąd usuwania harmonogramu");
-
       const updatedSchedules = await fetchDeviceSchedules(deviceId);
       setExistingSchedules(updatedSchedules);
       setErrorMsg(null);
@@ -361,36 +395,62 @@ function Schedule() {
     }
   };
 
+  // === Pomocnicze do renderu ===
   const getDevicesInGroup = (groupId) => {
-    return devices.filter(device => device.groups.includes(groupId));
+    return groupId === null
+      ? devices.filter((d) => (d.groups || []).length === 0)
+      : devices.filter((d) => (d.groups || []).includes(groupId));
   };
 
-  const getDevicesWithoutGroup = () => {
-    return devices.filter(device => device.groups.length === 0);
-  };
+  const getDevicesWithoutGroup = () => devices.filter((d) => (d.groups || []).length === 0);
 
   const formatScheduleDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleString('pl-PL', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return date.toLocaleString("pl-PL", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
+    // opcjonalnie można dodać { timeZone: "Europe/Warsaw" } po stronie backendu zapisywać UTC
   };
 
   const formatWeeklySchedule = (schedule) => {
-    const days = ['Niedziela', 'Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota'];
-    return `${days[schedule.dayOfWeek]}, ${String(schedule.hour).padStart(2, '0')}:${String(schedule.minute).padStart(2, '0')}`;
+    const days = ["Niedziela", "Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota"];
+    return `${days[schedule.dayOfWeek]}, ${String(schedule.hour).padStart(2, "0")}:${String(schedule.minute).padStart(2, "0")}`;
   };
 
+  // === RENDER ===
   return (
     <>
       <Navbar />
       <div className={styles.container}>
+        {/* Switcher lokalizacji */}
+        <div style={{ marginBottom: 12 }}>
+          <strong>Wybierz lokalizację: </strong>
+          {locationIds.map((locId) => (
+            <button
+              key={locId}
+              onClick={() => handleSwitchLocation(locId)}
+              style={{
+                marginRight: 8,
+                padding: "6px 10px",
+                border: "1px solid #ccc",
+                background: currentLocationId === locId ? "#e8f0fe" : "white",
+                cursor: "pointer",
+              }}
+              title={locId}
+            >
+              {locId}
+            </button>
+          ))}
+        </div>
+
         <div className={styles.header}>
-          <h2 className={styles.title}>Zarządzanie harmonogramami wyświetlania</h2>
+          <h2 className={styles.title}>
+            Zarządzanie harmonogramami wyświetlania {currentLocationId ? `– ${currentLocationId}` : ""}
+          </h2>
           {errorMsg && <div className={styles.errorMessage}>{errorMsg}</div>}
         </div>
 
@@ -402,27 +462,23 @@ function Schedule() {
                   {group.name} ({getDevicesInGroup(group._id).length} urządzeń)
                 </h3>
                 <div className={styles.groupActions}>
-                  <button
-                    className={styles.selectGroupButton}
-                    onClick={() => handleGroupSelectAllToggle(group._id)}
-                  >
-                    {getDevicesInGroup(group._id).every(device =>
-                      selectedDevices.some(d => d._id === device._id)
-                    )
+                  <button className={styles.selectGroupButton} onClick={() => handleGroupSelectAllToggle(group._id)}>
+                    {getDevicesInGroup(group._id).every((d) => selectedDevices.some((s) => s._id === d._id))
                       ? "Odznacz wszystkie w grupie"
                       : "Zaznacz wszystkie w grupie"}
                   </button>
                 </div>
               </div>
+
               {getDevicesInGroup(group._id).length > 0 ? (
                 <div className={styles.deviceGrid}>
                   {getDevicesInGroup(group._id).map((device) => (
                     <div
                       key={device._id}
-                      className={`${styles.deviceCard} ${device.isOnline ? "" : styles.offline} ${selectedDevices.some((d) => d._id === device._id) ? styles.selected : ""}`}
-
-                        onClick={() => device.isOnline && handleDeviceSelectToggle(device)}
-
+                      className={`${styles.deviceCard} ${device.isOnline ? "" : styles.offline} ${
+                        selectedDevices.some((d) => d._id === device._id) ? styles.selected : ""
+                      }`}
+                      onClick={() => device.isOnline && handleDeviceSelectToggle(device)}
                     >
                       <div className={styles.deviceIcons}>
                         <button
@@ -439,22 +495,29 @@ function Schedule() {
                       <div className={styles.deviceImageContainer}>
                         <div className={styles.hangingWrapper}>
                           <div className={styles.hangerBar}></div>
-                          <div className={styles.stick + " " + styles.left}></div>
-                          <div className={styles.stick + " " + styles.right}></div>
-                          {getFileType(device.thumbnail || '') === 'video' ? (
+                          <div className={`${styles.stick} ${styles.left}`}></div>
+                          <div className={`${styles.stick} ${styles.right}`}></div>
+                          {getFileType(device.thumbnail || "") === "video" ? (
                             <video
-                              src={device.thumbnail ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}` : null}
+                              src={
+                                device.thumbnail
+                                  ? `${API_BASE_URL}/${currentLocationId}/files/${device.thumbnail}`
+                                  : null
+                              }
                               autoPlay
                               loop
                               muted
                               className={styles.deviceImage}
-                              onError={(e) => { e.target.onerror = null; e.target.src = "/src/assets/images/device.png" }}
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "/src/assets/images/device.png";
+                              }}
                             />
                           ) : (
                             <img
                               src={
                                 device.thumbnail
-                                  ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}`
+                                  ? `${API_BASE_URL}/${currentLocationId}/files/${device.thumbnail}`
                                   : "/src/assets/images/device.png"
                               }
                               alt="Device"
@@ -463,11 +526,9 @@ function Schedule() {
                           )}
                         </div>
                         <div
-                          className={`${styles.onlineIndicator} ${device.isOnline ? styles.green : styles.red
-                            }`}
+                          className={`${styles.onlineIndicator} ${device.isOnline ? styles.green : styles.red}`}
                           title={device.isOnline ? "Online" : "Offline"}
                         ></div>
-
                       </div>
 
                       <div className={styles.deviceInfo}>
@@ -479,18 +540,22 @@ function Schedule() {
                               onChange={(e) => setEditInputValue(e.target.value)}
                               className={styles.editInput}
                             />
-                            <button onClick={() => handleEditSave(device.clientName)} className={styles.saveButton}>Zapisz</button>
-                            <button onClick={() => handleEditReset(device.clientName)} className={styles.resetButton}>Resetuj</button>
-                            <button onClick={handleEditCancel} className={styles.cancelButton}>Anuluj</button>
+                            <button onClick={() => handleEditSave(device.clientName)} className={styles.saveButton}>
+                              Zapisz
+                            </button>
+                            <button onClick={() => handleEditReset(device.clientName)} className={styles.resetButton}>
+                              Resetuj
+                            </button>
+                            <button onClick={handleEditCancel} className={styles.cancelButton}>
+                              Anuluj
+                            </button>
                           </>
                         ) : (
                           <div className={styles.deviceNameEditWrapper}>
                             <h3 className={styles.deviceName}>{getDisplayName(device.clientName)}</h3>
                           </div>
                         )}
-                        <p className={styles.deviceId}>
-                        Client: {device.clientId}
-                        </p>
+                        <p className={styles.deviceId}>Client: {device.clientId}</p>
                       </div>
                     </div>
                   ))}
@@ -504,32 +569,28 @@ function Schedule() {
           <p className={styles.noGroupsMessage}>Brak zdefiniowanych grup dla tej lokalizacji.</p>
         )}
 
-        {/* Devices without groups */}
+        {/* Urządzenia bez grup */}
         <div className={styles.groupSection}>
           <div className={styles.groupHeader}>
             <h3 className={styles.groupName}>
-              Urządzenia bez grup ({getDevicesWithoutGroup().length} urządzeń)
+              Urządzenia bez grup ({getDevicesInGroup(null).length} urządzeń)
             </h3>
-            <button
-              className={styles.selectGroupButton}
-              onClick={() => handleGroupSelectAllToggle(null)}
-            >
-              {getDevicesWithoutGroup().every(device =>
-                selectedDevices.some(d => d._id === device._id)
-              )
+            <button className={styles.selectGroupButton} onClick={() => handleGroupSelectAllToggle(null)}>
+              {getDevicesInGroup(null).every((d) => selectedDevices.some((s) => s._id === d._id))
                 ? "Odznacz wszystkie bez grupy"
                 : "Zaznacz wszystkie bez grupy"}
             </button>
           </div>
-          {getDevicesWithoutGroup().length > 0 ? (
+
+          {getDevicesInGroup(null).length > 0 ? (
             <div className={styles.deviceGrid}>
-              {getDevicesWithoutGroup().map((device) => (
+              {getDevicesInGroup(null).map((device) => (
                 <div
                   key={device._id}
-                  className={`${styles.deviceCard} ${device.isOnline ? "" : styles.offline} ${selectedDevices.some((d) => d._id === device._id) ? styles.selected : ""}`}
-
-                    onClick={() => device.isOnline && handleDeviceSelectToggle(device)}
-
+                  className={`${styles.deviceCard} ${device.isOnline ? "" : styles.offline} ${
+                    selectedDevices.some((d) => d._id === device._id) ? styles.selected : ""
+                  }`}
+                  onClick={() => device.isOnline && handleDeviceSelectToggle(device)}
                 >
                   <div className={styles.deviceIcons}>
                     <button
@@ -548,11 +609,11 @@ function Schedule() {
                       <div className={styles.hangerBar}></div>
                       <div className={`${styles.stick} ${styles.left}`}></div>
                       <div className={`${styles.stick} ${styles.right}`}></div>
-                      {getFileType(device.thumbnail || '') === 'video' ? (
+                      {getFileType(device.thumbnail || "") === "video" ? (
                         <video
                           src={
                             device.thumbnail
-                              ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}`
+                              ? `${API_BASE_URL}/${currentLocationId}/files/${device.thumbnail}`
                               : null
                           }
                           autoPlay
@@ -568,7 +629,7 @@ function Schedule() {
                         <img
                           src={
                             device.thumbnail
-                              ? `${API_BASE_URL}/${locationId}/files/${device.thumbnail}`
+                              ? `${API_BASE_URL}/${currentLocationId}/files/${device.thumbnail}`
                               : "/src/assets/images/device.png"
                           }
                           alt="Device"
@@ -577,35 +638,35 @@ function Schedule() {
                       )}
                     </div>
                     <div
-                      className={`${styles.onlineIndicator} ${device.isOnline ? styles.green : styles.red
-                        }`}
+                      className={`${styles.onlineIndicator} ${device.isOnline ? styles.green : styles.red}`}
                       title={device.isOnline ? "Online" : "Offline"}
                     ></div>
-
                   </div>
 
                   <div className={styles.deviceInfo}>
-                    <div className={styles.deviceNameEditWrapper}>
-                      {editingDeviceId === device._id ? (
-                        <>
-                          <input
-                            type="text"
-                            value={editInputValue}
-                            onChange={(e) => setEditInputValue(e.target.value)}
-                            className={styles.editInput}
-                          />
-                          <button onClick={() => handleEditSave(device.clientName)} className={styles.saveButton}>Zapisz</button>
-                          <button onClick={() => handleEditReset(device.clientName)} className={styles.resetButton}>Resetuj</button>
-                          <button onClick={handleEditCancel} className={styles.cancelButton}>Anuluj</button>
-                        </>
-                      ) : (
-                        <h3 className={styles.deviceName}>
-                          {getDisplayName(device.clientName)}
-                        </h3>
-                      )}
-                    </div>
+                    {editingDeviceId === device._id ? (
+                      <>
+                        <input
+                          type="text"
+                          value={editInputValue}
+                          onChange={(e) => setEditInputValue(e.target.value)}
+                          className={styles.editInput}
+                        />
+                        <button onClick={() => handleEditSave(device.clientName)} className={styles.saveButton}>
+                          Zapisz
+                        </button>
+                        <button onClick={() => handleEditReset(device.clientName)} className={styles.resetButton}>
+                          Resetuj
+                        </button>
+                        <button onClick={handleEditCancel} className={styles.cancelButton}>
+                          Anuluj
+                        </button>
+                      </>
+                    ) : (
+                      <h3 className={styles.deviceName}>{getDisplayName(device.clientName)}</h3>
+                    )}
                     <p className={styles.deviceId}>
-                      Status: <a style={{ color: "green", fontWeight: "bold" }}>Online</a>, {device.clientId}
+                      Status: <span style={{ color: "green", fontWeight: "bold" }}>Online</span>, {device.clientId}
                     </p>
                   </div>
                 </div>
@@ -618,17 +679,10 @@ function Schedule() {
 
         {selectedDevices.length > 0 && (
           <div className={styles.manageButtonContainer}>
-            <button
-              className={styles.manageButton}
-              onClick={openScheduleModal}
-            >
+            <button className={styles.manageButton} onClick={openScheduleModal}>
               Dodaj harmonogram dla {selectedDevices.length} urządzeń
             </button>
-            <button
-              className={styles.showScheduleButton}
-              onClick={handleShowSchedules}
-              disabled={selectedDevices.length !== 1}
-            >
+            <button className={styles.showScheduleButton} onClick={handleShowSchedules} disabled={selectedDevices.length !== 1}>
               Pokaż harmonogramy wybranego urządzenia
             </button>
           </div>
@@ -638,9 +692,7 @@ function Schedule() {
           <div className={styles.scheduleModal}>
             <div className={styles.modalContent}>
               <div className={styles.modalHeader}>
-                <h3 className={styles.modalTitle}>
-                  Dodaj nowy harmonogram dla {selectedDevices.length} urządzeń
-                </h3>
+                <h3 className={styles.modalTitle}>Dodaj nowy harmonogram dla {selectedDevices.length} urządzeń</h3>
                 <button className={styles.closeButton} onClick={closeScheduleModal}>
                   ×
                 </button>
@@ -677,13 +729,11 @@ function Schedule() {
                       selected={dateTime || getNowInWarsaw()}
                       onChange={(next) => {
                         if (!next) return;
-                        // wykryj zmianę samej godziny/minuty -> wtedy zamknij dymek
                         const prev = dateTime || getNowInWarsaw();
                         const prevHM = prev.getHours() * 60 + prev.getMinutes();
                         const nextHM = next.getHours() * 60 + next.getMinutes();
                         setDateTime(next);
                         if (nextHM !== prevHM) {
-                          // użytkownik zatwierdził godzinę -> chowamy dymek
                           setIsFixedPickerOpen(false);
                         }
                       }}
@@ -694,15 +744,12 @@ function Schedule() {
                       timeCaption="Godzina"
                       locale="pl"
                       className={styles.dateTimeInput}
-                      // ręczne sterowanie otwarciem:
                       open={isFixedPickerOpen}
-                      onInputClick={() => setIsFixedPickerOpen(true)}   // otwieraj tylko po kliknięciu w pole
+                      onInputClick={() => setIsFixedPickerOpen(true)}
                       onClickOutside={() => setIsFixedPickerOpen(false)}
                       onCalendarClose={() => setIsFixedPickerOpen(false)}
-                      // Nie zamykaj po kliknięciu daty — dopiero po wyborze godziny (robimy to wyżej):
                       shouldCloseOnSelect={false}
                     />
-
                   </label>
                 </div>
               ) : (
@@ -710,11 +757,7 @@ function Schedule() {
                   <div className={styles.weeklyControl}>
                     <label>
                       Dzień tygodnia:
-                      <select
-                        value={dayOfWeek}
-                        onChange={(e) => setDayOfWeek(e.target.value)}
-                        className={styles.daySelect}
-                      >
+                      <select value={dayOfWeek} onChange={(e) => setDayOfWeek(e.target.value)} className={styles.daySelect}>
                         <option value="0">Niedziela</option>
                         <option value="1">Poniedziałek</option>
                         <option value="2">Wtorek</option>
@@ -734,7 +777,6 @@ function Schedule() {
                           if (!time) return;
                           setHour(time.getHours());
                           setMinute(time.getMinutes());
-                          // po wyborze godziny chowamy dymek:
                           setIsWeeklyTimeOpen(false);
                         }}
                         showTimeSelect
@@ -744,49 +786,24 @@ function Schedule() {
                         dateFormat="HH:mm"
                         locale="pl"
                         className={styles.dateTimeInput}
-                        // ręczne sterowanie otwarciem:
                         open={isWeeklyTimeOpen}
                         onInputClick={() => setIsWeeklyTimeOpen(true)}
                         onClickOutside={() => setIsWeeklyTimeOpen(false)}
                         onCalendarClose={() => setIsWeeklyTimeOpen(false)}
                         shouldCloseOnSelect
                       />
-
                     </label>
                   </div>
-
                 </div>
               )}
 
               <div className={styles.tabSwitcher}>
-                {/* <button
-                  className={`${styles.tab} ${
-                    activeTab === "photo" ? styles.activeTab : ""
-                  }`}
-                  onClick={() => {
-                    setActiveTab("photo");
-                    setSelectedGalleryFile(null);
-                  }}
-                >
-                  Zdjęcie
-                </button>
                 <button
-                  className={`${styles.tab} ${
-                    activeTab === "video" ? styles.activeTab : ""
-                  }`}
-                  onClick={() => {
-                    setActiveTab("video");
-                    setSelectedGalleryFile(null);
-                  }}
-                >
-                  Film
-                </button> */}
-                <button
-                  className={`${styles.tab} ${activeTab === "gallery" ? styles.activeTab : ""
-                    }`}
+                  className={`${styles.tab} ${activeTab === "gallery" ? styles.activeTab : ""}`}
                   onClick={() => {
                     setActiveTab("gallery");
                     setSelectedGalleryFile(null);
+                    if (currentLocationId) fetchGalleryFiles(currentLocationId);
                   }}
                 >
                   Galeria plików
@@ -799,59 +816,48 @@ function Schedule() {
                 <div className={styles.galleryContainer}>
                   {galleryFiles.length > 0 ? (
                     <div className={styles.fileGrid}>
-                      {galleryFiles
-                        .filter(filename => {
-                          const fileType = getFileType(filename);
-                          if (activeTab === "photo") return fileType === 'image';
-                          if (activeTab === "video") return fileType === 'video';
-                          return true;
-                        })
-                        .map((filename) => {
-                          const fileType = getFileType(filename);
-                          const fileUrl = `${API_BASE_URL}/${locationId}/files/${filename}`;
-                          return (
-                            <label
-                              key={filename}
-                              className={`${styles.galleryItem} ${selectedGalleryFile === filename ? styles.selectedGalleryItem : ""
-                                }`}
-                            >
-                              <input
-                                type="radio"
-                                name="galleryFile"
-                                value={filename}
-                                checked={selectedGalleryFile === filename}
-                                onChange={() => handleGalleryFileSelect(filename)}
-                                className={styles.galleryRadioButton}
-                              />
-                              <div className={styles.galleryMediaWrapper}>
-                                {fileType === 'image' ? (
-                                  <img
-                                    src={fileUrl}
-                                    alt={filename}
-                                    className={styles.galleryMedia}
-                                  />
-                                ) : fileType === 'video' ? (
-                                  <video
-                                    src={fileUrl}
-                                    autoPlay
-                                    loop
-                                    muted
-                                    playsInline
-                                    className={styles.galleryMedia}
-                                    onError={(e) => { e.target.onerror = null; e.target.src = "/src/assets/images/placeholder-video.png"; }}
-                                  />
-                                ) : (
-                                  <div className={styles.galleryPlaceholder}>
-                                    <span className={styles.fileIcon}>📄</span>
-                                  </div>
-                                )}
-                              </div>
-                              <span className={styles.galleryFileName}>
-                                {filename}
-                              </span>
-                            </label>
-                          );
-                        })}
+                      {galleryFiles.map((filename) => {
+                        const fileType = getFileType(filename);
+                        const fileUrl = `${API_BASE_URL}/${currentLocationId}/files/${filename}`;
+                        return (
+                          <label
+                            key={filename}
+                            className={`${styles.galleryItem} ${selectedGalleryFile === filename ? styles.selectedGalleryItem : ""}`}
+                          >
+                            <input
+                              type="radio"
+                              name="galleryFile"
+                              value={filename}
+                              checked={selectedGalleryFile === filename}
+                              onChange={() => handleGalleryFileSelect(filename)}
+                              className={styles.galleryRadioButton}
+                            />
+                            <div className={styles.galleryMediaWrapper}>
+                              {fileType === "image" ? (
+                                <img src={fileUrl} alt={filename} className={styles.galleryMedia} />
+                              ) : fileType === "video" ? (
+                                <video
+                                  src={fileUrl}
+                                  autoPlay
+                                  loop
+                                  muted
+                                  playsInline
+                                  className={styles.galleryMedia}
+                                  onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = "/src/assets/images/placeholder-video.png";
+                                  }}
+                                />
+                              ) : (
+                                <div className={styles.galleryPlaceholder}>
+                                  <span className={styles.fileIcon}>📄</span>
+                                </div>
+                              )}
+                            </div>
+                            <span className={styles.galleryFileName}>{filename}</span>
+                          </label>
+                        );
+                      })}
                     </div>
                   ) : (
                     <p>Brak plików w galerii dla tej lokalizacji.</p>
@@ -861,22 +867,22 @@ function Schedule() {
                 <div className={styles.galleryInfo}>
                   {selectedGalleryFile ? (
                     <div className={styles.selectedFilePreview}>
-                      {getFileType(selectedGalleryFile) === 'image' ? (
+                      {getFileType(selectedGalleryFile) === "image" ? (
                         <img
-                          src={`${API_BASE_URL}/${locationId}/files/${selectedGalleryFile}`}
+                          src={`${API_BASE_URL}/${currentLocationId}/files/${selectedGalleryFile}`}
                           alt="Selected"
                           className={styles.previewImage}
                         />
                       ) : (
                         <video
-                          src={`${API_BASE_URL}/${locationId}/files/${selectedGalleryFile}`}
+                          src={`${API_BASE_URL}/${currentLocationId}/files/${selectedGalleryFile}`}
                           controls
                           className={styles.previewImage}
                         />
                       )}
                       <div className={styles.selectedFileInfo}>
                         <p>Wybrany plik: {selectedGalleryFile}</p>
-                        <p>Typ: {getFileType(selectedGalleryFile) === 'image' ? 'Zdjęcie' : 'Film'}</p>
+                        <p>Typ: {getFileType(selectedGalleryFile) === "image" ? "Zdjęcie" : "Film"}</p>
                       </div>
                     </div>
                   ) : (
@@ -906,12 +912,9 @@ function Schedule() {
             <div className={styles.modalContent}>
               <div className={styles.modalHeader}>
                 <h3 className={styles.modalTitle}>
-                  Harmonogramy dla {selectedDevices.length > 0 ? getDisplayName(selectedDevices[0].clientName) : ''}
+                  Harmonogramy dla {selectedDevices.length > 0 ? getDisplayName(selectedDevices[0].clientName) : ""}
                 </h3>
-                <button
-                  className={styles.closeButton}
-                  onClick={() => setIsScheduleListOpen(false)}
-                >
+                <button className={styles.closeButton} onClick={() => setIsScheduleListOpen(false)}>
                   ×
                 </button>
               </div>
@@ -921,22 +924,15 @@ function Schedule() {
                   {existingSchedules.map((schedule) => (
                     <div key={schedule._id} className={styles.scheduleItem}>
                       <div className={styles.scheduleInfo}>
-                        <div className={styles.scheduleType}>
-                          {schedule.type === 'fixed' ? 'Pojedynczy' : 'Cykliczny'}
-                        </div>
+                        <div className={styles.scheduleType}>{schedule.type === "fixed" ? "Pojedynczy" : "Cykliczny"}</div>
                         <div className={styles.scheduleTime}>
-                          {schedule.type === 'fixed'
-                            ? formatScheduleDate(schedule.date)
-                            : formatWeeklySchedule(schedule)}
+                          {schedule.type === "fixed" ? formatScheduleDate(schedule.date) : formatWeeklySchedule(schedule)}
                         </div>
                         <div className={styles.scheduleMedia}>
                           {schedule.media.filename} ({schedule.media.mediaType})
                         </div>
                       </div>
-                      <button
-                        className={styles.deleteScheduleButton}
-                        onClick={() => handleDeleteSchedule(schedule._id)}
-                      >
+                      <button className={styles.deleteScheduleButton} onClick={() => handleDeleteSchedule(schedule._id)}>
                         Usuń
                       </button>
                     </div>
@@ -947,10 +943,7 @@ function Schedule() {
               )}
 
               <div className={styles.modalActions}>
-                <button
-                  className={styles.closeButton}
-                  onClick={() => setIsScheduleListOpen(false)}
-                >
+                <button className={styles.closeButton} onClick={() => setIsScheduleListOpen(false)}>
                   Zamknij
                 </button>
               </div>
