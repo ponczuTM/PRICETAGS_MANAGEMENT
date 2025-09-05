@@ -6,6 +6,7 @@ import Schedule from "./components/Schedule";
 import Gallery from "./components/Gallery";
 import Login from "./components/Login";
 import Register from "./components/Register";
+import Settings from "./components/Settings";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
       <Route path="/schedule" element={<Schedule />} />
       <Route path="/gallery" element={<Gallery />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/settings" element={<Settings />} />
       </Routes>
     </Router>
   );

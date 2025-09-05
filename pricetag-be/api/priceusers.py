@@ -1,208 +1,227 @@
-from fastapi import APIRouter, HTTPException, Depends, Request, status
-from typing import List, Dict, Any
+# api/priceusers.py
+from fastapi import APIRouter, HTTPException, status, Request, Depends
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, EmailStr
 from bson import ObjectId
+from typing import Optional, List, Dict, Any
+import pyotp
+import qrcode
+import io
+import base64
+
 from passlib.context import CryptContext
-from datetime import datetime
 
-from models import (
-    PriceUser, PriceUserCreate, PriceUserUpdate, PriceUserResponse, PriceUserLogin
-)
-
+# ===== Router =====
 router = APIRouter()
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # ===== Helpers =====
-
-def get_database(request: Request):
+def get_db(request: Request):
     return request.app.mongodb
 
-def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+def hash_pwd(p: str) -> str:
+    return pwd_ctx.hash(p)
 
-def _normalize_priceuser_doc(doc: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Normalizuje dokument z bazy:
-    - konwertuje _id do str
-    - scala legacy 'locationId' (str) do 'locationIds' (List[str])
-    - usuwa stare pole 'locationId' z odpowiedzi
-    """
-    if not doc:
-        return doc
+def verify_pwd(plain: str, hashed: str) -> bool:
+    try:
+        return pwd_ctx.verify(plain, hashed)
+    except Exception:
+        return False
 
-    # _id -> str
-    if "_id" in doc and isinstance(doc["_id"], ObjectId):
-        doc["_id"] = str(doc["_id"])
+def to_str_id(doc: dict) -> dict:
+    d = dict(doc)
+    if isinstance(d.get("_id"), ObjectId):
+        d["_id"] = str(d["_id"])
+    return d
 
-    # migracja legacy
-    if "locationIds" not in doc or not isinstance(doc["locationIds"], list):
-        if "locationId" in doc and isinstance(doc["locationId"], str):
-            doc["locationIds"] = [doc["locationId"]]
-        elif "locationIds" in doc and isinstance(doc["locationIds"], str):
-            doc["locationIds"] = [doc["locationIds"]]
-        elif "locationIds" not in doc:
-            doc["locationIds"] = []
+def sanitize_priceuser(doc: dict) -> dict:
+    d = dict(doc)
+    d.pop("passwordHash", None)
+    d.pop("totp_secret", None)
+    if isinstance(d.get("_id"), ObjectId):
+        d["_id"] = str(d["_id"])
+    # ujednolicenie: locationIds zawsze lista stringów
+    if "locationIds" not in d or d["locationIds"] is None:
+        d["locationIds"] = []
+    else:
+        d["locationIds"] = [str(x) for x in d["locationIds"]]
+    return d
 
-    # nie pokazujemy legacy pola na zewnątrz
-    doc.pop("locationId", None)
+# ===== Modele żądań/odpowiedzi (lokalne do routera) =====
+class PriceUserRegisterInput(BaseModel):
+    first_name: str
+    last_name: str
+    email: EmailStr
+    password: str
+    locationName: str
+    # rejestracja bez przypisywania lokalizacji – admin zrobi to później
+    locationIds: Optional[List[str]] = None  # dozwolone, ale nie wymagane
 
-    return doc
+class PriceUserLoginWithOtp(BaseModel):
+    email: EmailStr
+    password: str
+    otp: Optional[str] = None
 
-def _ensure_locationIds_in_update(update: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Zapewnia, że legacy 'locationId' zostanie zamienione na tablicę 'locationIds'.
-    """
-    if "locationIds" in update and update["locationIds"] is not None:
-        if isinstance(update["locationIds"], str):
-            update["locationIds"] = [update["locationIds"]]
-        elif isinstance(update["locationIds"], list):
-            update["locationIds"] = [str(x) for x in update["locationIds"]]
-    if "locationId" in update and update["locationId"]:
-        val = update.pop("locationId")
-        if isinstance(val, list):
-            update["locationIds"] = [str(x) for x in val]
-        else:
-            update["locationIds"] = [str(val)]
-    return update
+class PriceUserUpdateInput(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    password: Optional[str] = None
+    locationName: Optional[str] = None
+    locationIds: Optional[List[str]] = None
 
+class TotpSetupInput(BaseModel):
+    email: EmailStr
+    password: str
 
-# ===== Endpoints =====
+class TotpDisableInput(BaseModel):
+    email: EmailStr
+    password: str
 
-@router.post("/login")
-async def priceuser_login(payload: PriceUserLogin, db=Depends(get_database)):
-    """
-    Logowanie PriceUser po email + password (bcrypt).
-    Zwraca dane użytkownika i placeholder tokenu.
-    """
-    doc = await db["priceusers"].find_one({"email": payload.email})
-    if not doc:
-        # raise HTTPException(status_code=401, detail="Invalid email or password")
-        raise HTTPException(status_code=401, detail="Invalid email - dont exists in database")
-
-    password_hash = doc.get("passwordHash") or ""
-    if not pwd_context.verify(payload.password, password_hash):
-        # raise HTTPException(status_code=401, detail="Invalid email or password")
-        raise HTTPException(status_code=401, detail="Invalid password - dont match with email")
-
-    doc = _normalize_priceuser_doc(doc)
-
-    # 🔑 sprawdzenie czy są przypisane lokalizacje
-    if not doc.get("locationIds") or len(doc["locationIds"]) == 0:
-        raise HTTPException(status_code=403, detail="User has no assigned locations")
-
-    return {
-        "message": "Logged in",
-        "user": PriceUserResponse(**doc),
-        "token": "dummy-token"
-    }
-
-
-
-@router.post("/", response_model=PriceUserResponse, status_code=status.HTTP_201_CREATED)
-async def create_priceuser(payload: PriceUserCreate, db=Depends(get_database)):
-    """
-    Tworzy PriceUser z locationIds (lista). Backward-compat:
-    jeśli front wyśle tylko 1 locationId (legacy) – zamienimy na tablicę.
-    """
-    # sprawdź duplikat e-maila
-    existing = await db["priceusers"].find_one({"email": payload.email})
-    if existing:
+# ===== Rejestracja (POST /api/priceusers) =====
+# Uwaga: Twój front woła POST na /api/priceusers (bez /register), więc dodajemy dwa aliasy:
+@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED)
+async def register_priceuser(body: PriceUserRegisterInput, db=Depends(get_db)):
+    # Unikalny email
+    exists = await db["priceusers"].find_one({"email": body.email})
+    if exists:
         raise HTTPException(status_code=400, detail="User with this email already exists")
 
-    # zbuduj locationIds
-    location_ids: List[str] = []
-    if payload.locationIds is not None:
-        location_ids = [str(x) for x in payload.locationIds]
-
     doc = {
-        "first_name": payload.first_name,
-        "last_name": payload.last_name,
-        "email": payload.email,
-        "locationName": payload.locationName,
-        "locationIds": location_ids,     # <=== zapisujemy listę
-        "passwordHash": hash_password(payload.password),
-        "created_at": datetime.utcnow(),
-        "updated_at": datetime.utcnow(),
+        "first_name": body.first_name.strip(),
+        "last_name": body.last_name.strip(),
+        "email": body.email.strip().lower(),
+        "locationName": body.locationName.strip(),
+        "locationIds": body.locationIds if body.locationIds else [],
+        "passwordHash": hash_pwd(body.password),
+        # 2FA:
+        "totp_enabled": False,
+        "totp_secret": None,
     }
-
     result = await db["priceusers"].insert_one(doc)
     created = await db["priceusers"].find_one({"_id": result.inserted_id})
-    created = _normalize_priceuser_doc(created)
+    return sanitize_priceuser(created)
 
-    return PriceUserResponse(**created)
+# ===== Lista użytkowników (GET /api/priceusers) – pomocniczo =====
+@router.get("", status_code=200)
+@router.get("/", status_code=200)
+async def list_priceusers(db=Depends(get_db)):
+    out = []
+    async for u in db["priceusers"].find({}):
+        out.append(sanitize_priceuser(u))
+    return out
 
+# ===== Pobranie jednego (GET /api/priceusers/{id}) – pomocniczo =====
+@router.get("/{priceuser_id}", status_code=200)
+async def get_priceuser(priceuser_id: str, db=Depends(get_db)):
+    if not ObjectId.is_valid(priceuser_id):
+        raise HTTPException(status_code=400, detail="Invalid id")
+    u = await db["priceusers"].find_one({"_id": ObjectId(priceuser_id)})
+    if not u:
+        raise HTTPException(status_code=404, detail="Not found")
+    return sanitize_priceuser(u)
 
-@router.get("/", response_model=List[PriceUserResponse])
-async def list_priceusers(db=Depends(get_database)):
-    users: List[PriceUserResponse] = []
-    async for doc in db["priceusers"].find():
-        doc = _normalize_priceuser_doc(doc)
-        users.append(PriceUserResponse(**doc))
-    return users
+# ===== Update (PUT /api/priceusers/{id}) – opcjonalnie =====
+@router.put("/{priceuser_id}", status_code=200)
+async def update_priceuser(priceuser_id: str, body: PriceUserUpdateInput, db=Depends(get_db)):
+    if not ObjectId.is_valid(priceuser_id):
+        raise HTTPException(status_code=400, detail="Invalid id")
 
+    updates: Dict[str, Any] = {}
+    if body.first_name is not None: updates["first_name"] = body.first_name.strip()
+    if body.last_name is not None:  updates["last_name"]  = body.last_name.strip()
+    if body.email is not None:      updates["email"]      = body.email.strip().lower()
+    if body.locationName is not None: updates["locationName"] = body.locationName.strip()
+    if body.locationIds is not None:  updates["locationIds"]  = [str(x) for x in body.locationIds]
+    if body.password is not None:     updates["passwordHash"] = hash_pwd(body.password)
 
-@router.get("/{user_id}", response_model=PriceUserResponse)
-async def get_priceuser(user_id: str, db=Depends(get_database)):
-    if not ObjectId.is_valid(user_id):
-        raise HTTPException(status_code=400, detail="Invalid user_id")
+    if not updates:
+        raise HTTPException(status_code=400, detail="No fields to update")
 
-    doc = await db["priceusers"].find_one({"_id": ObjectId(user_id)})
-    if not doc:
-        raise HTTPException(status_code=404, detail="User not found")
+    # Gdy zmieniamy email, sprawdź unikalność
+    if "email" in updates:
+        dup = await db["priceusers"].find_one({"email": updates["email"], "_id": {"$ne": ObjectId(priceuser_id)}})
+        if dup:
+            raise HTTPException(status_code=400, detail="Email already in use")
 
-    doc = _normalize_priceuser_doc(doc)
-    return PriceUserResponse(**doc)
+    res = await db["priceusers"].update_one({"_id": ObjectId(priceuser_id)}, {"$set": updates})
+    if res.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    u = await db["priceusers"].find_one({"_id": ObjectId(priceuser_id)})
+    return sanitize_priceuser(u)
 
+# ===== Login (POST /api/priceusers/login) z obsługą TOTP =====
+@router.post("/login", status_code=200)
+async def login_priceuser(body: PriceUserLoginWithOtp, db=Depends(get_db)):
+    user = await db["priceusers"].find_one({"email": body.email.strip().lower()})
+    if not user or not verify_pwd(body.password, user.get("passwordHash", "")):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
 
-@router.put("/{user_id}", response_model=PriceUserResponse)
-async def update_priceuser(user_id: str, payload: PriceUserUpdate, db=Depends(get_database)):
-    """
-    Nadpisywanie pól (PUT). Obsługuje:
-    - first_name, last_name, email, locationName, locationIds (lista), password (hashowany)
-    - usuwa legacy 'locationId' jeśli jeszcze był
-    """
-    if not ObjectId.is_valid(user_id):
-        raise HTTPException(status_code=400, detail="Invalid user_id")
+    if user.get("totp_enabled"):
+        # Jeśli TOTP włączony i brak OTP → poinformuj front, by poprosił o kod
+        if not body.otp:
+            return JSONResponse(status_code=401, content={"detail": "OTP_REQUIRED"})
+        secret = user.get("totp_secret")
+        if not secret:
+            raise HTTPException(status_code=500, detail="TOTP misconfigured")
+        totp = pyotp.TOTP(secret)
+        # valid_window=1 => tolerancja +/- 30s
+        if not totp.verify(body.otp.strip(), valid_window=1):
+            raise HTTPException(status_code=401, detail="INVALID_OTP")
 
-    update_data = payload.dict(exclude_unset=True)
-    update_data = _ensure_locationIds_in_update(update_data)
-
-    # hasło
-    if "password" in update_data and update_data["password"]:
-        update_data["passwordHash"] = hash_password(update_data.pop("password"))
-
-    # jeśli ktoś wyśle pustą listę locationIds, to tak ją zapiszemy
-    if "locationIds" in update_data and update_data["locationIds"] is None:
-        update_data["locationIds"] = []
-
-    update_op = {
-        "$set": {
-            **{k: v for k, v in update_data.items() if k != "locationId"},
-            "updated_at": datetime.utcnow()
-        },
-        "$unset": {
-            "locationId": ""   # legacy cleanup
-        }
+    # TODO: wygeneruj prawdziwy JWT; na razie placeholder
+    token = "your_jwt_token_here"
+    return {
+        "message": "Logged in",
+        "user": sanitize_priceuser(user),
+        "token": token
     }
 
-    result = await db["priceusers"].update_one(
-        {"_id": ObjectId(user_id)},
-        update_op
+# ===== Włączenie TOTP (POST /api/priceusers/totp/setup) =====
+@router.post("/totp/setup", status_code=200)
+async def totp_setup(body: TotpSetupInput, db=Depends(get_db)):
+    user = await db["priceusers"].find_one({"email": body.email.strip().lower()})
+    if not user or not verify_pwd(body.password, user.get("passwordHash", "")):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    if user.get("totp_enabled") and user.get("totp_secret"):
+        raise HTTPException(status_code=400, detail="TOTP already enabled")
+
+    secret = pyotp.random_base32()
+    issuer = "EXON-PriceTag"
+    account = user["email"]
+    otpauth_uri = pyotp.totp.TOTP(secret).provisioning_uri(name=account, issuer_name=issuer)
+
+    # Wygeneruj QR w base64 (data URL)
+    img = qrcode.make(otpauth_uri)
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    qr_b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+    qr_data_url = f"data:image/png;base64,{qr_b64}"
+
+    await db["priceusers"].update_one(
+        {"_id": user["_id"]},
+        {"$set": {"totp_secret": secret, "totp_enabled": True}}
     )
 
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="User not found")
+    return {
+        "issuer": issuer,
+        "account": account,
+        "secret": secret,
+        "otpauth_uri": otpauth_uri,
+        "qr_data_url": qr_data_url
+    }
 
-    doc = await db["priceusers"].find_one({"_id": ObjectId(user_id)})
-    doc = _normalize_priceuser_doc(doc)
-    return PriceUserResponse(**doc)
+# ===== Wyłączenie TOTP (POST /api/priceusers/totp/disable) =====
+@router.post("/totp/disable", status_code=200)
+async def totp_disable(body: TotpDisableInput, db=Depends(get_db)):
+    user = await db["priceusers"].find_one({"email": body.email.strip().lower()})
+    if not user or not verify_pwd(body.password, user.get("passwordHash", "")):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
 
-
-@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_priceuser(user_id: str, db=Depends(get_database)):
-    if not ObjectId.is_valid(user_id):
-        raise HTTPException(status_code=400, detail="Invalid user_id")
-
-    result = await db["priceusers"].delete_one({"_id": ObjectId(user_id)})
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="User not found")
-    return None
+    await db["priceusers"].update_one(
+        {"_id": user["_id"]},
+        {"$set": {"totp_enabled": False}, "$unset": {"totp_secret": ""}}
+    )
+    return {"message": "TOTP disabled"}

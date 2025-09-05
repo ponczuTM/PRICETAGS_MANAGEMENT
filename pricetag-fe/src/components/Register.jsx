@@ -151,6 +151,11 @@ const Register = () => {
           />
         </div>
 
+        <p className={styles.smallNote}>
+            Po zalogowaniu możesz włączyć 2FA (Google Authenticator) – w aplikacji przejdź do sekcji „Ustawienia → Bezpieczeństwo”.
+        </p>
+
+
         <button type="submit" disabled={loading}>
           {loading ? "Rejestruję..." : "Zarejestruj"}
         </button>

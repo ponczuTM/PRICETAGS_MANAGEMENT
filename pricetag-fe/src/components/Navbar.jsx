@@ -8,7 +8,7 @@ const Navbar = ({ logoText = 'ZARZĄDZANIE PRICETAGAMI' }) => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    navigate("/"); // przenosi na stronę logowania
+    navigate("/");
   };
 
   return (
@@ -21,6 +21,7 @@ const Navbar = ({ logoText = 'ZARZĄDZANIE PRICETAGAMI' }) => {
         <Link to="/groups" className={styles.navLink}>Grupy</Link>
         <Link to="/schedule" className={styles.navLink}>Harmonogram</Link>
         <Link to="/gallery" className={styles.navLink}>Galeria plików</Link>
+        <Link to="/settings" className={styles.navLink}>Ustawienia</Link>
         <button onClick={handleLogout} className={styles.logoutButton}>Wyloguj się</button>
       </div>
     </nav>
