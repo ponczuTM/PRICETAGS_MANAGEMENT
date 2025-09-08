@@ -8,21 +8,13 @@ const API_BASE = "http://localhost:8000/api/priceusers";
 export default function Settings() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-
-  // 2FA state
   const [totpEnabled, setTotpEnabled] = useState(false);
   const [password, setPassword] = useState("");
-
-  // Setup response
   const [qrDataUrl, setQrDataUrl] = useState(null);
   const [secret, setSecret] = useState(null);
   const [otpauthUri, setOtpauthUri] = useState(null);
-
-  // Test OTP
   const [otp, setOtp] = useState("");
   const [testResult, setTestResult] = useState("");
-
-  // UX
   const [loadingSetup, setLoadingSetup] = useState(false);
   const [loadingDisable, setLoadingDisable] = useState(false);
   const [loadingRefresh, setLoadingRefresh] = useState(false);
@@ -183,14 +175,6 @@ export default function Settings() {
     }
   }
 
-  function copySecret() {
-    if (!secret) return;
-    navigator.clipboard.writeText(secret).then(() => {
-      setTestResult("🔑 Skopiowano sekret do schowka.");
-      setTimeout(() => setTestResult(""), 1500);
-    });
-  }
-
   if (!user) return null;
 
   return (
@@ -246,15 +230,14 @@ export default function Settings() {
               <img src={qrDataUrl} alt="QR do konfiguracji TOTP" className={styles.qr} />
               <div className={styles.secretRow}>
                 <div>
-                  <div><b>Sekret (zapasowo):</b></div>
+                  <div><b>Sekret (jeśli nie mona skanować QR):</b></div>
                   <code className={styles.secret}>{secret}</code>
                 </div>
-                <button className={styles.copyBtn} onClick={copySecret}>Kopiuj</button>
               </div>
-              <details className={styles.uriDetails}>
+              {/* <details className={styles.uriDetails}>
                 <summary>Pokaż otpauth URI</summary>
                 <code className={styles.uri}>{otpauthUri}</code>
-              </details>
+              </details> */}
             </div>
           )}
 
