@@ -213,6 +213,7 @@ async def totp_setup(body: TotpSetupInput, db=Depends(get_db)):
         "qr_data_url": qr_data_url
     }
 
+
 # ===== Wyłączenie TOTP (POST /api/priceusers/totp/disable) =====
 @router.post("/totp/disable", status_code=200)
 async def totp_disable(body: TotpDisableInput, db=Depends(get_db)):
@@ -225,3 +226,18 @@ async def totp_disable(body: TotpDisableInput, db=Depends(get_db)):
         {"$set": {"totp_enabled": False}, "$unset": {"totp_secret": ""}}
     )
     return {"message": "TOTP disabled"}
+
+
+# ===== DELETE /api/priceusers/{user_id} =====
+@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_price_user(user_id: str, db=Depends(get_db)):
+    """
+    Usuwa użytkownika z kolekcji 'priceusers' po jego _id (ObjectId).
+    """
+    if not ObjectId.is_valid(user_id):
+        raise HTTPException(status_code=400, detail="Invalid user_id (ObjectId)")
+
+    result = await db["priceusers"].delete_one({"_id": ObjectId(user_id)})
+
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="PriceUser not found")
