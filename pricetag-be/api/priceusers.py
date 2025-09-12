@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, EmailStr
 from bson import ObjectId
 from typing import Optional, List, Dict, Any
+from datetime import datetime
 import pyotp
 import qrcode
 import io
@@ -47,6 +48,23 @@ def sanitize_priceuser(doc: dict) -> dict:
         d["locationIds"] = [str(x) for x in d["locationIds"]]
     return d
 
+async def _update_priceuser(user_id: str, update_fields: Dict[str, Any], db):
+    """Wspólna logika do aktualizacji i zwrotu zaktualizowanego dokumentu."""
+    if not ObjectId.is_valid(user_id):
+        raise HTTPException(status_code=400, detail="Invalid user_id (ObjectId)")
+    update_fields = dict(update_fields or {})
+    update_fields["updated_at"] = datetime.utcnow()
+    res = await db["priceusers"].update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": update_fields}
+    )
+    if res.matched_count == 0:
+        raise HTTPException(status_code=404, detail="PriceUser not found")
+    doc = await db["priceusers"].find_one({"_id": ObjectId(user_id)})
+    if not doc:
+        raise HTTPException(status_code=404, detail="PriceUser not found after update")
+    return sanitize_priceuser(doc)
+
 # ===== Modele żądań/odpowiedzi (lokalne do routera) =====
 class PriceUserRegisterInput(BaseModel):
     first_name: str
@@ -78,23 +96,42 @@ class TotpDisableInput(BaseModel):
     email: EmailStr
     password: str
 
+# Granularne PATCH-e
+class UpdatePassword(BaseModel):
+    password: str
+
+class UpdateEmail(BaseModel):
+    email: EmailStr
+
+class UpdateLocationName(BaseModel):
+    locationName: str
+
+class UpdateFirstName(BaseModel):
+    first_name: str
+
+class UpdateLastName(BaseModel):
+    last_name: str
+
 # ===== Rejestracja (POST /api/priceusers) =====
-# Uwaga: Twój front woła POST na /api/priceusers (bez /register), więc dodajemy dwa aliasy:
+# Uwaga: front woła POST na /api/priceusers (bez /register), więc są dwa aliasy:
 @router.post("", status_code=status.HTTP_201_CREATED)
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def register_priceuser(body: PriceUserRegisterInput, db=Depends(get_db)):
     # Unikalny email
-    exists = await db["priceusers"].find_one({"email": body.email})
+    exists = await db["priceusers"].find_one({"email": body.email.strip().lower()})
     if exists:
         raise HTTPException(status_code=400, detail="User with this email already exists")
 
+    now = datetime.utcnow()
     doc = {
         "first_name": body.first_name.strip(),
         "last_name": body.last_name.strip(),
         "email": body.email.strip().lower(),
         "locationName": body.locationName.strip(),
-        "locationIds": body.locationIds if body.locationIds else [],
+        "locationIds": [str(x) for x in (body.locationIds or [])],
         "passwordHash": hash_pwd(body.password),
+        "created_at": now,
+        "updated_at": now,
         # 2FA:
         "totp_enabled": False,
         "totp_secret": None,
@@ -103,7 +140,7 @@ async def register_priceuser(body: PriceUserRegisterInput, db=Depends(get_db)):
     created = await db["priceusers"].find_one({"_id": result.inserted_id})
     return sanitize_priceuser(created)
 
-# ===== Lista użytkowników (GET /api/priceusers) – pomocniczo =====
+# ===== Lista użytkowników (GET /api/priceusers) =====
 @router.get("", status_code=200)
 @router.get("/", status_code=200)
 async def list_priceusers(db=Depends(get_db)):
@@ -112,7 +149,7 @@ async def list_priceusers(db=Depends(get_db)):
         out.append(sanitize_priceuser(u))
     return out
 
-# ===== Pobranie jednego (GET /api/priceusers/{id}) – pomocniczo =====
+# ===== Pobranie jednego (GET /api/priceusers/{id}) =====
 @router.get("/{priceuser_id}", status_code=200)
 async def get_priceuser(priceuser_id: str, db=Depends(get_db)):
     if not ObjectId.is_valid(priceuser_id):
@@ -122,34 +159,41 @@ async def get_priceuser(priceuser_id: str, db=Depends(get_db)):
         raise HTTPException(status_code=404, detail="Not found")
     return sanitize_priceuser(u)
 
-# ===== Update (PUT /api/priceusers/{id}) – opcjonalnie =====
+# ===== Update całościowy (PUT /api/priceusers/{id}) – opcjonalny =====
 @router.put("/{priceuser_id}", status_code=200)
 async def update_priceuser(priceuser_id: str, body: PriceUserUpdateInput, db=Depends(get_db)):
     if not ObjectId.is_valid(priceuser_id):
         raise HTTPException(status_code=400, detail="Invalid id")
 
     updates: Dict[str, Any] = {}
-    if body.first_name is not None: updates["first_name"] = body.first_name.strip()
-    if body.last_name is not None:  updates["last_name"]  = body.last_name.strip()
-    if body.email is not None:      updates["email"]      = body.email.strip().lower()
-    if body.locationName is not None: updates["locationName"] = body.locationName.strip()
-    if body.locationIds is not None:  updates["locationIds"]  = [str(x) for x in body.locationIds]
-    if body.password is not None:     updates["passwordHash"] = hash_pwd(body.password)
+    if body.first_name is not None:
+        updates["first_name"] = body.first_name.strip()
+    if body.last_name is not None:
+        updates["last_name"] = body.last_name.strip()
+    if body.email is not None:
+        updates["email"] = body.email.strip().lower()
+    if body.locationName is not None:
+        updates["locationName"] = body.locationName.strip()
+    if body.locationIds is not None:
+        updates["locationIds"] = [str(x) for x in body.locationIds]
+    if body.password is not None:
+        if not body.password.strip():
+            raise HTTPException(status_code=400, detail="Password cannot be empty")
+        updates["passwordHash"] = hash_pwd(body.password)
 
     if not updates:
         raise HTTPException(status_code=400, detail="No fields to update")
 
     # Gdy zmieniamy email, sprawdź unikalność
     if "email" in updates:
-        dup = await db["priceusers"].find_one({"email": updates["email"], "_id": {"$ne": ObjectId(priceuser_id)}})
+        dup = await db["priceusers"].find_one({
+            "email": updates["email"],
+            "_id": {"$ne": ObjectId(priceuser_id)}
+        })
         if dup:
             raise HTTPException(status_code=400, detail="Email already in use")
 
-    res = await db["priceusers"].update_one({"_id": ObjectId(priceuser_id)}, {"$set": updates})
-    if res.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Not found")
-    u = await db["priceusers"].find_one({"_id": ObjectId(priceuser_id)})
-    return sanitize_priceuser(u)
+    return await _update_priceuser(priceuser_id, updates, db)
 
 # ===== Login (POST /api/priceusers/login) z obsługą TOTP =====
 @router.post("/login", status_code=200)
@@ -202,7 +246,7 @@ async def totp_setup(body: TotpSetupInput, db=Depends(get_db)):
 
     await db["priceusers"].update_one(
         {"_id": user["_id"]},
-        {"$set": {"totp_secret": secret, "totp_enabled": True}}
+        {"$set": {"totp_secret": secret, "totp_enabled": True, "updated_at": datetime.utcnow()}}
     )
 
     return {
@@ -213,7 +257,6 @@ async def totp_setup(body: TotpSetupInput, db=Depends(get_db)):
         "qr_data_url": qr_data_url
     }
 
-
 # ===== Wyłączenie TOTP (POST /api/priceusers/totp/disable) =====
 @router.post("/totp/disable", status_code=200)
 async def totp_disable(body: TotpDisableInput, db=Depends(get_db)):
@@ -223,10 +266,51 @@ async def totp_disable(body: TotpDisableInput, db=Depends(get_db)):
 
     await db["priceusers"].update_one(
         {"_id": user["_id"]},
-        {"$set": {"totp_enabled": False}, "$unset": {"totp_secret": ""}}
+        {"$set": {"totp_enabled": False, "updated_at": datetime.utcnow()},
+         "$unset": {"totp_secret": ""}}
     )
     return {"message": "TOTP disabled"}
 
+# ===== Granularne PATCH-e zgodnie z prośbą =====
+
+# Zmiana hasła
+@router.patch("/{user_id}/password", status_code=status.HTTP_200_OK)
+async def change_password(user_id: str, body: UpdatePassword, db=Depends(get_db)):
+    if not body.password or not body.password.strip():
+        raise HTTPException(status_code=400, detail="Password cannot be empty")
+    hashed = hash_pwd(body.password)
+    doc = await _update_priceuser(user_id, {"passwordHash": hashed}, db)
+    return {"message": "Password updated", "user": doc}
+
+# Zmiana emaila (z kontrolą unikalności)
+@router.patch("/{user_id}/email", status_code=status.HTTP_200_OK)
+async def change_email(user_id: str, body: UpdateEmail, db=Depends(get_db)):
+    if not ObjectId.is_valid(user_id):
+        raise HTTPException(status_code=400, detail="Invalid user_id (ObjectId)")
+    new_email = body.email.strip().lower()
+    exists = await db["priceusers"].find_one({"email": new_email, "_id": {"$ne": ObjectId(user_id)}})
+    if exists:
+        raise HTTPException(status_code=400, detail="Email already in use")
+    doc = await _update_priceuser(user_id, {"email": new_email}, db)
+    return {"message": "Email updated", "user": doc}
+
+# Zmiana locationName
+@router.patch("/{user_id}/location-name", status_code=status.HTTP_200_OK)
+async def change_location_name(user_id: str, body: UpdateLocationName, db=Depends(get_db)):
+    doc = await _update_priceuser(user_id, {"locationName": body.locationName.strip()}, db)
+    return {"message": "Location name updated", "user": doc}
+
+# Zmiana first_name
+@router.patch("/{user_id}/first-name", status_code=status.HTTP_200_OK)
+async def change_first_name(user_id: str, body: UpdateFirstName, db=Depends(get_db)):
+    doc = await _update_priceuser(user_id, {"first_name": body.first_name.strip()}, db)
+    return {"message": "First name updated", "user": doc}
+
+# Zmiana last_name
+@router.patch("/{user_id}/last-name", status_code=status.HTTP_200_OK)
+async def change_last_name(user_id: str, body: UpdateLastName, db=Depends(get_db)):
+    doc = await _update_priceuser(user_id, {"last_name": body.last_name.strip()}, db)
+    return {"message": "Last name updated", "user": doc}
 
 # ===== DELETE /api/priceusers/{user_id} =====
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)

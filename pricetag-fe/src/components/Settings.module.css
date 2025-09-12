@@ -11,13 +11,21 @@
   padding: 0 16px;
 }
 
+/* Karty/sektory */
 .card {
   background: #fff;
   border-radius: 14px;
   padding: 20px;
   box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  margin-bottom: 20px;
 }
 
+.card h2 {
+  margin: 0 0 14px 0;
+  font-size: 20px;
+}
+
+/* Wiersze formularza */
 .row {
   display: grid;
   grid-template-columns: 200px 1fr;
@@ -31,14 +39,37 @@
   border: 1px solid #ddd;
   border-radius: 10px;
   font-size: 14px;
+  width: 100%;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
 }
 
+.row input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+}
+
+/* Wiersz z inputem + przyciskiem "Zapisz" */
+.growRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.noteLine {
+  grid-column: 2 / -1;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Przyciski */
 .primary, .secondary, .danger, .copyBtn, .linkBtn {
   border: none;
   border-radius: 10px;
   padding: 10px 14px;
   cursor: pointer;
   font-weight: 600;
+  transition: transform .05s ease, opacity .15s ease, background-color .15s ease;
 }
 
 .primary { background: #2563eb; color: #fff; }
@@ -47,6 +78,29 @@
 .copyBtn { background: #10b981; color: #fff; }
 .linkBtn { background: transparent; color: #2563eb; padding: 0; }
 
+.primary:active,
+.secondary:active,
+.danger:active,
+.copyBtn:active {
+  transform: translateY(1px);
+}
+
+.primary:disabled,
+.secondary:disabled,
+.danger:disabled,
+.copyBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Blok narzędzi w kartach (np. odśwież) */
+.tools {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px dashed #e5e7eb;
+}
+
+/* QR / 2FA */
 .qrBlock {
   margin-top: 18px;
   padding-top: 12px;
@@ -83,13 +137,11 @@
 }
 
 .secret:hover {
-  text-shadow: 0 0 0px rgb(255, 255, 255);
-  color: white
+  text-shadow: 0 0 0 rgb(255, 255, 255);
+  color: #fff;
 }
 
-.uriDetails {
-  margin-top: 8px;
-}
+.uriDetails { margin-top: 8px; }
 
 .uri {
   display: block;
@@ -101,13 +153,10 @@
   border-radius: 8px;
 }
 
-.testForm {
-  margin-top: 18px;
-}
+.testForm { margin-top: 18px; }
 
-.messages {
-  margin-top: 12px;
-}
+/* Komunikaty */
+.messages { margin-top: 12px; }
 
 .error {
   color: #b91c1c;
@@ -122,4 +171,21 @@
 .note {
   color: #4b5563;
   margin-bottom: 10px;
+}
+
+/* Opcjonalne stany walidacji dla inputów */
+.inputError {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239,68,68,0.12) !important;
+}
+
+/* Mobile: jedna kolumna */
+@media (max-width: 640px) {
+  .row {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+  .noteLine {
+    grid-column: 1 / -1;
+  }
 }
