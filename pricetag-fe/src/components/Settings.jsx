@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import styles from "./Settings.module.css";
 import Navbar from "./Navbar";
 import { useNavigate } from "react-router-dom";
+import AddLocation from "./addlocation";
 
 const API_BASE = "http://localhost:8000/api/priceusers";
 
@@ -746,6 +747,10 @@ export default function Settings() {
             </button>
           </div>
         </section>
+        <div>
+        <AddLocation/>
+        </div>
+        
       </div>
     </div>
   );

@@ -1,0 +1,248 @@
+/* ====== Layout ====== */
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 80vh;
+  margin-top: 100px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  margin: 16px auto;
+  width: 100%;
+  max-width: 980px;
+}
+
+.card h2, .card h3, .card h4 {
+  margin: 0 0 14px 0;
+}
+
+/* Wiersze formularza / drobne układy */
+.row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.growRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* ====== Inputs ====== */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea,
+select {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 14px;
+  width: 100%;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+  background: #fff;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+}
+
+.inputError {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239,68,68,0.12) !important;
+}
+
+/* ====== Buttons ====== */
+.primary, .secondary, .danger {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform .05s ease, opacity .15s ease, background-color .15s ease;
+}
+
+.primary { background: #2563eb; color: #fff; }
+.secondary { background: #e5e7eb; color: #111827; }
+.danger { background: #ef4444; color: #fff; }
+
+.primary:active, .secondary:active, .danger:active {
+  transform: translateY(1px);
+}
+
+.primary:disabled, .secondary:disabled, .danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Linki-akcje w nagłówkach */
+.card a {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 600;
+}
+.card a:hover { text-decoration: underline; }
+
+/* ====== Tabela ====== */
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #eee;
+}
+
+.table thead th {
+  text-align: left;
+  font-size: 13px;
+  font-weight: 700;
+  color: #374151;
+  background: #f9fafb;
+  padding: 12px 14px;
+  border-bottom: 1px solid #eee;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.table tbody td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  font-size: 14px;
+  color: #111827;
+}
+
+.table tbody tr:hover {
+  background: #fafafa;
+}
+
+.table code {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+/* Inputy w tabeli */
+.table input[type="text"] {
+  min-width: 220px;
+}
+
+/* Kolumna „Status” – drobne znaczniki */
+.badge {
+  display: inline-block;
+  font-size: 12px;
+  line-height: 1;
+  padding: 6px 8px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.badgeOk {
+  color: #065f46;
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+}
+
+.badgeDirty {
+  color: #92400e;
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.badgeSaving {
+  color: #1e3a8a;
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.badgeError {
+  color: #991b1b;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+/* Akcje w tabeli */
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.actions .primary,
+.actions .secondary,
+.actions .danger {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+/* ====== Komunikaty ====== */
+.error {
+  color: #b91c1c;
+  margin: 4px 0;
+}
+
+.info {
+  color: #065f46;
+  margin: 4px 0;
+}
+
+.note {
+  color: #4b5563;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+/* Dodatkowe bloki pomocnicze */
+.tools {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px dashed #e5e7eb;
+}
+
+/* ====== Responsywność ====== */
+@media (max-width: 880px) {
+  .row {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 640px) {
+  .table thead {
+    display: none;
+  }
+  .table, .table tbody, .table tr, .table td {
+    display: block;
+    width: 100%;
+  }
+  .table tr {
+    border-bottom: 1px solid #eee;
+    padding: 10px 12px;
+  }
+  .table td {
+    border: none;
+    padding: 8px 0;
+  }
+  .table td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 4px;
+  }
+}

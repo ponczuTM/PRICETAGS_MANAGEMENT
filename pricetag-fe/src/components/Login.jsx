@@ -26,14 +26,13 @@ const Login = () => {
         body: JSON.stringify({
           email,
           password,
-          otp: otpRequired ? otp.trim() : undefined, // ⬅️ wyślij tylko gdy potrzebny
+          otp: otpRequired ? otp.trim() : undefined,
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        // Gdy backend mówi, że potrzeba OTP – pokaż pole i nie traktuj jako „błąd końcowy”
         if (data?.detail === "OTP_REQUIRED") {
           setOtpRequired(true);
           setErrorMsg("Wpisz jednorazowy kod z aplikacji.");
@@ -42,19 +41,30 @@ const Login = () => {
         throw new Error(data.detail || data.message || "Logowanie nieudane");
       }
 
-      const { user, token } = data;
-
-      if (!user.locationIds || !Array.isArray(user.locationIds) || user.locationIds.length === 0) {
-        throw new Error("Użytkownik nie ma przypisanych lokalizacji.");
+      const { user, token } = data || {};
+      if (!user || typeof user !== "object") {
+        throw new Error("Nieprawidłowa odpowiedź serwera.");
       }
 
+      // Zapis tokena i użytkownika zawsze – nawet bez lokalizacji
       localStorage.setItem("token", token || "");
       localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("locationIds", JSON.stringify(user.locationIds));
-      localStorage.setItem("locationId", user.locationIds[0]);
 
-      setUserInfo(user);
-      setTimeout(() => navigate("/mainpage"), 800);
+      const ids = Array.isArray(user.locationIds) ? user.locationIds : [];
+      localStorage.setItem("locationIds", JSON.stringify(ids));
+
+      if (ids.length > 0) {
+        // Mamy lokalizacje → ustaw domyślne i idź na /mainpage
+        localStorage.setItem("locationId", ids[0]);
+        setUserInfo(user);
+        setTimeout(() => navigate("/mainpage"), 800);
+      } else {
+        // Brak lokalizacji → wyczyść ewentualne stare locationId i idź na /addlocation
+        localStorage.removeItem("locationId");
+        setUserInfo(user);
+        setErrorMsg(""); // brak błędu – to legalny scenariusz
+        setTimeout(() => navigate("/addlocation"), 800);
+      }
     } catch (error) {
       console.error("Login error:", error);
       setErrorMsg(error.message || "Wystąpił błąd podczas logowania.");
@@ -102,7 +112,8 @@ const Login = () => {
               id="otp"
               type="text"
               inputMode="numeric"
-              pattern="\d*"
+              pattern="\\d*"
+              maxLength={6}
               value={otp}
               onChange={(e)=>setOtp(e.target.value)}
               placeholder="123456"
@@ -127,7 +138,11 @@ const Login = () => {
           <p><strong>Użytkownik:</strong> {userInfo.first_name} {userInfo.last_name}</p>
           <p><strong>Email:</strong> {userInfo.email}</p>
           <p><strong>Location IDs:</strong> {Array.isArray(userInfo.locationIds) ? userInfo.locationIds.join(", ") : "—"}</p>
-          <p className={styles.redirectMessage}>Za chwilę nastąpi przekierowanie…</p>
+          <p className={styles.redirectMessage}>
+            {Array.isArray(userInfo.locationIds) && userInfo.locationIds.length > 0
+              ? "Za chwilę nastąpi przekierowanie do panelu…"
+              : "Nie masz jeszcze lokalizacji – przenoszę do dodania lokalizacji…"}
+          </p>
         </div>
       )}
     </div>
