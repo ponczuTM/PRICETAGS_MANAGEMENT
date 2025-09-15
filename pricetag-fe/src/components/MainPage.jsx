@@ -8,13 +8,10 @@ const API_BASE_URL = `${import.meta.env.VITE_BACKEND_URL}/api/locations`;
 
 function MainPage() {
   const navigate = useNavigate();
-
-  // === NOWE: pobieramy z localStorage tablicę locationIds i wybieramy bieżącą lokalizację ===
   const storedUser = localStorage.getItem("user");
   const parsedUser = storedUser ? JSON.parse(storedUser) : null;
 
   const storedLocationIds = (() => {
-    // preferuj klucz 'locationIds' (tablica); fallback: jeśli ktoś zostawił stary 'locationId'
     try {
       const arr = JSON.parse(localStorage.getItem("locationIds") || "[]");
       if (Array.isArray(arr) && arr.length > 0) return arr;
