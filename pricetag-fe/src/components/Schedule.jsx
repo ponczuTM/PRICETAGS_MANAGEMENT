@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 
 registerLocale("pl", pl);
 
-const API_BASE_URL = "http://localhost:8000/api/locations";
+const API_BASE_URL = `${import.meta.env.VITE_BACKEND_URL}/api/locations`;
 
 function Schedule() {
   const navigate = useNavigate();

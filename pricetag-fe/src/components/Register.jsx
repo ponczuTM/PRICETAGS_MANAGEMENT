@@ -39,7 +39,7 @@ const Register = () => {
 
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:8000/api/priceusers", {
+      const res = await fetch(`${backendUrl}/api/priceusers`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

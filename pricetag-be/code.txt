@@ -1676,6 +1676,21 @@ async def update_device_ip(
     return await _update_device_field(location_id, device_id, {"ip": ip}, db)
 
 
+@router.put("/{location_id}")
+async def update_location(location_id: str, body: dict, db=Depends(get_database)):
+    if not ObjectId.is_valid(location_id):
+        raise HTTPException(400, "Invalid location ID")
+    updates = {}
+    if "name" in body: updates["name"] = body["name"]
+    if "address" in body: updates["address"] = body["address"]
+    if not updates: raise HTTPException(400, "No fields to update")
+    res = await db["locations"].update_one({"_id": ObjectId(location_id)}, {"$set": updates})
+    if res.matched_count == 0: raise HTTPException(404, "Location not found")
+    doc = await db["locations"].find_one({"_id": ObjectId(location_id)})
+    doc["_id"] = str(doc["_id"])
+    return doc
+
+
 mam taki api/users.py:
 from fastapi import APIRouter, HTTPException, Depends, Request, status
 from typing import List

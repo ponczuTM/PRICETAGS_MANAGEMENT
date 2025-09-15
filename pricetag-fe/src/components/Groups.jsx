@@ -18,7 +18,7 @@ const storedLocationIds = (() => {
   return legacy ? [legacy] : (parsedUser?.locationIds || []);
 })();
 
-const API_BASE_URL = "http://localhost:8000/api/locations";
+const API_BASE_URL = `${import.meta.env.VITE_BACKEND_URL}/api/locations`;
 
 function Groups() {
   const [devices, setDevices] = useState([]);

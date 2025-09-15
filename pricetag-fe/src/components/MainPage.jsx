@@ -4,7 +4,7 @@ import Navbar from "./Navbar";
 import edit from "./../assets/images/edit.png";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE_URL = "http://localhost:8000/api/locations";
+const API_BASE_URL = `${import.meta.env.VITE_BACKEND_URL}/api/locations`;
 
 function MainPage() {
   const navigate = useNavigate();

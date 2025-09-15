@@ -3,7 +3,7 @@ import styles from "./Gallery.module.css";
 import Navbar from "./Navbar";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE_URL = "http://localhost:8000/api/locations";
+const API_BASE_URL = `${import.meta.env.VITE_BACKEND_URL}/api/locations`;
 
 function Gallery() {
   const navigate = useNavigate();

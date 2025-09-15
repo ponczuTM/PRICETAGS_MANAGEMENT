@@ -19,8 +19,10 @@ const Login = () => {
     setUserInfo(null);
     setLoading(true);
 
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
     try {
-      const response = await fetch("http://localhost:8000/api/priceusers/login", {
+      const response = await fetch(`${backendUrl}/api/priceusers/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

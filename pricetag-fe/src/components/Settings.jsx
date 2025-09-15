@@ -4,7 +4,7 @@ import Navbar from "./Navbar";
 import { useNavigate } from "react-router-dom";
 import AddLocation from "./addlocation";
 
-const API_BASE = "http://localhost:8000/api/priceusers";
+const API_BASE = `${import.meta.env.VITE_BACKEND_URL}/api/priceusers`;
 
 export default function Settings() {
   const navigate = useNavigate();
