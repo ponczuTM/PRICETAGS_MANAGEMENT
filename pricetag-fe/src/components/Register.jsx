@@ -37,6 +37,8 @@ const Register = () => {
       // ❌ bez locationIds — admin nada później
     };
 
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
     setLoading(true);
     try {
       const res = await fetch(`${backendUrl}/api/priceusers`, {
