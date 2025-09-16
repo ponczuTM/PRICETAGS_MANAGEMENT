@@ -6,7 +6,8 @@ from typing import List
 import time
 
 # Konfiguracja
-LOCATION_ID = "685003cbf071eb1bb4304cd2"
+# LOCATION_ID = "685003cbf071eb1bb4304cd2"
+LOCATION_ID = "68c95e497b40e5d906e1caa6"
 API_BASE = "http://localhost:8000/api/locations"
 IMAGE_FOLDER = "."  # Folder z plikami PNG, MP4 i JS
 
