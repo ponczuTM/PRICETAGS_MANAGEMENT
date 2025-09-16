@@ -7,7 +7,7 @@ import Gallery from "./components/Gallery";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Settings from "./components/Settings";
-import AddLocation from "./components/addlocation";
+import AddLocation from "./components/AddLocation";
 
 function App() {
   return (
