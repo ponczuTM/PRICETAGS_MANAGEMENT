@@ -1,3 +1,4 @@
+# MONGODB_URI=mongodb+srv://ptrkkulpa1:bThbW3VG3Vc0HHZF@cluster0.ghnr7.mongodb.net/art-gallery?retryWrites=true&w=majority
 MONGODB_URI=mongodb://localhost:27017/art-gallery
 DATABASE_NAME=art-gallery
 SECRET_KEY=your-super-secret-key-change-this-in-production
