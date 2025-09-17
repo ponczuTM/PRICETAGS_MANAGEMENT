@@ -424,7 +424,7 @@ function MainPage() {
 
         <div className={styles.header}>
           <h2 className={styles.title}>
-            Lista urządzeń {currentLocationId ? `– ${currentLocationId}` : ""}
+            Lista urządzeń {currentLocationId ? `– ${currentLocationId.name}` : ""}
           </h2>
           <div className={styles.deviceCount}>{devices.length} urządzeń</div>
         </div>

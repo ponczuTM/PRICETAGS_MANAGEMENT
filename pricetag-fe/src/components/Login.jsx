@@ -65,7 +65,7 @@ const Login = () => {
         localStorage.removeItem("locationId");
         setUserInfo(user);
         setErrorMsg(""); // brak błędu – to legalny scenariusz
-        setTimeout(() => navigate("/addlocation"), 800);
+        setTimeout(() => navigate("/settings"), 800);
       }
     } catch (error) {
       console.error("Login error:", error);
