@@ -423,9 +423,9 @@ function MainPage() {
         </div>
 
         <div className={styles.header}>
-        <h2 className={styles.title}>
+        {/* <h2 className={styles.title}>
           Lista urządzeń {currentLocationId ? `– ${locations.find(l => l.id === currentLocationId)?.name || ""}` : ""}
-        </h2>
+        </h2> */}
 
           <div className={styles.deviceCount}>{devices.length} urządzeń</div>
         </div>
