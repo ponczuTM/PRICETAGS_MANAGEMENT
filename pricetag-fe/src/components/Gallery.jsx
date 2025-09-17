@@ -170,8 +170,11 @@ function Gallery() {
         </div>
 
         <div className={styles.header}>
-          <h2 className={styles.title}>
+          {/* <h2 className={styles.title}>
             Galeria plików {currentLocationId ? `– ${currentLocationId}` : ""}
+          </h2> */}
+          <h2 className={styles.title}>
+            Galeria plików
           </h2>
           <div className={styles.deviceCount}>{galleryFiles.length} plików</div>
         </div>

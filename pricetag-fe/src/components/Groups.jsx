@@ -551,13 +551,13 @@ function Groups() {
 
         <div className={styles.header}>
           <h2 className={styles.title}>Zarządzanie grupami i urządzeniami</h2>
-          {selectedLocationId && (
+          {/* {selectedLocationId && (
             <p className={styles.currentLocation}>
               Aktualna lokalizacja: {selectedLocationId === "685003cbf071eb1bb4304cd2" ? "Toronto" : 
                                    selectedLocationId === "685003cbf071eb1bb4304cd3" ? "Montreal" : 
                                    selectedLocationId}
             </p>
-          )}
+          )} */}
           {errorMsg && <div className={styles.errorMessage}>{errorMsg}</div>}
         </div>
 

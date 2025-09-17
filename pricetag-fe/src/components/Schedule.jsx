@@ -448,9 +448,9 @@ function Schedule() {
         </div>
 
         <div className={styles.header}>
-          <h2 className={styles.title}>
+          {/* <h2 className={styles.title}>
             Zarządzanie harmonogramami wyświetlania {currentLocationId ? `– ${currentLocationId}` : ""}
-          </h2>
+          </h2> */}
           {errorMsg && <div className={styles.errorMessage}>{errorMsg}</div>}
         </div>
 
