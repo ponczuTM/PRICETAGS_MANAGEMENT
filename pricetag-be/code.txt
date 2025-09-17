@@ -26,10 +26,10 @@ app = FastAPI(
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origin_regex=r"http?://.*",  # lub lepiej: konkretny whitelist domen
+    allow_credentials=True,             # bo u≈ºywasz cookies
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*"],                # lub ["Authorization","Content-Type",...]
 )
 
 # Database connection
