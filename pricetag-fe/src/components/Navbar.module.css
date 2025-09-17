@@ -1,9 +1,10 @@
 /* Główne style dla paska nawigacyjnego */
 .navbar {
-  background-color: rgba(255, 255, 255, 0.2); /* Półprzezroczyste tło */
+  background-color: rgba(255, 255, 255, 0.15); /* Półprzezroczyste tło */
   backdrop-filter: blur(10px); /* Efekt rozmycia w tle */
   -webkit-backdrop-filter: blur(10px); /* Wsparcie dla Safari */
   border-bottom: 1px solid rgba(255, 255, 255, 0.3); /* Delikatna ramka */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   color: #4472c4; /* Kolor napisów */
   padding: 1rem 2rem;
   display: flex;
@@ -21,7 +22,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #4472c4; /* Kolor napisów */
+  color: #4472c4;
 }
 
 /* Kontener linków nawigacyjnych */
@@ -34,7 +35,7 @@
 
 /* Styl dla pojedynczych linków */
 .navLink, .logoutButton {
-  color: #4472c4; /* Kolor napisów */
+  color: #4472c4;
   text-decoration: none;
   font-size: 1rem;
   font-weight: 500;
@@ -51,7 +52,7 @@
   left: 0;
   width: 0;
   height: 2px;
-  background-color: #4472c4; /* Kolor podkreślenia */
+  background-color: #4472c4;
   transition: width 0.3s ease-in-out;
 }
 
@@ -62,13 +63,13 @@
 
 .navLink:hover,
 .navLink:focus {
-  color: #385a97; /* Ciemniejszy odcień koloru po najechaniu */
+  color: #385a97;
   transform: translateY(-2px);
 }
 
 /* Styl dla przycisku wylogowania */
 .logoutButton {
-  background-color: #e74c3c; /* Czerwony kolor dla akcentu */
+  background-color: #e74c3c;
   color: white;
   border: none;
   padding: 0.5rem 1rem;
@@ -80,7 +81,7 @@
 
 .logoutButton:hover,
 .logoutButton:focus {
-  background-color: #c0392b; /* Ciemniejszy odcień czerwieni */
+  background-color: #c0392b;
   transform: scale(1.05);
 }
 
@@ -101,7 +102,7 @@
 .hamburger .bar {
   width: 2rem;
   height: 3px;
-  background-color: #4472c4; /* Kolor kresek w hamburgerze */
+  background-color: #4472c4;
   border-radius: 10px;
   transition: all 0.3s ease-in-out;
 }
@@ -116,21 +117,22 @@
     display: flex; /* Pokaż hamburger na małych ekranach */
   }
 
-  /* Styl dla rozwijanego menu */
+  /* Styl dla rozwijanego menu (glassmorphism) */
   .navbarLinks {
     position: absolute;
     top: 100%;
     right: 0;
     width: 100%;
     flex-direction: column;
-    background-color: rgba(255, 255, 255, 0.2); /* Półprzezroczyste tło */
-    backdrop-filter: blur(10px); /* Efekt rozmycia */
-    -webkit-backdrop-filter: blur(10px); /* Wsparcie dla Safari */
+    background: rgba(255, 255, 255, 0.15); /* Półprzezroczyste tło */
+    backdrop-filter: blur(20px); /* Efekt rozmycia */
+    -webkit-backdrop-filter: blur(20px); /* Wsparcie dla Safari */
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     transform: translateX(100%); /* Ukryj menu domyślnie */
     transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     padding: 1rem 0;
     z-index: 99;
-    border-top: 1px solid rgba(255, 255, 255, 0.3);
   }
 
   .navbarLinks.open {
