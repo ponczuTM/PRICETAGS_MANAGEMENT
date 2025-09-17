@@ -748,7 +748,8 @@ export default function Settings() {
           </div>
         </section>
         <div>
-        <AddLocation/>
+        {/* <AddLocation/> */}
+        <Link to="/addlocation" className={styles.navLink}>Zarządzanie Lokalizacjami 🔗</Link>
         </div>
         
       </div>
