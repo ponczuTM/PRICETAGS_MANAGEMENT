@@ -20,7 +20,6 @@
   margin: 0 0 14px 0;
 }
 
-/* Wiersze formularza / drobne układy */
 .row {
   display: grid;
   grid-template-columns: 200px 1fr;

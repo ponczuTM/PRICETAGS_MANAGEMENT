@@ -1,8 +1,35 @@
+/* ===============================
+   Settings.module.css — CLEAN + RESPONSIVE
+   =============================== */
+
+/* --------- Design tokens --------- */
+:root {
+  --c-bg: #fff;
+  --c-text: #111827;
+  --c-muted: #6b7280;
+  --c-note: #4b5563;
+
+  --c-border: #ddd;
+  --c-border-soft: #eee;
+
+  --c-primary: #2563eb;
+  --c-primary-ghost: rgba(37,99,235,0.12);
+  --c-danger: #ef4444;
+  --c-success: #065f46;
+
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 14px;
+  --shadow-1: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+/* --------- Layout --------- */
 .container {
   display: flex;
   flex-direction: column;
   min-height: 80vh;
   margin-top: 100px;
+  color: var(--c-text);
 }
 
 .inner {
@@ -11,13 +38,15 @@
   padding: 0 16px;
 }
 
-/* Karty/sektory */
+/* --------- Cards / Sections --------- */
 .card {
-  background: #fff;
-  border-radius: 14px;
+  background: var(--c-bg);
+  border-radius: var(--radius-xl);
   padding: 20px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  box-shadow: var(--shadow-1);
   margin-bottom: 20px;
+  /* dzięki temu tabela przewija się poziomo na mobile */
+  overflow-x: auto;
 }
 
 .card h2 {
@@ -25,7 +54,12 @@
   font-size: 20px;
 }
 
-/* Wiersze formularza */
+.card h3 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+}
+
+/* --------- Form rows --------- */
 .row {
   display: grid;
   grid-template-columns: 200px 1fr;
@@ -34,49 +68,66 @@
   margin-bottom: 12px;
 }
 
-.row input {
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  font-size: 14px;
-  width: 100%;
-  outline: none;
-  transition: border-color .15s, box-shadow .15s;
-}
-
-.row input:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
-}
-
-/* Wiersz z inputem + przyciskiem "Zapisz" */
 .growRow {
   display: flex;
   gap: 10px;
   align-items: center;
+  flex-wrap: wrap; /* lepsze zwijanie na mniejszych ekranach */
 }
 
 .noteLine {
   grid-column: 2 / -1;
   font-size: 12px;
-  color: #6b7280;
+  color: var(--c-muted);
 }
 
-/* Przyciski */
-.primary, .secondary, .danger, .copyBtn, .linkBtn {
+/* --------- Inputs / Controls --------- */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea,
+select {
+  padding: 10px 12px;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  width: 100%;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s, background-color .15s;
+  background: #fff;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--c-primary);
+  box-shadow: 0 0 0 3px var(--c-primary-ghost);
+}
+
+.inputError {
+  border-color: var(--c-danger) !important;
+  box-shadow: 0 0 0 3px rgba(239,68,68,0.12) !important;
+}
+
+/* --------- Buttons --------- */
+.primary,
+.secondary,
+.danger,
+.copyBtn,
+.linkBtn {
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   padding: 10px 14px;
   cursor: pointer;
   font-weight: 600;
   transition: transform .05s ease, opacity .15s ease, background-color .15s ease;
 }
 
-.primary { background: #2563eb; color: #fff; }
-.secondary { background: #e5e7eb; color: #111827; }
-.danger { background: #ef4444; color: #fff; }
+.primary { background: var(--c-primary); color: #fff; }
+.secondary { background: #e5e7eb; color: var(--c-text); }
+.danger { background: var(--c-danger); color: #fff; }
 .copyBtn { background: #10b981; color: #fff; }
-.linkBtn { background: transparent; color: #2563eb; padding: 0; }
+.linkBtn { background: transparent; color: var(--c-primary); padding: 0; }
 
 .primary:active,
 .secondary:active,
@@ -93,18 +144,36 @@
   cursor: not-allowed;
 }
 
-/* Blok narzędzi w kartach (np. odśwież) */
+/* --------- Helpers / Utility blocks --------- */
 .tools {
   margin-top: 14px;
   padding-top: 10px;
   border-top: 1px dashed #e5e7eb;
 }
 
-/* QR / 2FA */
+/* --------- Messages --------- */
+.messages { margin-top: 12px; }
+
+.error {
+  color: #b91c1c;
+  margin: 4px 0;
+}
+
+.info {
+  color: var(--c-success);
+  margin: 4px 0;
+}
+
+.note {
+  color: var(--c-note);
+  margin-bottom: 10px;
+}
+
+/* --------- 2FA / QR --------- */
 .qrBlock {
   margin-top: 18px;
   padding-top: 12px;
-  border-top: 1px dashed #ddd;
+  border-top: 1px dashed var(--c-border);
 }
 
 .qr {
@@ -114,7 +183,7 @@
   border-radius: 12px;
   background: #fafafa;
   padding: 8px;
-  border: 1px solid #eee;
+  border: 1px solid var(--c-border-soft);
 }
 
 .secretRow {
@@ -148,44 +217,205 @@
   white-space: break-spaces;
   word-break: break-all;
   background: #f9fafb;
-  border: 1px solid #eee;
+  border: 1px solid var(--c-border-soft);
   padding: 8px;
   border-radius: 8px;
 }
 
 .testForm { margin-top: 18px; }
 
-/* Komunikaty */
-.messages { margin-top: 12px; }
-
-.error {
-  color: #b91c1c;
-  margin: 4px 0;
+/* --------- Table --------- */
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--c-border-soft);
+  /* minimum szerokości, żeby kolumny nie łamały się brzydko;
+     na małych ekranach card ma overflow-x:auto */
+  min-width: 700px;
 }
 
-.info {
+.table thead th {
+  text-align: left;
+  font-size: 13px;
+  font-weight: 700;
+  color: #374151;
+  background: #f9fafb;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--c-border-soft);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.table tbody td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  font-size: 14px;
+  color: var(--c-text);
+}
+
+.table tbody tr:hover {
+  background: #fafafa;
+}
+
+.table code {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+/* Inputy w tabeli */
+.table input[type="text"] {
+  min-width: 220px;
+}
+
+/* Badges (opcjonalne) */
+.badge {
+  display: inline-block;
+  font-size: 12px;
+  line-height: 1;
+  padding: 6px 8px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.badgeOk {
   color: #065f46;
-  margin: 4px 0;
+  background: #ecfdf5;
+  border-color: #a7f3d0;
 }
 
-.note {
-  color: #4b5563;
-  margin-bottom: 10px;
+.badgeDirty {
+  color: #92400e;
+  background: #fffbeb;
+  border-color: #fde68a;
 }
 
-/* Opcjonalne stany walidacji dla inputów */
-.inputError {
-  border-color: #ef4444 !important;
-  box-shadow: 0 0 0 3px rgba(239,68,68,0.12) !important;
+.badgeSaving {
+  color: #1e3a8a;
+  background: #eff6ff;
+  border-color: #bfdbfe;
 }
 
-/* Mobile: jedna kolumna */
-@media (max-width: 640px) {
+.badgeError {
+  color: #991b1b;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+/* Akcje w tabeli */
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.actions .primary,
+.actions .secondary,
+.actions .danger {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+/* --------- Links in cards --------- */
+.card a {
+  color: var(--c-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+.card a:hover { text-decoration: underline; }
+
+/* ==================================
+   RESPONSIVE
+   ================================== */
+
+/* <= 1024px: delikatne zmiany szerokości */
+@media (max-width: 1024px) {
+  .inner { max-width: 760px; }
+}
+
+/* <= 860px: formularze w jedną kolumnę */
+@media (max-width: 860px) {
   .row {
     grid-template-columns: 1fr;
     align-items: stretch;
   }
+  .row > label {
+    font-weight: 600;
+  }
   .noteLine {
     grid-column: 1 / -1;
   }
+}
+
+/* <= 720px: typografia/padding, QR mniejszy, przyciski pełnej szerokości w growRow */
+@media (max-width: 720px) {
+  .card { padding: 16px; }
+
+  .primary,
+  .secondary,
+  .danger,
+  .copyBtn {
+    padding: 10px 12px;
+  }
+
+  .growRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .qr {
+    width: 180px;
+    height: 180px;
+  }
+
+  /* nagłówek tabeli bez sticky na bardzo małych, by uniknąć skoków */
+  .table thead th {
+    position: static;
+  }
+}
+
+/* <= 480px: jeszcze ciaśniej + lepsza czytelność */
+@media (max-width: 480px) {
+  .inner { padding: 0 12px; }
+  .card { padding: 14px; }
+  .card h2 { font-size: 18px; }
+  .card h3 { font-size: 16px; }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  textarea,
+  select {
+    font-size: 15px;
+    padding: 11px 12px;
+  }
+
+  .qr {
+    width: 160px;
+    height: 160px;
+  }
+
+  .actions {
+    gap: 6px;
+  }
+  .actions .primary,
+  .actions .secondary,
+  .actions .danger {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Prefer-reduced-motion: ograniczenie animacji */
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
 }
