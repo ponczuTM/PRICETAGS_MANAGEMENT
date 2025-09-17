@@ -1,348 +1,123 @@
-/* ===========================
-   Navbar.module.css
-   =========================== */
+/* Plik: Navbar.module.css */
 
-/* Kolory + zmienne */
-:root {
-  --blue: #4472c4;                /* główny kolor tekstu */
-  --blue-strong: #2d56a6;
-  --blue-soft: rgba(68, 114, 196, 0.15);
-  --glass-bg: rgba(255, 255, 255, 0.15);
-  --navbar-bg: rgba(255, 255, 255, 0.58); /* półprzezroczyste tło paska */
-  --border-glass: rgba(255, 255, 255, 0.3);
-  --shadow-1: 0 8px 24px rgba(0, 0, 0, 0.12);
-  --shadow-2: 0 12px 32px rgba(0, 0, 0, 0.18);
-  --radius: 14px;
-  --radius-lg: 20px;
-  --transition-fast: 180ms cubic-bezier(.2,.8,.2,1);
-  --transition-med: 360ms cubic-bezier(.2,.8,.2,1);
-  --blur-amt: 16px;
-}
-
-/* Reset kliku na urządzeniach dotykowych */
-* {
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* ===== Pasek nawigacji ===== */
 .navbar {
-  position: sticky;       /* zostaje na górze podczas scrollowania */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: white;
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: sticky;
   top: 0;
   z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 64px;
-  padding: 0 20px;
-  color: var(--blue);
-  background: var(--navbar-bg);
-  border-bottom: 1px solid rgba(68, 114, 196, 0.18);
-  box-shadow: 0 2px 10px rgba(34, 52, 82, 0.08);
-  backdrop-filter: blur(var(--blur-amt)) saturate(140%);
-  -webkit-backdrop-filter: blur(var(--blur-amt)) saturate(140%);
 }
 
-/* Brand / logo */
 .navbarBrand {
   display: flex;
   align-items: center;
-  gap: 12px;
 }
 
 .logoText {
-  color: var(--blue);
-  font-weight: 800;
-  letter-spacing: .4px;
-  text-transform: uppercase;
-  white-space: nowrap;
-  user-select: none;
+  color: #4472c4;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 1px;
 }
 
-/* ===== Linki desktop ===== */
 .navbarLinks {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 1.5rem;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
 }
 
-/* Linki / przyciski w pasku */
 .navLink,
 .logoutButton {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 40px;
-  padding: 0 14px;
-  border-radius: var(--radius);
+  color: #4472c4;
   text-decoration: none;
   font-weight: 600;
-  letter-spacing: .2px;
-  color: var(--blue);
-  background: linear-gradient(to bottom, rgba(255,255,255,.6), rgba(255,255,255,.2));
-  border: 1px solid rgba(68, 114, 196, 0.25);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.7) inset,
-    0 2px 10px rgba(68,114,196,0.12);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  font-size: 1rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: 5px;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  white-space: nowrap; /* Zapobiega łamaniu się tekstu */
 }
 
-.navLink::after,
-.logoutButton::after {
-  /* animowana kreska pod linkiem */
-  content: '';
-  position: absolute;
-  left: 12px;
-  right: 12px;
-  bottom: 6px;
-  height: 2px;
-  border-radius: 2px;
-  background: linear-gradient(90deg, transparent, var(--blue), transparent);
-  transform: scaleX(0);
-  transform-origin: center;
-  transition: transform var(--transition-med);
-  opacity: .75;
+.navLink:hover {
+  background-color: #f0f4ff;
+  transform: translateY(-2px);
 }
 
-.navLink:hover,
-.logoutButton:hover {
-  transform: translateY(-1px);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.8) inset,
-    0 8px 24px rgba(68,114,196,.22);
-}
-
-.navLink:hover::after,
-.logoutButton:hover::after {
-  transform: scaleX(1);
-}
-
-/* Wersja "aktywna" klik */
-.navLink:active,
-.logoutButton:active {
-  transform: translateY(0);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.6) inset,
-    0 4px 12px rgba(68,114,196,.18);
-}
-
-/* Dostępność */
-.navLink:focus-visible,
-.logoutButton:focus-visible,
-.hamburger:focus-visible {
-  outline: 2px solid var(--blue);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(68,114,196,0.24);
-}
-
-/* Logout – lekko wyróżniony */
 .logoutButton {
+  background-color: transparent;
+  border: 2px solid #4472c4;
   cursor: pointer;
-  background: linear-gradient(to bottom, rgba(255,255,255,.85), rgba(255,255,255,.35));
 }
 
-/* ===== Hamburger (mobile/tablet) ===== */
+.logoutButton:hover {
+  background-color: #4472c4;
+  color: white;
+  transform: translateY(-2px);
+}
+
 .hamburger {
-  display: none; /* pokazywany w media query */
-  width: 44px;
-  height: 44px;
-  border: 1px solid rgba(68,114,196,0.25);
-  border-radius: 10px;
-  background: linear-gradient(to bottom, rgba(255,255,255,.6), rgba(255,255,255,.2));
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  display: none; /* Domyślnie ukryty na szerokich ekranach */
+  flex-direction: column;
+  justify-content: space-around;
+  width: 2rem;
+  height: 2rem;
   cursor: pointer;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 10px;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.7) inset,
-    0 2px 10px rgba(68,114,196,0.12);
-}
-
-.hamburger:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-1);
+  background: transparent;
+  border: none;
+  z-index: 1001;
+  padding: 0;
 }
 
 .bar {
-  width: 22px;
-  height: 2px;
-  background: var(--blue);
-  border-radius: 2px;
-  transition: width var(--transition-fast), transform var(--transition-fast), opacity var(--transition-fast);
+  width: 2rem;
+  height: 0.25rem;
+  background-color: #4472c4;
+  border-radius: 10px;
+  transition: all 0.3s linear;
+  transform-origin: 1px;
 }
 
-/* Delikatna animacja przy hover */
-.hamburger:hover .bar:nth-child(2) {
-  width: 18px;
-}
-.hamburger:hover .bar:nth-child(3) {
-  width: 14px;
-}
+/* Responsywność dla tabletów i urządzeń mobilnych */
+@media (max-width: 768px) {
+  .navbar {
+      padding: 1rem;
+  }
 
-/* ===== MOBILE / TABLET – panel wysuwany ===== */
-@media (max-width: 1024px) {
   .hamburger {
-    display: inline-flex;
+      display: flex;
   }
 
-  /* Na mniejszych ekranach układ: brand + hamburger, linki w panelu */
   .navbarLinks {
-    position: fixed;
-    top: 0;
-    right: 0;
-    height: 100dvh;
-    width: clamp(280px, 76vw, 380px);
-    padding: 96px 20px 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-
-    /* Glassmorphism – zgodnie z wytycznymi */
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-radius: var(--radius-lg) 0 0 var(--radius-lg);
-    border: 1px solid var(--border-glass);
-    box-shadow:
-      0 8px 32px rgba(0, 0, 0, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.5),
-      inset 0 -1px 0 rgba(255, 255, 255, 0.1),
-      inset 0 0 20px 10px rgba(255, 255, 255, 1);
-
-    /* Start poza ekranem, potem wjeżdża */
-    transform: translateX(104%);
-    opacity: 0;
-    pointer-events: none;
-    transition: transform var(--transition-med), opacity var(--transition-med);
+      position: absolute;
+      top: 100%; /* Umieszcza menu pod navbar */
+      left: 0;
+      width: 100%;
+      flex-direction: column;
+      background-color: white;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+      padding: 1rem 0;
+      transform: translateY(-100%); /* Ukrywa menu nad ekranem */
+      opacity: 0;
+      pointer-events: none; /* Wyłącza interakcję, gdy jest schowane */
+      transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+      z-index: 999;
   }
-
-  /* gradientowe krawędzie jak w opisie glass-card */
-  .navbarLinks::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
-    pointer-events: none;
-  }
-  .navbarLinks::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 0;
-    width: 1px; height: 100%;
-    background: linear-gradient(180deg, rgba(255,255,255,0.8), transparent, rgba(255,255,255,0.3));
-    pointer-events: none;
-  }
-
-  /* Ciemna przyciemniona warstwa pod panelem (pseudo-element fixed) */
-  .navbarLinks.open::backdrop { /* dla przeglądarek wspierających */
-    background: rgba(0,0,0,0.3);
-  }
-  .navbarLinks.open::marker { /* no-op fallback to avoid warnings */ }
-
-  .navbarLinks.open::before,
-  .navbarLinks.open::after { /* zostawiamy krawędzie – overlay robimy dodatkowym pseudo-elementem niżej */
-  }
-
-  /* Overlay przez dodatkowy pseudo-element: */
-  .navbarLinks.open > :first-child::before {
-    /* trik: nie narusza layoutu linków, a tworzy overlay */
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.28);
-    z-index: -1; /* pod panelem */
-  }
-
+  
   .navbarLinks.open {
-    transform: translateX(0%);
-    opacity: 1;
-    pointer-events: auto;
+      transform: translateY(0); /* Pokazuje menu */
+      opacity: 1;
+      pointer-events: all;
   }
 
-  /* Stagger animacji dla elementów menu */
-  .navbarLinks a,
-  .navbarLinks .logoutButton {
-    transform: translateX(12px);
-    opacity: 0;
-    animation: itemIn 420ms cubic-bezier(.2,.8,.2,1) forwards;
-  }
-  .navbarLinks a:nth-child(1) { animation-delay: 80ms; }
-  .navbarLinks a:nth-child(2) { animation-delay: 120ms; }
-  .navbarLinks a:nth-child(3) { animation-delay: 160ms; }
-  .navbarLinks a:nth-child(4) { animation-delay: 200ms; }
-  .navbarLinks a:nth-child(5) { animation-delay: 240ms; }
-  .navbarLinks .logoutButton { animation-delay: 280ms; }
-
-  @keyframes itemIn {
-    to { transform: translateX(0); opacity: 1; }
-  }
-}
-
-/* ===== DESKTOP – porządek i spacing ===== */
-@media (min-width: 1025px) {
-  .navbarLinks {
-    gap: 8px;
-  }
-}
-
-/* Dodatkowe: gdy system woli mniej ruchu */
-@media (prefers-reduced-motion: reduce) {
   .navLink,
-  .logoutButton,
-  .hamburger,
-  .navbarLinks {
-    transition: none !important;
-    animation: none !important;
+  .logoutButton {
+      width: 100%;
+      text-align: center;
+      padding: 1rem;
   }
-}
-
-/* Opcjonalne drobne utility gdy brak wsparcia blur – poprawa czytelności */
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .navbar,
-  .navbarLinks {
-    background: rgba(255, 255, 255, 0.92);
-  }
-}
-
-/* ===========================
-   (Opcjonalnie) klasa pomocnicza,
-   jeśli chcesz gdzieś użyć tej samej
-   karty glass jak w przykładzie:
-   =========================== */
-.glass-card {
-  width: 240px;
-  height: 360px;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.1),
-    inset 0 0 20px 10px rgba(255, 255, 255, 1);
-  position: relative;
-  overflow: hidden;
-}
-.glass-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
-}
-.glass-card::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 0;
-  width: 1px; height: 100%;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.8), transparent, rgba(255, 255, 255, 0.3));
 }
