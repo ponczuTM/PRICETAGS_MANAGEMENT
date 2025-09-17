@@ -1152,112 +1152,6 @@
   color: var(--status-error);
 }
 
-/* --- Responsywność --- */
-
-/* Responsive design dla edytowania nazw na mniejszych ekranach */
-@media (max-width: 768px) {
-  .deviceNameEditWrapper {
-    flex-wrap: wrap;
-    gap: 0.4rem;
-  }
-  
-  .editInput {
-    width: 100%;
-    margin-bottom: 0.4rem;
-  }
-  
-  .saveButton,
-  .resetButton,
-  .cancelButton {
-    flex: 1;
-    min-width: 60px;
-    font-size: 0.75rem;
-    padding: 0.35rem 0.6rem;
-  }
-
-  .fileGrid {
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-      gap: 0.75rem;
-      max-height: 300px;
-  }
-
-  /* Dostosowanie dla responsywności nowej klasy */
-  .galleryMediaWrapper {
-      width: 80px;
-      height: 80px;
-  }
-
-  .galleryFileName {
-      font-size: 0.7rem;
-  }
-
-  .fileIcon {
-      font-size: 1.5rem;
-  }
-
-  .container {
-      padding: 1rem;
-  }
-
-  .header {
-      flex-direction: column;
-      align-items: flex-start;
-  }
-
-  .title {
-      font-size: 2rem;
-  }
-
-  .deviceCount {
-      margin-top: 10px;
-  }
-
-  .modalContent {
-      padding: 1.5rem;
-  }
-
-  .modalTitle {
-      font-size: 1.25rem;
-  }
-
-  .uploadButton, .modalActions .cancelButton {
-      padding: 0.6rem 1.2rem;
-      font-size: 0.9rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .deviceNameEditWrapper:has(.editInput) {
-    padding: 0.4rem;
-    margin: -0.4rem;
-  }
-  
-  .saveButton,
-  .resetButton,
-  .cancelButton {
-    font-size: 0.7rem;
-    padding: 0.3rem 0.5rem;
-    min-width: 50px;
-  }
-
-  .fileGrid {
-      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-      gap: 0.5rem;
-  }
-
-  /* Dostosowanie dla responsywności nowej klasy */
-  .galleryMediaWrapper {
-      width: 70px;
-      height: 70px;
-  }
-
-  .manageButton {
-      padding: 0.8rem 2rem;
-      font-size: 1rem;
-  }
-}
-
-
 .editIcon {
   width: 40px;
   height: 40px;
@@ -1266,10 +1160,8 @@
 
 .deviceCard {
   position: relative;
-  /* inne style kart... */
-}
+ }
 
-/* Kontener ikon (może być pusty, ale trzyma logicznie 2 przyciski) */
 .deviceIcons {
   position: absolute;
   top: 0;
@@ -1277,11 +1169,10 @@
   z-index: 10;
 }
 
-/* ✏️ Przycisk edycji (lewy z dwóch) */
 .editButton {
   position: absolute;
-  top: 8px;      /* zmniejszamy z 20px */
-  right: 42px;   /* bliżej siebie */
+  top: 8px;
+  right: 42px;
   background: none;
   border: none;
   cursor: pointer;
@@ -1343,4 +1234,83 @@
   opacity: 0.5;
   filter: grayscale(100%);
   pointer-events: none; /* zablokuj kliknięcia */
+}
+
+.container {
+  padding: clamp(0.75rem, 2vw, 2rem);
+  margin-top: clamp(64px, 7vw, 96px);
+  margin-bottom: clamp(84px, 10vw, 120px);
+}
+
+.title { font-size: clamp(1.25rem, 1rem + 2.4vw, 2.5rem); }
+.deviceCount { font-size: clamp(0.8rem, 0.75rem + 0.3vw, 0.95rem); }
+
+.deviceGrid {
+  grid-template-columns: repeat(auto-fill, minmax(clamp(240px, 42vw, 350px), 1fr));
+  gap: clamp(0.75rem, 2.2vw, 1.5rem);
+}
+
+.deviceCard { padding: clamp(0.9rem, 2vw, 1.5rem); border-radius: clamp(12px, 1.5vw, 16px); }
+.deviceName { font-size: clamp(1rem, 0.9rem + 0.7vw, 1.25rem); }
+.deviceId { font-size: clamp(0.8rem, 0.75rem + 0.4vw, 0.9rem); }
+
+.deviceImage {
+  width: clamp(84px, 14vw, 117px);
+  height: clamp(138px, 23vw, 192px);
+  border-width: clamp(3px, 0.9vw, 6px);
+}
+.hangerBar { height: clamp(4px, 0.6vw, 6px); top: clamp(-12px, -1.3vw, -15px); }
+.stick { width: clamp(4px, 0.6vw, 6px); height: clamp(12px, 1.8vw, 15px); top: clamp(-12px, -1.3vw, -15px); }
+
+.editIcon { width: clamp(24px, 4vw, 40px); height: clamp(24px, 4vw, 40px); }
+
+@media (max-width: 900px) {
+  .header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+}
+
+@media (max-width: 700px) {
+  .tabSwitcher { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tab { flex: 0 0 auto; min-width: 140px; }
+}
+
+.modalContent {
+  width: min(96vw, 620px);
+  padding: clamp(1rem, 2.5vw, 2rem);
+  max-height: min(84svh, 760px);
+}
+@media (max-width: 560px) {
+  .modalHeader { gap: 0.5rem; }
+  .modalTitle { font-size: 1.25rem; }
+  .dropZone { padding: 1rem; min-height: 160px; }
+  .previewImage { max-height: 160px; }
+  .modalActions { flex-direction: column; align-items: stretch; }
+  .uploadButton, .modalActions .cancelButton { width: 100%; }
+}
+
+@media (max-width: 560px) {
+  .fileGrid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 0.75rem; }
+  .galleryMediaWrapper { width: 84px; height: 84px; }
+  .galleryFileName { -webkit-line-clamp: 2; font-size: 0.7rem; }
+}
+
+.manageButtonContainer {
+  padding: clamp(0.5rem, 2.5vw, 1rem);
+  padding-bottom: calc(clamp(0.5rem, 2.5vw, 1rem) + env(safe-area-inset-bottom, 0px));
+}
+.manageButton, .selectButton {
+  font-size: clamp(0.95rem, 0.9rem + 0.4vw, 1.1rem);
+  padding: clamp(0.75rem, 2.2vw, 1rem) clamp(1.25rem, 4vw, 2.5rem);
+}
+
+@media (max-width: 420px) {
+  .deviceGrid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 560px) {
+  .onlineIndicator { top: -6px; left: auto; right: 0; width: 16px; height: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deviceCard, .uploadButton, .selectButton, .manageButton, .galleryItem { transition: none; }
+  .deviceCard:hover, .manageButton:hover, .selectButton:hover { transform: none; }
 }

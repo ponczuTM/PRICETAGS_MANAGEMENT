@@ -128,3 +128,103 @@
     text-decoration: underline;
   }
   
+  /* === RESPONSYWNOŚĆ – WKLEJ NA SAM DÓŁ PLIKU === */
+
+/* Bezpieczne jednostki viewportu + notch */
+.registerContainer {
+  min-height: 100svh; /* lepsze niż 100vh na mobilkach */
+  padding-top: calc(1.5rem + env(safe-area-inset-top));
+  padding-right: calc(1rem + env(safe-area-inset-right));
+  padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  padding-left: calc(1rem + env(safe-area-inset-left));
+}
+
+/* Logo skaluje się płynnie */
+.logo {
+  width: clamp(140px, 24vw, 250px);
+  height: auto;
+}
+
+/* Elastyczny nagłówek */
+.registerContainer h2 {
+  font-size: clamp(1.25rem, 1rem + 1.8vw, 2rem);
+}
+
+/* Formularz rośnie na desktopie, a padding/gap skaluje się płynnie */
+.form {
+  width: min(100%, 520px);
+  padding: clamp(1rem, 2.4vw, 2.5rem) clamp(1rem, 3vw, 3rem);
+  gap: clamp(0.75rem, 1.5vw, 1.25rem);
+}
+
+/* Czytelne etykiety/pola na każdym ekranie – lokalnie w obrębie formularza */
+.form label {
+  font-size: clamp(0.95rem, 0.8rem + 0.5vw, 1rem);
+}
+
+.form input {
+  font-size: clamp(1rem, 0.95rem + 0.5vw, 1.05rem); /* min 16px – bez zoomu iOS */
+  padding: clamp(0.6rem, 1.3vw, 0.9rem) clamp(0.9rem, 2vw, 1rem);
+}
+
+/* Miejsce na przycisk „Pokaż/Ukryj” w polach hasła */
+.passwordWrap input {
+  padding-right: clamp(2.25rem, 2.5vw, 3rem);
+}
+
+/* Przycisk toggle z wygodnym polem dotyku */
+.pwdToggle {
+  right: clamp(6px, 1vw, 10px);
+  font-size: clamp(0.9rem, 0.8rem + 0.4vw, 1rem);
+  min-width: 40px;
+  min-height: 36px;
+}
+
+/* Główny przycisk – płynny rozmiar i komfort dotyku */
+.form button[type="submit"] {
+  font-size: clamp(1rem, 0.9rem + 0.6vw, 1.1rem);
+  padding: clamp(0.8rem, 1.6vw, 1rem) clamp(1rem, 2.5vw, 1.5rem);
+}
+
+/* Notki i błędy – elastyczny rozmiar + łamanie długich linii */
+.smallNote,
+.errorMessage {
+  font-size: clamp(0.9rem, 0.85rem + 0.3vw, 1rem);
+}
+
+.errorMessage {
+  word-break: break-word;
+}
+
+@media (max-width: 480px) {
+  .form {
+    box-shadow: none;
+    border: 1px solid #e0e7ff;
+  }
+}
+
+@media (min-width: 768px) {
+  .registerContainer { padding: 3rem; }
+  .form { max-width: 520px; }
+}
+
+@media (min-width: 1200px) {
+  .registerContainer { padding: 4rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .form input,
+  .form button[type="submit"],
+  .pwdToggle {
+    transition: none;
+  }
+  .form button[type="submit"]:hover {
+    transform: none;
+  }
+}
+
+@media (pointer: coarse) {
+  .form button[type="submit"]:hover {
+    transform: translateY(-1px);
+  }
+}

@@ -1,7 +1,4 @@
-/* Navbar.module.css */
-
 :root {
-  /* Główne kolory */
   --primary-color: #4472c4;
   --primary-color-hover: #3b5998;
   
@@ -74,27 +71,8 @@
   width: 100%;
 }
 
-/* Dostosowania dla mniejszych ekranów, jeśli potrzebne */
-@media (max-width: 768px) {
-  .navbar {
-    flex-wrap: wrap;
-    padding: 1rem;
-  }
-
-  .navbarLinks {
-    margin-right: 0;
-    margin-top: 1rem;
-    width: 100%;
-    justify-content: space-around;
-  }
-
-  .logoText {
-    font-size: 1.2rem;
-  }
-}
-
 .logoutButton {
-  background-color: #dc3545; /* czerwony */
+  background-color: #dc3545;
   color: white;
   padding: 8px 12px;
   border: none;
@@ -106,4 +84,96 @@
 
 .logoutButton:hover {
   background-color: #c82333;
+}
+
+.navbar {
+  background-color: var(--background-card, #ffffff);
+}
+
+@media (max-width: 1280px) {
+  .logoText {
+    font-size: 1.25rem;
+    letter-spacing: 0.03em;
+  }
+  .navbarLinks {
+    gap: 1.25rem;
+    margin-right: 1rem;
+  }
+  .navLink {
+    font-size: 0.95rem;
+  }
+  .logoutButton {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 992px) {
+  .navbar {
+    padding: 0.75rem 1rem;
+  }
+  .navbarLinks {
+    gap: 0.9rem;
+    margin-right: 0;
+  }
+}
+
+@media (max-width: 820px) {
+  .navbar {
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+    padding: 0.6rem 0.8rem;
+  }
+  .navbarBrand {
+    width: 100%;
+  }
+  .logoText {
+    font-size: 1.1rem;
+    letter-spacing: 0.02em;
+  }
+  .navbarLinks {
+    width: 100%;
+    margin: 0;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+  }
+  .navLink {
+    padding: 0.35rem 0;
+    font-size: 0.95rem;
+  }
+  .logoutButton {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 560px) {
+  .navbarLinks {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 0.85rem;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.25rem;
+  }
+  .navLink,
+  .logoutButton {
+    flex: 0 0 auto;
+  }
+
+  .navbarLinks::-webkit-scrollbar { height: 6px; }
+  .navbarLinks::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.2);
+    border-radius: 4px;
+  }
+  .navbarLinks { scrollbar-width: thin; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navLink,
+  .logoutButton {
+    transition: none;
+  }
 }
