@@ -3,7 +3,7 @@
   --primary-color-hover: #3b5998;
   --text-secondary: #000000;
   --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
-  --background-card: #ffffff; /* Dodano kolor tła dla menu na małych ekranach */
+  --background-card: #ffffff;
 }
 
 .navbar {
@@ -80,7 +80,7 @@
   cursor: pointer;
   margin-left: 12px;
   font-size: 14px;
-  white-space: nowrap; /* Zapobiega łamaniu tekstu na mniejszych ekranach */
+  white-space: nowrap;
 }
 
 .logoutButton:hover {
@@ -92,7 +92,7 @@
 /* -------------------------------------- */
 
 .hamburger {
-  display: none; /* Domyślnie ukryty na dużych ekranach */
+  display: none;
   background: none;
   border: none;
   cursor: pointer;
@@ -114,15 +114,21 @@
     padding: 1rem;
   }
   
+  /* Zmniejszenie czcionki dla logo na małych ekranach */
+  .logoText {
+    font-size: 1.2rem;
+  }
+  
   .hamburger {
-    display: block; /* Pokaż przycisk hamburgera na małych ekranach */
+    display: block;
+    margin-left: 50px; /* Przesunięcie przycisku o 50px w lewo */
   }
 
   .navbarLinks {
     display: flex;
     flex-direction: column;
-    position: fixed; /* Zmieniono na 'fixed' aby menu było zawsze widoczne */
-    top: 65px; /* Wysokość nawigacji */
+    position: fixed;
+    top: 65px;
     left: 0;
     width: 100%;
     height: calc(100vh - 65px);
@@ -133,11 +139,11 @@
     align-items: flex-start;
     transform: translateX(-100%);
     transition: transform 0.3s ease-in-out;
-    overflow-y: auto; /* Dodano przewijanie w przypadku dużej ilości linków */
+    overflow-y: auto;
   }
 
   .navbarLinks.open {
-    transform: translateX(0); /* Pokaż menu, gdy ma klasę .open */
+    transform: translateX(0);
   }
 
   .navLink, .logoutButton {
@@ -156,6 +162,6 @@
 
 @media (min-width: 769px) {
     .hamburger {
-        display: none; /* Ukryj hamburgera na dużych ekranach */
+        display: none;
     }
 }
