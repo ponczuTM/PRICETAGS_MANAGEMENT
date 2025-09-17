@@ -1,10 +1,9 @@
-import React, { useState } from 'react'; // ZMIANA: Import useState
+import React, { useState } from 'react';
 import styles from './Navbar.module.css';
 import { Link, useNavigate } from 'react-router-dom';
 
 const Navbar = ({ logoText = 'ZARZĄDZANIE PRICETAGAMI' }) => {
   const navigate = useNavigate();
-  // ZMIANA: Dodajemy stan do obsługi otwarcia/zamknięcia menu
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleLogout = () => {
@@ -14,6 +13,7 @@ const Navbar = ({ logoText = 'ZARZĄDZANIE PRICETAGAMI' }) => {
     navigate("/");
   };
 
+  // Funkcja do zamykania menu po kliknięciu na link
   const closeMenu = () => {
     setIsMenuOpen(false);
   };
@@ -24,7 +24,7 @@ const Navbar = ({ logoText = 'ZARZĄDZANIE PRICETAGAMI' }) => {
         <span className={styles.logoText}>{logoText}</span>
       </div>
 
-      {/* ZMIANA: Ikona hamburgera */}
+      {/* Ikona hamburgera */}
       <div 
         className={`${styles.menuIcon} ${isMenuOpen ? styles.open : ''}`} 
         onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -34,7 +34,7 @@ const Navbar = ({ logoText = 'ZARZĄDZANIE PRICETAGAMI' }) => {
         <span></span>
       </div>
 
-      {/* ZMIANA: Dodajemy warunkową klasę .active */}
+      {/* Kontener z linkami, z warunkową klasą .active */}
       <div className={`${styles.navbarLinks} ${isMenuOpen ? styles.active : ''}`}>
         <Link to="/mainpage" className={styles.navLink} onClick={closeMenu}>Urządzenia</Link>
         <Link to="/groups" className={styles.navLink} onClick={closeMenu}>Grupy</Link>

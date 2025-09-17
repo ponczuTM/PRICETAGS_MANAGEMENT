@@ -1,9 +1,7 @@
 :root {
   --primary-color: #4472c4;
   --primary-color-hover: #3b5998;
-  
   --text-secondary: #000000;
-
   --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
@@ -14,12 +12,17 @@
   align-items: center;
   width: 100%;
   padding: 1rem 2rem;
-  background-color: var(--background-card);
-  box-shadow: var(--shadow-sm);
   position: fixed;
   top: 0;
   left: 0;
   z-index: 1000;
+
+  /* ZMIANA: Efekt szkła (glassmorphism) */
+  background-color: rgba(255, 255, 255, 0.7); /* Półprzezroczyste tło */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px); /* Dla wsparcia Safari */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* Delikatna krawędź */
+  box-shadow: var(--shadow-sm);
 }
 
 .navbarBrand {
@@ -36,9 +39,8 @@
 
 .navbarLinks {
   display: flex;
-  margin-left: auto; /* Przesuwa linki na prawą stronę */
-  margin-right: 100px; /* Odsunięcie 100px od prawej */
-  gap: 2rem; /* Odstęp między linkami */
+  margin-left: auto;
+  gap: 2rem;
 }
 
 .navLink {
@@ -72,7 +74,7 @@
 }
 
 .logoutButton {
-  background-color: #dc3545; /* czerwony */
+  background-color: #dc3545;
   color: white;
   padding: 8px 12px;
   border: none;
@@ -86,16 +88,15 @@
   background-color: #c82333;
 }
 
+/* --- SEKCJA RESPONSYWNOŚCI --- */
 
-/* --- DODAJ TEN KOD PONIŻEJ --- */
-
-/* Styl dla ikony menu (hamburgera) */
+/* Styl dla ikony menu (hamburgera) - domyślnie ukryta */
 .menuIcon {
-  display: none; /* Ukryty na dużych ekranach */
+  display: none;
   cursor: pointer;
   flex-direction: column;
-  gap: 5px; /* Odstęp między kreskami */
-  z-index: 1001; /* Wyżej niż navbar, aby był klikalny */
+  gap: 5px;
+  z-index: 1001;
 }
 
 .menuIcon span {
@@ -107,28 +108,26 @@
   transition: all 0.3s ease-in-out;
 }
 
-/* Style dla aktywnej ikony (przekształcenie w "X") */
+/* Animacja ikony do "X" */
 .menuIcon.open span:nth-child(1) {
   transform: translateY(8px) rotate(45deg);
 }
-
 .menuIcon.open span:nth-child(2) {
   opacity: 0;
 }
-
 .menuIcon.open span:nth-child(3) {
   transform: translateY(-8px) rotate(-45deg);
 }
 
-
-/* Media Query dla responsywności (np. tablety i telefony) */
+/* Media Query dla tabletów i telefonów (poniżej 992px) */
 @media (max-width: 992px) {
   .navbar {
-    padding: 1rem; /* Zmniejszenie paddingu na mniejszych ekranach */
+    padding: 1rem;
+    justify-content: space-between; /* Zapewnia odstęp między logo a ikoną */
   }
 
   .logoText {
-    font-size: 1.2rem; /* Opcjonalnie zmniejszenie logotypu */
+    font-size: 1.2rem;
   }
 
   /* Pokazanie ikony hamburgera */
@@ -141,10 +140,13 @@
     display: none; /* Ukrywamy domyślnie */
     flex-direction: column;
     position: absolute;
-    top: 65px; /* Wysokość navbara, dostosuj w razie potrzeby */
+    top: 100%; /* Pozycjonowanie tuż pod navbarem */
     left: 0;
     width: 100%;
-    background-color: #ffffff; /* Tło dla rozwijanego menu */
+    /* Efekt szkła również dla rozwijanego menu */
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     box-shadow: var(--shadow-sm);
     padding: 1rem 0;
     margin: 0;
@@ -156,7 +158,6 @@
     display: flex; 
   }
 
-  /* Styl linków w rozwijanym menu */
   .navLink {
     text-align: center;
     padding: 1rem;
@@ -164,11 +165,11 @@
   }
 
   .navLink::after {
-    display: none; /* Wyłączamy animację podkreślenia w mobilnym menu */
+    display: none;
   }
   
   .logoutButton {
     width: 80%;
-    margin: 1rem auto; /* Wyśrodkowanie i margines */
+    margin: 1rem auto;
   }
 }
