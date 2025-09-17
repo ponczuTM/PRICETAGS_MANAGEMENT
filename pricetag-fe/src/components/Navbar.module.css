@@ -111,7 +111,17 @@
 
 @media (max-width: 768px) {
   .navbar {
-    padding: 1rem;
+    padding: 1rem 2rem;
+    position: fixed;
+  }
+  
+  .hamburger {
+    display: block;
+    position: absolute; /* Użycie pozycjonowania absolutnego */
+    right: 40px;      /* Ustawienie 40px od prawej krawędzi */
+    top: 50%;         /* Ustawienie na środku pionowo */
+    transform: translateY(-50%); /* Korekta, aby był idealnie na środku */
+    z-index: 1001;    /* Upewnij się, że jest na wierzchu */
   }
   
   /* Zmniejszenie czcionki dla logo na małych ekranach */
@@ -119,11 +129,6 @@
     font-size: 1.2rem;
   }
   
-  .hamburger {
-    display: block;
-    margin-left: -50px; /* Przesunięcie przycisku o 50px w lewo */
-  }
-
   .navbarLinks {
     display: flex;
     flex-direction: column;
