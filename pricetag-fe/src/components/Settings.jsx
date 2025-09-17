@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styles from "./Settings.module.css";
 import Navbar from "./Navbar";
-import { useNavigate } from "react-router-dom";
-import AddLocation from "./AddLocation";
+import { Link, useNavigate } from "react-router-dom";
 
 const API_BASE = `${import.meta.env.VITE_BACKEND_URL}/api/priceusers`;
 
