@@ -3,6 +3,7 @@
   --primary-color-hover: #3b5998;
   --text-secondary: #000000;
   --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --background-card: #ffffff; /* Dodano kolor tła dla menu na małych ekranach */
 }
 
 .navbar {
@@ -12,17 +13,12 @@
   align-items: center;
   width: 100%;
   padding: 1rem 2rem;
+  background-color: var(--background-card);
+  box-shadow: var(--shadow-sm);
   position: fixed;
   top: 0;
   left: 0;
   z-index: 1000;
-
-  /* ZMIANA: Efekt szkła (glassmorphism) */
-  background-color: rgba(255, 255, 255, 0.7); /* Półprzezroczyste tło */
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px); /* Dla wsparcia Safari */
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* Delikatna krawędź */
-  box-shadow: var(--shadow-sm);
 }
 
 .navbarBrand {
@@ -40,7 +36,9 @@
 .navbarLinks {
   display: flex;
   margin-left: auto;
+  margin-right: 100px;
   gap: 2rem;
+  align-items: center;
 }
 
 .navLink {
@@ -82,94 +80,82 @@
   cursor: pointer;
   margin-left: 12px;
   font-size: 14px;
+  white-space: nowrap; /* Zapobiega łamaniu tekstu na mniejszych ekranach */
 }
 
 .logoutButton:hover {
   background-color: #c82333;
 }
 
-/* --- SEKCJA RESPONSYWNOŚCI --- */
+/* -------------------------------------- */
+/* Style dla responsywności */
+/* -------------------------------------- */
 
-/* Styl dla ikony menu (hamburgera) - domyślnie ukryta */
-.menuIcon {
-  display: none;
+.hamburger {
+  display: none; /* Domyślnie ukryty na dużych ekranach */
+  background: none;
+  border: none;
   cursor: pointer;
-  flex-direction: column;
-  gap: 5px;
-  z-index: 1001;
+  padding: 0;
+  margin-left: 1rem;
 }
 
-.menuIcon span {
+.bar {
   display: block;
   width: 25px;
   height: 3px;
   background-color: var(--primary-color);
-  border-radius: 3px;
+  margin: 5px 0;
   transition: all 0.3s ease-in-out;
 }
 
-/* Animacja ikony do "X" */
-.menuIcon.open span:nth-child(1) {
-  transform: translateY(8px) rotate(45deg);
-}
-.menuIcon.open span:nth-child(2) {
-  opacity: 0;
-}
-.menuIcon.open span:nth-child(3) {
-  transform: translateY(-8px) rotate(-45deg);
-}
-
-/* Media Query dla tabletów i telefonów (poniżej 992px) */
-@media (max-width: 992px) {
+@media (max-width: 768px) {
   .navbar {
     padding: 1rem;
-    justify-content: space-between; /* Zapewnia odstęp między logo a ikoną */
-  }
-
-  .logoText {
-    font-size: 1.2rem;
-  }
-
-  /* Pokazanie ikony hamburgera */
-  .menuIcon {
-    display: flex;
   }
   
-  /* Ukrycie linków i przygotowanie ich do wyświetlenia w pionie */
+  .hamburger {
+    display: block; /* Pokaż przycisk hamburgera na małych ekranach */
+  }
+
   .navbarLinks {
-    display: none; /* Ukrywamy domyślnie */
+    display: flex;
     flex-direction: column;
-    position: absolute;
-    top: 100%; /* Pozycjonowanie tuż pod navbarem */
+    position: fixed; /* Zmieniono na 'fixed' aby menu było zawsze widoczne */
+    top: 65px; /* Wysokość nawigacji */
     left: 0;
     width: 100%;
-    /* Efekt szkła również dla rozwijanego menu */
-    background-color: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    height: calc(100vh - 65px);
+    background-color: var(--background-card);
     box-shadow: var(--shadow-sm);
-    padding: 1rem 0;
-    margin: 0;
-    gap: 0;
+    padding: 2rem;
+    gap: 1rem;
+    align-items: flex-start;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+    overflow-y: auto; /* Dodano przewijanie w przypadku dużej ilości linków */
   }
 
-  /* Klasa .active pokaże menu po kliknięciu */
-  .navbarLinks.active {
-    display: flex; 
+  .navbarLinks.open {
+    transform: translateX(0); /* Pokaż menu, gdy ma klasę .open */
   }
 
-  .navLink {
-    text-align: center;
-    padding: 1rem;
+  .navLink, .logoutButton {
     width: 100%;
-  }
-
-  .navLink::after {
-    display: none;
+    text-align: left;
+    padding: 1rem 0;
+    border-bottom: 1px solid #eee;
   }
   
   .logoutButton {
-    width: 80%;
-    margin: 1rem auto;
+    margin-left: 0;
+    margin-top: 1rem;
+    text-align: center;
   }
+}
+
+@media (min-width: 769px) {
+    .hamburger {
+        display: none; /* Ukryj hamburgera na dużych ekranach */
+    }
 }

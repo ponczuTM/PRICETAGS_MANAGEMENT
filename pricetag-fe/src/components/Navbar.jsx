@@ -4,18 +4,16 @@ import { Link, useNavigate } from 'react-router-dom';
 
 const Navbar = ({ logoText = 'ZARZĄDZANIE PRICETAGAMI' }) => {
   const navigate = useNavigate();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // 🆕 Nowy stan dla menu
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    setIsMenuOpen(false); // Zamknij menu po wylogowaniu
     navigate("/");
   };
 
-  // Funkcja do zamykania menu po kliknięciu na link
-  const closeMenu = () => {
-    setIsMenuOpen(false);
+  const toggleMenu = () => { // 🆕 Nowa funkcja do otwierania/zamykania menu
+    setIsMenuOpen(!isMenuOpen);
   };
 
   return (
@@ -23,24 +21,21 @@ const Navbar = ({ logoText = 'ZARZĄDZANIE PRICETAGAMI' }) => {
       <div className={styles.navbarBrand}>
         <span className={styles.logoText}>{logoText}</span>
       </div>
+      
+      {/* 🆕 Dodajemy przycisk/ikonę menu dla urządzeń mobilnych */}
+      <button className={styles.hamburger} onClick={toggleMenu}>
+        <div className={styles.bar}></div>
+        <div className={styles.bar}></div>
+        <div className={styles.bar}></div>
+      </button>
 
-      {/* Ikona hamburgera */}
-      <div 
-        className={`${styles.menuIcon} ${isMenuOpen ? styles.open : ''}`} 
-        onClick={() => setIsMenuOpen(!isMenuOpen)}
-      >
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-
-      {/* Kontener z linkami, z warunkową klasą .active */}
-      <div className={`${styles.navbarLinks} ${isMenuOpen ? styles.active : ''}`}>
-        <Link to="/mainpage" className={styles.navLink} onClick={closeMenu}>Urządzenia</Link>
-        <Link to="/groups" className={styles.navLink} onClick={closeMenu}>Grupy</Link>
-        <Link to="/schedule" className={styles.navLink} onClick={closeMenu}>Harmonogram</Link>
-        <Link to="/gallery" className={styles.navLink} onClick={closeMenu}>Galeria plików</Link>
-        <Link to="/settings" className={styles.navLink} onClick={closeMenu}>Ustawienia</Link>
+      {/* 🆕 Dynamiczna klasa, która pokaże menu, gdy jest otwarte */}
+      <div className={`${styles.navbarLinks} ${isMenuOpen ? styles.open : ''}`}>
+        <Link to="/mainpage" className={styles.navLink} onClick={() => setIsMenuOpen(false)}>Urządzenia</Link>
+        <Link to="/groups" className={styles.navLink} onClick={() => setIsMenuOpen(false)}>Grupy</Link>
+        <Link to="/schedule" className={styles.navLink} onClick={() => setIsMenuOpen(false)}>Harmonogram</Link>
+        <Link to="/gallery" className={styles.navLink} onClick={() => setIsMenuOpen(false)}>Galeria plików</Link>
+        <Link to="/settings" className={styles.navLink} onClick={() => setIsMenuOpen(false)}>Ustawienia</Link>
         <button onClick={handleLogout} className={styles.logoutButton}>Wyloguj się</button>
       </div>
     </nav>
