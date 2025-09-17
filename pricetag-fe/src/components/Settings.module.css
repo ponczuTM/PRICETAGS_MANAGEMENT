@@ -332,3 +332,169 @@ select:focus {
   font-weight: 600;
 }
 .card a:hover { text-decoration: underline; }
+
+
+
+/*  */
+/*  */
+/*  */
+/*  */
+/*  */
+
+
+
+/* ===============================
+   RESPONSYWNOŚĆ (DODAĆ NA KOŃCU)
+   =============================== */
+
+/* Bazowo – bardziej płynne „płótno” w % */
+.inner {
+  width: 94%;
+  max-width: none;
+  margin: 24px auto;
+  padding: 0;
+}
+
+/* Obrazy/filmy nigdy nie wyjdą poza kontener */
+img, video { max-width: 100%; height: auto; }
+
+/* --- GRID formularza w procentach (desktop/tablet/mobile) --- */
+
+/* Duże ekrany: ~30/70 */
+@media (min-width: 1024px) {
+  .row { grid-template-columns: 30% 70%; }
+}
+
+/* Tablety: ~35/65 + delikatne oddechy */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .row { grid-template-columns: 35% 65%; gap: 12px; }
+  .card { padding: 18px; }
+}
+
+/* Telefony: label nad polem, pełna szerokość elementów */
+@media (max-width: 767px) {
+  .container { margin-top: 72px; }
+  .inner { width: 92%; }
+
+  .row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .row label {
+    font-size: 13px;
+    color: var(--c-muted);
+  }
+
+  .growRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  /* wszystkie elementy „rosną” do 100% */
+  .growRow > * { flex: 1 1 100%; width: 100%; }
+
+  /* przyciski pełną szerokością (łatwiejsze kliknięcie) */
+  .primary,
+  .secondary,
+  .danger,
+  .copyBtn {
+    width: 100%;
+  }
+
+  .card { padding: 16px; }
+  .card h2 { font-size: 18px; }
+  .card h3 { font-size: 16px; }
+
+  .messages { font-size: 14px; }
+}
+
+/* --- Inputy w tabeli nie wymuszają min-szerokości na mobile --- */
+@media (max-width: 767px) {
+  .table input[type="text"] { min-width: 0; width: 100%; }
+}
+
+/* --- QR obrazek dopasowany procentowo na małych ekranach --- */
+@media (max-width: 480px) {
+  .qr { width: 70vw; height: 70vw; }
+  .secret { word-break: break-all; }
+}
+
+/* ===============================
+   Tabela -> „karty” na smartfonach
+   =============================== */
+@media (max-width: 720px) {
+  /* rozbijamy klasyczną tabelę na bloki */
+  .table,
+  .table thead,
+  .table tbody,
+  .table th,
+  .table td,
+  .table tr { display: block; }
+
+  .table { border: 0; min-width: 0; }
+
+  /* nagłówek znika, bo etykiety damy w :before */
+  .table thead { display: none; }
+
+  .table tr {
+    background: #fff;
+    border: 1px solid var(--c-border-soft);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    padding: 10px;
+  }
+
+  .table td {
+    display: grid;
+    grid-template-columns: 40% 60%; /* procentowo */
+    gap: 8px;
+    padding: 8px 6px;
+    border: 0;
+    align-items: center;
+  }
+
+  /* etykiety kolumn przez :before (dopasowane do obecnego układu) */
+  .table td:nth-child(1)::before { content: "ID"; font-weight: 600; color: var(--c-muted); }
+  .table td:nth-child(2)::before { content: "Nazwa"; font-weight: 600; color: var(--c-muted); }
+  .table td:nth-child(3)::before { content: "Adres"; font-weight: 600; color: var(--c-muted); }
+  .table td:nth-child(4)::before { content: "Akcje"; font-weight: 600; color: var(--c-muted); }
+
+  /* akcje pionowo + 100% */
+  .actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+  .actions .primary,
+  .actions .secondary,
+  .actions .danger {
+    width: 100%;
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+
+  /* ładniejszy kod ID w kartach */
+  .table code {
+    display: inline-block;
+    width: 100%;
+    overflow-wrap: anywhere;
+    text-align: left;
+  }
+}
+
+/* ===============================
+   Drobne dopieszczenia tabletowe
+   =============================== */
+@media (min-width: 721px) and (max-width: 1023px) {
+  .table { min-width: 100%; }   /* procentowo, bez sztywnego progu */
+  .actions { gap: 10px; }
+}
+
+/* Ruch ograniczony dla osób z ograniczeniami – lepsza dostępność */
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
