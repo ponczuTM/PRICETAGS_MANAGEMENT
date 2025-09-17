@@ -121,7 +121,7 @@
   
   .hamburger {
     display: block;
-    margin-left: 50px; /* Przesunięcie przycisku o 50px w lewo */
+    margin-left: -50px; /* Przesunięcie przycisku o 50px w lewo */
   }
 
   .navbarLinks {
