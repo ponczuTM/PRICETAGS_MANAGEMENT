@@ -61,7 +61,7 @@ const Login = () => {
         setUserInfo(user);
         setTimeout(() => navigate("/mainpage"), 800);
       } else {
-        // Brak lokalizacji → wyczyść ewentualne stare locationId i idź na /addlocation
+        // Brak lokalizacji → wyczyść ewentualne stare locationId i idź na /settings
         localStorage.removeItem("locationId");
         setUserInfo(user);
         setErrorMsg(""); // brak błędu – to legalny scenariusz

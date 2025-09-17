@@ -7,7 +7,6 @@ import Gallery from "./components/Gallery";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Settings from "./components/Settings";
-import AddLocation from "./components/AddLocation";
 
 function App() {
   return (
@@ -20,7 +19,6 @@ function App() {
       <Route path="/gallery" element={<Gallery />} />
       <Route path="/register" element={<Register />} />
       <Route path="/settings" element={<Settings />} />
-      <Route path="/addlocation" element={<AddLocation />} />
       </Routes>
     </Router>
   );
