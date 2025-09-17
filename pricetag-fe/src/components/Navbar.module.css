@@ -1,172 +1,143 @@
-:root {
-  --primary-color: #4472c4;
-  --primary-color-hover: #3b5998;
-  --text-secondary: #000000;
-  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
-  --background-card: #ffffff;
-}
-
 .navbar {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #2c3e50; /* Ciemnoniebieski */
+  color: white;
+  padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
-  padding: 1rem 2rem;
-  background-color: var(--background-card);
-  box-shadow: var(--shadow-sm);
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 1000;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
 }
 
-.navbarBrand {
-  flex-shrink: 0;
-}
-
-.logoText {
+.navbarBrand .logoText {
   font-size: 1.5rem;
-  font-weight: bold;
-  color: var(--primary-color);
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 1px;
 }
 
 .navbarLinks {
   display: flex;
-  margin-left: auto;
-  margin-right: 100px;
-  gap: 2rem;
   align-items: center;
+  gap: 1.5rem;
+  transition: transform 0.3s ease-in-out;
 }
 
-.navLink {
-  color: var(--text-secondary);
+.navLink, .logoutButton {
+  color: white;
   text-decoration: none;
-  font-weight: 600;
   font-size: 1rem;
+  font-weight: 500;
   padding: 0.5rem 0;
   position: relative;
-  transition: color 0.3s ease-in-out;
-}
-
-.navLink:hover {
-  color: var(--primary-color);
+  transition: color 0.3s ease-in-out, transform 0.2s ease-in-out;
 }
 
 .navLink::after {
   content: '';
   position: absolute;
-  left: 0;
   bottom: 0;
+  left: 0;
   width: 0;
   height: 2px;
-  background-color: var(--primary-color);
+  background-color: #3498db; /* Jasnoniebieski */
   transition: width 0.3s ease-in-out;
 }
 
 .navLink:hover::after,
-.navLink.active::after {
+.navLink:focus::after {
   width: 100%;
 }
 
+.navLink:hover,
+.navLink:focus {
+  color: #3498db;
+  transform: translateY(-2px);
+}
+
 .logoutButton {
-  background-color: #dc3545;
-  color: white;
-  padding: 8px 12px;
+  background-color: #e74c3c; /* Czerwony dla akcentu */
   border: none;
-  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
   cursor: pointer;
-  margin-left: 12px;
-  font-size: 14px;
-  white-space: nowrap;
+  font-weight: 600;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-.logoutButton:hover {
-  background-color: #c82333;
+.logoutButton:hover,
+.logoutButton:focus {
+  background-color: #c0392b;
+  transform: scale(1.05);
 }
 
-/* -------------------------------------- */
-/* Style dla responsywności */
-/* -------------------------------------- */
-
+/* Styl dla hamburgera - widoczny tylko na małych ekranach */
 .hamburger {
-  display: none;
-  background: none;
+  display: none; /* Domyślnie ukryty */
+  flex-direction: column;
+  justify-content: space-around;
+  width: 2rem;
+  height: 2rem;
+  background: transparent;
   border: none;
   cursor: pointer;
   padding: 0;
-  margin-left: 1rem;
+  z-index: 100;
 }
 
-.bar {
-  display: block;
-  width: 25px;
+.hamburger .bar {
+  width: 2rem;
   height: 3px;
-  background-color: var(--primary-color);
-  margin: 5px 0;
+  background-color: white;
+  border-radius: 10px;
   transition: all 0.3s ease-in-out;
 }
 
-@media (max-width: 768px) {
+/* Responsywność */
+@media (max-width: 992px) {
   .navbar {
-    padding: 1rem 2rem;
-    position: fixed;
+    padding: 1rem 1.5rem;
   }
-  
+
   .hamburger {
-    display: block;
-    position: absolute; /* Użycie pozycjonowania absolutnego */
-    right: 40px;      /* Ustawienie 40px od prawej krawędzi */
-    top: 50%;         /* Ustawienie na środku pionowo */
-    transform: translateY(-50%); /* Korekta, aby był idealnie na środku */
-    z-index: 1001;    /* Upewnij się, że jest na wierzchu */
+    display: flex; /* Pokaż hamburger na mniejszych ekranach */
   }
-  
-  /* Zmniejszenie czcionki dla logo na małych ekranach */
-  .logoText {
-    font-size: 1.2rem;
-  }
-  
+
   .navbarLinks {
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    top: 65px;
-    left: 0;
+    position: absolute;
+    top: 100%; /* Poniżej nawigacji */
+    right: 0;
     width: 100%;
-    height: calc(100vh - 65px);
-    background-color: var(--background-card);
-    box-shadow: var(--shadow-sm);
-    padding: 2rem;
-    gap: 1rem;
-    align-items: flex-start;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease-in-out;
-    overflow-y: auto;
+    flex-direction: column;
+    background-color: #2c3e50;
+    transform: translateX(100%); /* Ukryj menu domyślnie */
+    transition: transform 0.4s ease-in-out;
+    padding: 1rem 0;
+    z-index: 99;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
 
   .navbarLinks.open {
-    transform: translateX(0);
+    transform: translateX(0); /* Pokaż menu */
   }
 
   .navLink, .logoutButton {
+    padding: 1rem 2rem;
     width: 100%;
-    text-align: left;
-    padding: 1rem 0;
-    border-bottom: 1px solid #eee;
-  }
-  
-  .logoutButton {
-    margin-left: 0;
-    margin-top: 1rem;
     text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
 }
 
-@media (min-width: 769px) {
-    .hamburger {
-        display: none;
-    }
+/* Dodatkowy styl dla animacji hamburgera - opcjonalny */
+.hamburger.open .bar:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+
+.hamburger.open .bar:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger.open .bar:nth-child(3) {
+  transform: rotate(-45deg) translate(7px, -6px);
 }
