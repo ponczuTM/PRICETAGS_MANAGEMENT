@@ -249,8 +249,8 @@ import re
 from binascii import Error as B64Error
 
 # === KONFIG ===
-# LOCATION_ID = "685003cbf071eb1bb4304cd2"
-LOCATION_ID = "68c95e497b40e5d906e1caa7"
+LOCATION_ID = "685003cbf071eb1bb4304cd2"
+# LOCATION_ID = "68c95e497b40e5d906e1caa7"
 API_BASE = "http://localhost:8000/api/locations"
 BASE_IP = "192.168.68."
 

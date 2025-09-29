@@ -18,7 +18,7 @@ PIX_FMT = "yuv420p"
 PROFILE = "high"
 LEVEL = "4.1"
 KEEP_ORIGINALS = False                 # True => nie usuwaj oryginałów
-IMG_DURATION = 3                       # ile sekund ma trwać MP4 z PNG
+IMG_DURATION = 1                       # ile sekund ma trwać MP4 z PNG
 
 # Rozszerzenia wideo do przeróbki (możesz dopisać inne)
 VIDEO_EXTS = {".mp4", ".mov", ".mkv", ".webm", ".avi", ".m4v", ".ts"}

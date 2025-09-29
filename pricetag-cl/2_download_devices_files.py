@@ -6,7 +6,7 @@ import pytz
 from pathlib import Path
 
 # LOCATION_ID = "685003cbf071eb1bb4304cd2"
-LOCATION_ID = "68c95e497b40e5d906e1caa7"
+LOCATION_ID = "685003cbf071eb1bb4304cd2"
 API_BASE = "http://localhost:8000/api/locations"
 script_dir = os.path.dirname(os.path.abspath(__file__))
 LAST_CHECK_PATH = os.path.join(script_dir, "lastHourCheck.txt")

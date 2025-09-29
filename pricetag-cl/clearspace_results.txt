@@ -1,0 +1,430 @@
+192.168.68.1: Fail - Status: 404, Odpowiedź: <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head><title>File not found!</title><style type="text/css"><!--/*--><![CDATA[/*><!--*/ body { color: #000000; background-color: #FFFFFF; }span.url { text-decoration: underline; }p {margin-left: 3em;}span.server {font-size: smaller;}/*]]>*/--></style></head><body><h1>File not found!</h1><p>The requested URL <span class="url"> </span> was not found on this server.</p><p>If you entered the URL manually please check your spelling and try again.</p><h2>Error 404</h2><p><span class="server">SonicWall Server</span></p></body></html>
+192.168.68.2: Fail - Status: 404, Odpowiedź: <!DOCTYPE html>
+<html><head><title>Document Error: Not Found</title></head>
+<body><h2>Access Error: 404 -- Not Found</h2>
+<p>Can't locate document: /control</p>
+</body>
+</html>
+
+192.168.68.3: Fail - Status: 404, Odpowiedź: <!DOCTYPE html>
+<html><head><title>Document Error: Not Found</title></head>
+<body><h2>Access Error: 404 -- Not Found</h2>
+<p>Can't locate document: /control</p>
+</body>
+</html>
+
+192.168.68.4: Fail - HTTPConnectionPool(host='192.168.68.4', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f3440>, 'Connection to 192.168.68.4 timed out. (connect timeout=25)'))
+192.168.68.5: Fail - Status: 404, Odpowiedź: <!DOCTYPE html>
+<html><head><title>Document Error: Not Found</title></head>
+<body><h2>Access Error: 404 -- Not Found</h2>
+<p>Can't locate document: /control</p>
+</body>
+</html>
+
+192.168.68.6: Fail - HTTPConnectionPool(host='192.168.68.6', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f35f0>, 'Connection to 192.168.68.6 timed out. (connect timeout=25)'))
+192.168.68.7: Fail - HTTPConnectionPool(host='192.168.68.7', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f3aa0>, 'Connection to 192.168.68.7 timed out. (connect timeout=25)'))
+192.168.68.8: Fail - HTTPConnectionPool(host='192.168.68.8', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322c350>, 'Connection to 192.168.68.8 timed out. (connect timeout=25)'))
+192.168.68.9: Fail - HTTPConnectionPool(host='192.168.68.9', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322cc20>, 'Connection to 192.168.68.9 timed out. (connect timeout=25)'))
+192.168.68.10: Fail - HTTPConnectionPool(host='192.168.68.10', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322d4f0>, 'Connection to 192.168.68.10 timed out. (connect timeout=25)'))
+192.168.68.11: Fail - Status: 404, Odpowiedź: 404 Not Found
+
+192.168.68.12: Fail - HTTPConnectionPool(host='192.168.68.12', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f0a40>, 'Connection to 192.168.68.12 timed out. (connect timeout=25)'))
+192.168.68.13: Fail - HTTPConnectionPool(host='192.168.68.13', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x102c29760>, 'Connection to 192.168.68.13 timed out. (connect timeout=25)'))
+192.168.68.14: Fail - HTTPConnectionPool(host='192.168.68.14', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322d400>, 'Connection to 192.168.68.14 timed out. (connect timeout=25)'))
+192.168.68.15: Fail - HTTPConnectionPool(host='192.168.68.15', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322c950>, 'Connection to 192.168.68.15 timed out. (connect timeout=25)'))
+192.168.68.16: Fail - Status: 404, Odpowiedź: 404 Not Found
+
+192.168.68.17: Fail - HTTPConnectionPool(host='192.168.68.17', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322ce90>, 'Connection to 192.168.68.17 timed out. (connect timeout=25)'))
+192.168.68.18: Fail - HTTPConnectionPool(host='192.168.68.18', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322e570>, 'Connection to 192.168.68.18 timed out. (connect timeout=25)'))
+192.168.68.19: Fail - HTTPConnectionPool(host='192.168.68.19', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f3380>, 'Connection to 192.168.68.19 timed out. (connect timeout=25)'))
+192.168.68.20: Fail - HTTPConnectionPool(host='192.168.68.20', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322db50>, 'Connection to 192.168.68.20 timed out. (connect timeout=25)'))
+192.168.68.21: Fail - HTTPConnectionPool(host='192.168.68.21', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322cd40>, 'Connection to 192.168.68.21 timed out. (connect timeout=25)'))
+192.168.68.22: Fail - HTTPConnectionPool(host='192.168.68.22', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322d8b0>, 'Connection to 192.168.68.22 timed out. (connect timeout=25)'))
+192.168.68.23: Fail - HTTPConnectionPool(host='192.168.68.23', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322e780>, 'Connection to 192.168.68.23 timed out. (connect timeout=25)'))
+192.168.68.24: Fail - HTTPConnectionPool(host='192.168.68.24', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1030c82c0>, 'Connection to 192.168.68.24 timed out. (connect timeout=25)'))
+192.168.68.25: Fail - HTTPConnectionPool(host='192.168.68.25', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f3e00>, 'Connection to 192.168.68.25 timed out. (connect timeout=25)'))
+192.168.68.26: Fail - HTTPConnectionPool(host='192.168.68.26', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322e720>, 'Connection to 192.168.68.26 timed out. (connect timeout=25)'))
+192.168.68.27: Fail - HTTPConnectionPool(host='192.168.68.27', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322d400>, 'Connection to 192.168.68.27 timed out. (connect timeout=25)'))
+192.168.68.28: Fail - HTTPConnectionPool(host='192.168.68.28', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322c470>, 'Connection to 192.168.68.28 timed out. (connect timeout=25)'))
+192.168.68.29: Fail - HTTPConnectionPool(host='192.168.68.29', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322dc70>, 'Connection to 192.168.68.29 timed out. (connect timeout=25)'))
+192.168.68.30: Fail - HTTPConnectionPool(host='192.168.68.30', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x102fbe870>, 'Connection to 192.168.68.30 timed out. (connect timeout=25)'))
+192.168.68.31: Fail - HTTPConnectionPool(host='192.168.68.31', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f3530>, 'Connection to 192.168.68.31 timed out. (connect timeout=25)'))
+192.168.68.32: Fail - HTTPConnectionPool(host='192.168.68.32', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322c440>, 'Connection to 192.168.68.32 timed out. (connect timeout=25)'))
+192.168.68.33: Fail - HTTPSConnectionPool(host='192.168.68.33', port=443): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1000)')))
+192.168.68.34: Fail - HTTPConnectionPool(host='192.168.68.34', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322e6c0>, 'Connection to 192.168.68.34 timed out. (connect timeout=25)'))
+192.168.68.35: Fail - HTTPConnectionPool(host='192.168.68.35', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322ef00>, 'Connection to 192.168.68.35 timed out. (connect timeout=25)'))
+192.168.68.36: Fail - HTTPConnectionPool(host='192.168.68.36', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f3b60>, 'Connection to 192.168.68.36 timed out. (connect timeout=25)'))
+192.168.68.37: Fail - HTTPConnectionPool(host='192.168.68.37', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322ce30>, 'Connection to 192.168.68.37 timed out. (connect timeout=25)'))
+192.168.68.38: Fail - HTTPConnectionPool(host='192.168.68.38', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322df70>, 'Connection to 192.168.68.38 timed out. (connect timeout=25)'))
+192.168.68.39: Fail - HTTPConnectionPool(host='192.168.68.39', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322cb90>, 'Connection to 192.168.68.39 timed out. (connect timeout=25)'))
+192.168.68.40: Fail - HTTPConnectionPool(host='192.168.68.40', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322e270>, 'Connection to 192.168.68.40 timed out. (connect timeout=25)'))
+192.168.68.41: Fail - HTTPConnectionPool(host='192.168.68.41', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322f650>, 'Connection to 192.168.68.41 timed out. (connect timeout=25)'))
+192.168.68.42: Fail - HTTPConnectionPool(host='192.168.68.42', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f3590>, 'Connection to 192.168.68.42 timed out. (connect timeout=25)'))
+192.168.68.43: Fail - HTTPConnectionPool(host='192.168.68.43', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322e270>, 'Connection to 192.168.68.43 timed out. (connect timeout=25)'))
+192.168.68.44: Fail - Status: 404, Odpowiedź: <HTML><HEAD><TITLE>404 Not Found</TITLE></HEAD><BODY>404 Not Found</BODY></HTML>
+
+192.168.68.45: Fail - HTTPConnectionPool(host='192.168.68.45', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322e240>, 'Connection to 192.168.68.45 timed out. (connect timeout=25)'))
+192.168.68.46: Fail - HTTPConnectionPool(host='192.168.68.46', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322c7a0>, 'Connection to 192.168.68.46 timed out. (connect timeout=25)'))
+192.168.68.47: Fail - HTTPConnectionPool(host='192.168.68.47', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322f800>, 'Connection to 192.168.68.47 timed out. (connect timeout=25)'))
+192.168.68.48: Fail - HTTPConnectionPool(host='192.168.68.48', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x103254170>, 'Connection to 192.168.68.48 timed out. (connect timeout=25)'))
+192.168.68.49: Fail - HTTPConnectionPool(host='192.168.68.49', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322da30>, 'Connection to 192.168.68.49 timed out. (connect timeout=25)'))
+192.168.68.50: Fail - HTTPConnectionPool(host='192.168.68.50', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322ca70>, 'Connection to 192.168.68.50 timed out. (connect timeout=25)'))
+192.168.68.51: Fail - HTTPConnectionPool(host='192.168.68.51', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322e060>, 'Connection to 192.168.68.51 timed out. (connect timeout=25)'))
+192.168.68.52: Fail - HTTPConnectionPool(host='192.168.68.52', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f3620>, 'Connection to 192.168.68.52 timed out. (connect timeout=25)'))
+192.168.68.53: Fail - HTTPConnectionPool(host='192.168.68.53', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x103254320>, 'Connection to 192.168.68.53 timed out. (connect timeout=25)'))
+192.168.68.54: Fail - HTTPConnectionPool(host='192.168.68.54', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x102adccb0>, 'Connection to 192.168.68.54 timed out. (connect timeout=25)'))
+192.168.68.55: Fail - HTTPConnectionPool(host='192.168.68.55', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f3380>, 'Connection to 192.168.68.55 timed out. (connect timeout=25)'))
+192.168.68.56: Fail - HTTPConnectionPool(host='192.168.68.56', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322c200>, 'Connection to 192.168.68.56 timed out. (connect timeout=25)'))
+192.168.68.57: Fail - HTTPConnectionPool(host='192.168.68.57', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322da90>, 'Connection to 192.168.68.57 timed out. (connect timeout=25)'))
+192.168.68.58: Fail - HTTPConnectionPool(host='192.168.68.58', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322eb10>, 'Connection to 192.168.68.58 timed out. (connect timeout=25)'))
+192.168.68.59: Fail - HTTPSConnectionPool(host='192.168.68.59', port=443): Max retries exceeded with url: /start.html (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate (_ssl.c:1000)')))
+192.168.68.60: Fail - HTTPSConnectionPool(host='192.168.68.60', port=443): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1000)')))
+192.168.68.61: Fail - HTTPSConnectionPool(host='192.168.68.61', port=443): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1000)')))
+192.168.68.62: Fail - HTTPConnectionPool(host='192.168.68.62', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x103254b60>, 'Connection to 192.168.68.62 timed out. (connect timeout=25)'))
+192.168.68.63: Fail - HTTPConnectionPool(host='192.168.68.63', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x103255700>, 'Connection to 192.168.68.63 timed out. (connect timeout=25)'))
+192.168.68.64: Fail - HTTPConnectionPool(host='192.168.68.64', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x102e82ba0>, 'Connection to 192.168.68.64 timed out. (connect timeout=25)'))
+192.168.68.65: Fail - HTTPConnectionPool(host='192.168.68.65', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f3b30>, 'Connection to 192.168.68.65 timed out. (connect timeout=25)'))
+192.168.68.66: Fail - HTTPConnectionPool(host='192.168.68.66', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322d0d0>, 'Connection to 192.168.68.66 timed out. (connect timeout=25)'))
+192.168.68.67: Fail - HTTPConnectionPool(host='192.168.68.67', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322f800>, 'Connection to 192.168.68.67 timed out. (connect timeout=25)'))
+192.168.68.68: Fail - HTTPConnectionPool(host='192.168.68.68', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322d460>, 'Connection to 192.168.68.68 timed out. (connect timeout=25)'))
+192.168.68.69: Fail - HTTPConnectionPool(host='192.168.68.69', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x103255010>, 'Connection to 192.168.68.69 timed out. (connect timeout=25)'))
+192.168.68.70: Fail - HTTPConnectionPool(host='192.168.68.70', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f0a40>, 'Connection to 192.168.68.70 timed out. (connect timeout=25)'))
+192.168.68.71: Fail - HTTPConnectionPool(host='192.168.68.71', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10314d580>, 'Connection to 192.168.68.71 timed out. (connect timeout=25)'))
+192.168.68.72: Fail - HTTPConnectionPool(host='192.168.68.72', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322d9d0>, 'Connection to 192.168.68.72 timed out. (connect timeout=25)'))
+192.168.68.73: Fail - HTTPConnectionPool(host='192.168.68.73', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322f890>, 'Connection to 192.168.68.73 timed out. (connect timeout=25)'))
+192.168.68.74: Fail - HTTPConnectionPool(host='192.168.68.74', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322cc50>, 'Connection to 192.168.68.74 timed out. (connect timeout=25)'))
+192.168.68.75: Fail - HTTPConnectionPool(host='192.168.68.75', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322f2c0>, 'Connection to 192.168.68.75 timed out. (connect timeout=25)'))
+192.168.68.76: Fail - HTTPConnectionPool(host='192.168.68.76', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x102e82ba0>, 'Connection to 192.168.68.76 timed out. (connect timeout=25)'))
+192.168.68.77: Fail - HTTPConnectionPool(host='192.168.68.77', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f3560>, 'Connection to 192.168.68.77 timed out. (connect timeout=25)'))
+192.168.68.78: Fail - HTTPConnectionPool(host='192.168.68.78', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322f2c0>, 'Connection to 192.168.68.78 timed out. (connect timeout=25)'))
+192.168.68.79: Fail - Status: 500, Odpowiedź:  500 Internal Sever Error
+192.168.68.80: Fail - HTTPConnectionPool(host='192.168.68.80', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322ca70>, 'Connection to 192.168.68.80 timed out. (connect timeout=25)'))
+192.168.68.81: Fail - HTTPConnectionPool(host='192.168.68.81', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322cad0>, 'Connection to 192.168.68.81 timed out. (connect timeout=25)'))
+192.168.68.82: Fail - HTTPConnectionPool(host='192.168.68.82', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322c6b0>, 'Connection to 192.168.68.82 timed out. (connect timeout=25)'))
+192.168.68.83: Fail - HTTPConnectionPool(host='192.168.68.83', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322eb70>, 'Connection to 192.168.68.83 timed out. (connect timeout=25)'))
+192.168.68.84: Fail - HTTPConnectionPool(host='192.168.68.84', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f32c0>, 'Connection to 192.168.68.84 timed out. (connect timeout=25)'))
+192.168.68.85: Fail - HTTPConnectionPool(host='192.168.68.85', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x102c2aed0>, 'Connection to 192.168.68.85 timed out. (connect timeout=25)'))
+192.168.68.86: Fail - HTTPConnectionPool(host='192.168.68.86', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322e660>, 'Connection to 192.168.68.86 timed out. (connect timeout=25)'))
+192.168.68.87: Fail - HTTPConnectionPool(host='192.168.68.87', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322faa0>, 'Connection to 192.168.68.87 timed out. (connect timeout=25)'))
+192.168.68.88: Fail - Status: 404, Odpowiedź: <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1250"/>
+<title>404  Nie odnaleziono pliku lub katalogu.</title>
+<style type="text/css">
+<!--
+body{margin:0;font-size:.7em;font-family:Verdana, Arial, Helvetica, sans-serif;background:#EEEEEE;}
+fieldset{padding:0 15px 10px 15px;} 
+h1{font-size:2.4em;margin:0;color:#FFF;}
+h2{font-size:1.7em;margin:0;color:#CC0000;} 
+h3{font-size:1.2em;margin:10px 0 0 0;color:#000000;} 
+#header{width:96%;margin:0 0 0 0;padding:6px 2% 6px 2%;font-family:"trebuchet MS", Verdana, sans-serif;color:#FFF;
+background-color:#555555;}
+#content{margin:0 0 0 2%;position:relative;}
+.content-container{background:#FFF;width:96%;margin-top:8px;padding:10px;position:relative;}
+-->
+</style>
+</head>
+<body>
+<div id="header"><h1>B³¹d serwera</h1></div>
+<div id="content">
+ <div class="content-container"><fieldset>
+  <h2>404  Nie odnaleziono pliku lub katalogu.</h2>
+  <h3>Szukany zasób zosta³ usuniêty, ma zmienion¹ nazwê lub jest czasowo niedostêpny.</h3>
+ </fieldset></div>
+</div>
+</body>
+</html>
+
+192.168.68.89: Fail - HTTPConnectionPool(host='192.168.68.89', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x10322dd90>: Failed to establish a new connection: [Errno 61] Connection refused'))
+192.168.68.90: Fail - Status: 401, Odpowiedź: <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+
+<HEAD>
+	<META HTTP-EQUIV="Content-Type" CONTENT="text/html">
+	<TITLE>MC562</TITLE>
+</HEAD>
+
+<BODY BGCOLOR="#FFFFFF">
+
+<P>
+<TABLE BORDER="0"  CELLPADDING="4" WIDTH="100%">
+	<TR>
+		<TD WIDTH="600" HEIGHT="50" VALIGN="BOTTOM" BGCOLOR="#8A2034" NOWRAP><FONT SIZE="4" COLOR="white" FACE="Arial, Helvetica">Unauthorized</FONT></TD>
+	</TR>
+</TABLE>
+</P>
+
+<BLOCKQUOTE>
+<TABLE BORDER="0" WIDTH="100%">
+	<TR>
+		<TD WIDTH="100%" NOWRAP><FONT SIZE="2" FACE="Arial, Helvetica">HTTP-1.0 / 401</FONT></TD>
+	</TR>
+</TABLE>
+<P>
+<TABLE BORDER="0" WIDTH="100%">
+	<TR>
+		<TD WIDTH="100%" NOWRAP><FONT SIZE="2" FACE="Arial, Helvetica">Return to </FONT>
+<FONT SIZE="2" FACE="Arial, Helvetica"><A HREF="JavaScript:history.back();">Previous Page.</A></FONT>
+
+	</TR>
+</TABLE>
+</BLOCKQUOTE>
+
+<P>
+
+</BODY>
+
+</HTML>
+192.168.68.91: Fail - HTTPConnectionPool(host='192.168.68.91', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322de20>, 'Connection to 192.168.68.91 timed out. (connect timeout=25)'))
+192.168.68.92: Fail - HTTPConnectionPool(host='192.168.68.92', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f3410>, 'Connection to 192.168.68.92 timed out. (connect timeout=25)'))
+192.168.68.93: Fail - HTTPConnectionPool(host='192.168.68.93', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322cbf0>, 'Connection to 192.168.68.93 timed out. (connect timeout=25)'))
+192.168.68.94: Success - OK
+192.168.68.95: Fail - HTTPConnectionPool(host='192.168.68.95', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322eb10>, 'Connection to 192.168.68.95 timed out. (connect timeout=25)'))
+192.168.68.96: Fail - HTTPConnectionPool(host='192.168.68.96', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322cef0>, 'Connection to 192.168.68.96 timed out. (connect timeout=25)'))
+192.168.68.97: Fail - Status: 404, Odpowiedź: <!DOCTYPE HTML>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="/framework/Unified.css" rel="stylesheet" type="text/css">
+
+<style type="text/css">
+#banner-logo-div {
+  padding-top: 15px;
+  }
+
+#pgm-top-pane {
+  height: 10px;
+  }
+</style>
+
+  <title>Not Found</title>
+</head>
+
+<body>
+<div id="pgm-overall-container">
+<div id="pgm-banner">
+  <div id="banner-logo-div">
+    <img src="/images/icon_hp_logo_masthead.png" alt="">
+  </div>
+  <div id="banner-section-title">
+    <h1>Sorry, we couldn't find that page.</h1>
+    <span>The URL may be misspelled or the page you're looking for is no longer available.</span>
+  </div>
+</div> <!-- #pgm-banner -->
+
+<div id="pgm-top-pane">
+</div>
+
+<div id="pgm-container-div">
+<div id="contentPane">
+</div> <!-- #contentPane -->
+</div> <!-- #pgm-container-div -->
+
+</div> <!-- #pgm-overall-container -->
+</body>
+</html>
+
+192.168.68.98: Fail - Status: 404, Odpowiedź: <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<html><head>
+<title>404 Not Found</title>
+</head><body>
+<h1>Not Found</h1>
+<p>The requested URL was not found on this server.</p>
+</body></html>
+
+192.168.68.99: Fail - HTTPConnectionPool(host='192.168.68.99', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x103254a70>, 'Connection to 192.168.68.99 timed out. (connect timeout=25)'))
+192.168.68.100: Fail - HTTPConnectionPool(host='192.168.68.100', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f3530>, 'Connection to 192.168.68.100 timed out. (connect timeout=25)'))
+192.168.68.101: Fail - HTTPConnectionPool(host='192.168.68.101', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f38f0>, 'Connection to 192.168.68.101 timed out. (connect timeout=25)'))
+192.168.68.102: Fail - HTTPConnectionPool(host='192.168.68.102', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322e5d0>, 'Connection to 192.168.68.102 timed out. (connect timeout=25)'))
+192.168.68.103: Fail - HTTPConnectionPool(host='192.168.68.103', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322f8f0>, 'Connection to 192.168.68.103 timed out. (connect timeout=25)'))
+192.168.68.104: Fail - HTTPSConnectionPool(host='192.168.68.104', port=443): Max retries exceeded with url: /start.html (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate (_ssl.c:1000)')))
+192.168.68.105: Fail - HTTPConnectionPool(host='192.168.68.105', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1030c82c0>, 'Connection to 192.168.68.105 timed out. (connect timeout=25)'))
+192.168.68.106: Fail - HTTPConnectionPool(host='192.168.68.106', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f2cf0>, 'Connection to 192.168.68.106 timed out. (connect timeout=25)'))
+192.168.68.107: Fail - HTTPConnectionPool(host='192.168.68.107', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322c680>, 'Connection to 192.168.68.107 timed out. (connect timeout=25)'))
+192.168.68.108: Fail - HTTPConnectionPool(host='192.168.68.108', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322e6c0>, 'Connection to 192.168.68.108 timed out. (connect timeout=25)'))
+192.168.68.109: Fail - HTTPConnectionPool(host='192.168.68.109', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322e7b0>, 'Connection to 192.168.68.109 timed out. (connect timeout=25)'))
+192.168.68.110: Fail - HTTPConnectionPool(host='192.168.68.110', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322f980>, 'Connection to 192.168.68.110 timed out. (connect timeout=25)'))
+192.168.68.111: Fail - HTTPConnectionPool(host='192.168.68.111', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x102e1f380>, 'Connection to 192.168.68.111 timed out. (connect timeout=25)'))
+192.168.68.112: Fail - HTTPConnectionPool(host='192.168.68.112', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f1fd0>, 'Connection to 192.168.68.112 timed out. (connect timeout=25)'))
+192.168.68.113: Fail - HTTPConnectionPool(host='192.168.68.113', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322cad0>, 'Connection to 192.168.68.113 timed out. (connect timeout=25)'))
+192.168.68.114: Fail - HTTPConnectionPool(host='192.168.68.114', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322d580>, 'Connection to 192.168.68.114 timed out. (connect timeout=25)'))
+192.168.68.115: Fail - HTTPConnectionPool(host='192.168.68.115', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x10322cc50>: Failed to establish a new connection: [Errno 61] Connection refused'))
+192.168.68.116: Fail - HTTPConnectionPool(host='192.168.68.116', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1030ca1b0>, 'Connection to 192.168.68.116 timed out. (connect timeout=25)'))
+192.168.68.117: Fail - HTTPConnectionPool(host='192.168.68.117', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x1032549b0>: Failed to establish a new connection: [Errno 61] Connection refused'))
+192.168.68.118: Fail - HTTPConnectionPool(host='192.168.68.118', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f2a20>, 'Connection to 192.168.68.118 timed out. (connect timeout=25)'))
+192.168.68.119: Fail - HTTPConnectionPool(host='192.168.68.119', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322fa10>, 'Connection to 192.168.68.119 timed out. (connect timeout=25)'))
+192.168.68.120: Fail - HTTPConnectionPool(host='192.168.68.120', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x10322dd90>: Failed to establish a new connection: [Errno 61] Connection refused'))
+192.168.68.121: Fail - Status: 404, Odpowiedź: 404 Not Found
+
+192.168.68.122: Fail - HTTPConnectionPool(host='192.168.68.122', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x10322c6e0>: Failed to establish a new connection: [Errno 61] Connection refused'))
+192.168.68.123: Success - OK
+192.168.68.124: Fail - HTTPConnectionPool(host='192.168.68.124', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322d280>, 'Connection to 192.168.68.124 timed out. (connect timeout=25)'))
+192.168.68.125: Fail - HTTPConnectionPool(host='192.168.68.125', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x103254410>, 'Connection to 192.168.68.125 timed out. (connect timeout=25)'))
+192.168.68.126: Fail - HTTPConnectionPool(host='192.168.68.126', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322eb10>, 'Connection to 192.168.68.126 timed out. (connect timeout=25)'))
+192.168.68.127: Fail - HTTPConnectionPool(host='192.168.68.127', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322d4c0>, 'Connection to 192.168.68.127 timed out. (connect timeout=25)'))
+192.168.68.128: Fail - HTTPConnectionPool(host='192.168.68.128', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322f2f0>, 'Connection to 192.168.68.128 timed out. (connect timeout=25)'))
+192.168.68.129: Fail - HTTPConnectionPool(host='192.168.68.129', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f36b0>, 'Connection to 192.168.68.129 timed out. (connect timeout=25)'))
+192.168.68.130: Fail - HTTPConnectionPool(host='192.168.68.130', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f3aa0>, 'Connection to 192.168.68.130 timed out. (connect timeout=25)'))
+192.168.68.131: Fail - HTTPConnectionPool(host='192.168.68.131', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x103254ad0>: Failed to establish a new connection: [Errno 61] Connection refused'))
+192.168.68.132: Fail - HTTPConnectionPool(host='192.168.68.132', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f3b90>, 'Connection to 192.168.68.132 timed out. (connect timeout=25)'))
+192.168.68.133: Fail - HTTPConnectionPool(host='192.168.68.133', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x102942cc0>, 'Connection to 192.168.68.133 timed out. (connect timeout=25)'))
+192.168.68.134: Fail - Status: 404, Odpowiedź: <!DOCTYPE html>
+<html><head><title>Document Error: Not Found</title></head>
+<body><h2>Access Error: 404 -- Not Found</h2>
+<p>Can't open URL</p>
+</body>
+</html>
+
+192.168.68.135: Fail - HTTPConnectionPool(host='192.168.68.135', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322cc20>, 'Connection to 192.168.68.135 timed out. (connect timeout=25)'))
+192.168.68.136: Fail - HTTPConnectionPool(host='192.168.68.136', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322d5e0>, 'Connection to 192.168.68.136 timed out. (connect timeout=25)'))
+192.168.68.137: Fail - HTTPConnectionPool(host='192.168.68.137', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322f980>, 'Connection to 192.168.68.137 timed out. (connect timeout=25)'))
+192.168.68.138: Fail - HTTPConnectionPool(host='192.168.68.138', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1032548f0>, 'Connection to 192.168.68.138 timed out. (connect timeout=25)'))
+192.168.68.139: Fail - HTTPConnectionPool(host='192.168.68.139', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x10322f350>: Failed to establish a new connection: [Errno 61] Connection refused'))
+192.168.68.140: Fail - HTTPConnectionPool(host='192.168.68.140', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322c260>, 'Connection to 192.168.68.140 timed out. (connect timeout=25)'))
+192.168.68.141: Fail - HTTPConnectionPool(host='192.168.68.141', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322fda0>, 'Connection to 192.168.68.141 timed out. (connect timeout=25)'))
+192.168.68.142: Fail - Status: 404, Odpowiedź: <!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>An Error Occurred: Not Found</title>
+    </head>
+    <body>
+        <h1>Oops! An Error Occurred</h1>
+        <h2>The server returned a "404 Not Found".</h2>
+
+        <div>
+            Something is broken. Please let us know what you were doing when this error occurred.
+            We will fix it as soon as possible. Sorry for any inconvenience caused.
+        </div>
+    </body>
+</html>
+
+192.168.68.143: Fail - HTTPConnectionPool(host='192.168.68.143', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322dcd0>, 'Connection to 192.168.68.143 timed out. (connect timeout=25)'))
+192.168.68.144: Fail - HTTPConnectionPool(host='192.168.68.144', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x1031f3a70>: Failed to establish a new connection: [Errno 61] Connection refused'))
+192.168.68.145: Fail - HTTPConnectionPool(host='192.168.68.145', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x103254170>, 'Connection to 192.168.68.145 timed out. (connect timeout=25)'))
+192.168.68.146: Fail - HTTPConnectionPool(host='192.168.68.146', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x102814b60>, 'Connection to 192.168.68.146 timed out. (connect timeout=25)'))
+192.168.68.147: Fail - HTTPConnectionPool(host='192.168.68.147', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f1eb0>, 'Connection to 192.168.68.147 timed out. (connect timeout=25)'))
+192.168.68.148: Fail - HTTPConnectionPool(host='192.168.68.148', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322dcd0>, 'Connection to 192.168.68.148 timed out. (connect timeout=25)'))
+192.168.68.149: Fail - HTTPConnectionPool(host='192.168.68.149', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322c470>, 'Connection to 192.168.68.149 timed out. (connect timeout=25)'))
+192.168.68.150: Fail - HTTPConnectionPool(host='192.168.68.150', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x10322c170>: Failed to establish a new connection: [Errno 61] Connection refused'))
+192.168.68.151: Fail - HTTPConnectionPool(host='192.168.68.151', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322c350>, 'Connection to 192.168.68.151 timed out. (connect timeout=25)'))
+192.168.68.152: Fail - HTTPConnectionPool(host='192.168.68.152', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1027db6e0>, 'Connection to 192.168.68.152 timed out. (connect timeout=25)'))
+192.168.68.153: Fail - HTTPConnectionPool(host='192.168.68.153', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f3e60>, 'Connection to 192.168.68.153 timed out. (connect timeout=25)'))
+192.168.68.154: Fail - HTTPConnectionPool(host='192.168.68.154', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x102fd4260>, 'Connection to 192.168.68.154 timed out. (connect timeout=25)'))
+192.168.68.155: Fail - HTTPConnectionPool(host='192.168.68.155', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322f7d0>, 'Connection to 192.168.68.155 timed out. (connect timeout=25)'))
+192.168.68.156: Success - OK
+192.168.68.157: Fail - HTTPConnectionPool(host='192.168.68.157', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x10322f860>: Failed to establish a new connection: [Errno 61] Connection refused'))
+192.168.68.158: Fail - HTTPConnectionPool(host='192.168.68.158', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322f2f0>, 'Connection to 192.168.68.158 timed out. (connect timeout=25)'))
+192.168.68.159: Fail - HTTPConnectionPool(host='192.168.68.159', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322e150>, 'Connection to 192.168.68.159 timed out. (connect timeout=25)'))
+192.168.68.160: Fail - HTTPConnectionPool(host='192.168.68.160', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f3a40>, 'Connection to 192.168.68.160 timed out. (connect timeout=25)'))
+192.168.68.161: Fail - HTTPConnectionPool(host='192.168.68.161', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x1027db6e0>: Failed to establish a new connection: [Errno 61] Connection refused'))
+192.168.68.162: Fail - HTTPConnectionPool(host='192.168.68.162', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322e990>, 'Connection to 192.168.68.162 timed out. (connect timeout=25)'))
+192.168.68.163: Fail - HTTPConnectionPool(host='192.168.68.163', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322ffe0>, 'Connection to 192.168.68.163 timed out. (connect timeout=25)'))
+192.168.68.164: Fail - HTTPConnectionPool(host='192.168.68.164', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322e1b0>, 'Connection to 192.168.68.164 timed out. (connect timeout=25)'))
+192.168.68.165: Fail - HTTPConnectionPool(host='192.168.68.165', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322ed80>, 'Connection to 192.168.68.165 timed out. (connect timeout=25)'))
+192.168.68.166: Fail - HTTPConnectionPool(host='192.168.68.166', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f3aa0>, 'Connection to 192.168.68.166 timed out. (connect timeout=25)'))
+192.168.68.167: Success - OK
+192.168.68.168: Fail - HTTPConnectionPool(host='192.168.68.168', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031be870>, 'Connection to 192.168.68.168 timed out. (connect timeout=25)'))
+192.168.68.169: Fail - HTTPConnectionPool(host='192.168.68.169', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322eb70>, 'Connection to 192.168.68.169 timed out. (connect timeout=25)'))
+192.168.68.170: Fail - HTTPConnectionPool(host='192.168.68.170', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322de50>, 'Connection to 192.168.68.170 timed out. (connect timeout=25)'))
+192.168.68.171: Success - OK
+192.168.68.172: Fail - HTTPConnectionPool(host='192.168.68.172', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322fa40>, 'Connection to 192.168.68.172 timed out. (connect timeout=25)'))
+192.168.68.173: Fail - HTTPConnectionPool(host='192.168.68.173', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322ca70>, 'Connection to 192.168.68.173 timed out. (connect timeout=25)'))
+192.168.68.174: Fail - HTTPConnectionPool(host='192.168.68.174', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031be2d0>, 'Connection to 192.168.68.174 timed out. (connect timeout=25)'))
+192.168.68.175: Fail - HTTPConnectionPool(host='192.168.68.175', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x1031f3890>: Failed to establish a new connection: [Errno 61] Connection refused'))
+192.168.68.176: Fail - HTTPConnectionPool(host='192.168.68.176', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322db80>, 'Connection to 192.168.68.176 timed out. (connect timeout=25)'))
+192.168.68.177: Fail - HTTPConnectionPool(host='192.168.68.177', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322f200>, 'Connection to 192.168.68.177 timed out. (connect timeout=25)'))
+192.168.68.178: Fail - HTTPConnectionPool(host='192.168.68.178', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322e7b0>, 'Connection to 192.168.68.178 timed out. (connect timeout=25)'))
+192.168.68.179: Fail - HTTPConnectionPool(host='192.168.68.179', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322efc0>, 'Connection to 192.168.68.179 timed out. (connect timeout=25)'))
+192.168.68.180: Success - OK
+192.168.68.181: Fail - HTTPConnectionPool(host='192.168.68.181', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f3650>, 'Connection to 192.168.68.181 timed out. (connect timeout=25)'))
+192.168.68.182: Fail - HTTPConnectionPool(host='192.168.68.182', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x102c2aed0>, 'Connection to 192.168.68.182 timed out. (connect timeout=25)'))
+192.168.68.183: Fail - HTTPConnectionPool(host='192.168.68.183', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322ea50>, 'Connection to 192.168.68.183 timed out. (connect timeout=25)'))
+192.168.68.184: Fail - HTTPConnectionPool(host='192.168.68.184', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322ec60>, 'Connection to 192.168.68.184 timed out. (connect timeout=25)'))
+192.168.68.185: Fail - HTTPConnectionPool(host='192.168.68.185', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322e210>, 'Connection to 192.168.68.185 timed out. (connect timeout=25)'))
+192.168.68.186: Success - OK
+192.168.68.187: Fail - HTTPConnectionPool(host='192.168.68.187', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322de80>, 'Connection to 192.168.68.187 timed out. (connect timeout=25)'))
+192.168.68.188: Fail - HTTPConnectionPool(host='192.168.68.188', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1030cac00>, 'Connection to 192.168.68.188 timed out. (connect timeout=25)'))
+192.168.68.189: Fail - HTTPConnectionPool(host='192.168.68.189', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f1eb0>, 'Connection to 192.168.68.189 timed out. (connect timeout=25)'))
+192.168.68.190: Success - OK
+192.168.68.191: Fail - HTTPConnectionPool(host='192.168.68.191', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322c7a0>, 'Connection to 192.168.68.191 timed out. (connect timeout=25)'))
+192.168.68.192: Fail - HTTPConnectionPool(host='192.168.68.192', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322c230>, 'Connection to 192.168.68.192 timed out. (connect timeout=25)'))
+192.168.68.193: Fail - Status: 404, Odpowiedź: 404 Not Found
+
+192.168.68.194: Fail - HTTPConnectionPool(host='192.168.68.194', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x10322e630>: Failed to establish a new connection: [Errno 61] Connection refused'))
+192.168.68.195: Fail - HTTPConnectionPool(host='192.168.68.195', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x10322f5c0>: Failed to establish a new connection: [Errno 61] Connection refused'))
+192.168.68.196: Fail - HTTPConnectionPool(host='192.168.68.196', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f3f50>, 'Connection to 192.168.68.196 timed out. (connect timeout=25)'))
+192.168.68.197: Fail - HTTPConnectionPool(host='192.168.68.197', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1030c82c0>, 'Connection to 192.168.68.197 timed out. (connect timeout=25)'))
+192.168.68.198: Fail - HTTPConnectionPool(host='192.168.68.198', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322cef0>, 'Connection to 192.168.68.198 timed out. (connect timeout=25)'))
+192.168.68.199: Fail - Status: 404, Odpowiedź: <html><body><h1>404 Not Found</h1></body></html>
+192.168.68.200: Fail - HTTPConnectionPool(host='192.168.68.200', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322dd60>, 'Connection to 192.168.68.200 timed out. (connect timeout=25)'))
+192.168.68.201: Success - OK
+192.168.68.202: Success - OK
+192.168.68.203: Fail - HTTPConnectionPool(host='192.168.68.203', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322cf50>, 'Connection to 192.168.68.203 timed out. (connect timeout=25)'))
+192.168.68.204: Fail - HTTPConnectionPool(host='192.168.68.204', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322d6d0>, 'Connection to 192.168.68.204 timed out. (connect timeout=25)'))
+192.168.68.205: Fail - HTTPConnectionPool(host='192.168.68.205', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x102882a80>, 'Connection to 192.168.68.205 timed out. (connect timeout=25)'))
+192.168.68.206: Fail - HTTPConnectionPool(host='192.168.68.206', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x10322f8f0>: Failed to establish a new connection: [Errno 61] Connection refused'))
+192.168.68.207: Fail - HTTPConnectionPool(host='192.168.68.207', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322fe90>, 'Connection to 192.168.68.207 timed out. (connect timeout=25)'))
+192.168.68.208: Fail - HTTPConnectionPool(host='192.168.68.208', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322f7d0>, 'Connection to 192.168.68.208 timed out. (connect timeout=25)'))
+192.168.68.209: Fail - HTTPConnectionPool(host='192.168.68.209', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322fef0>, 'Connection to 192.168.68.209 timed out. (connect timeout=25)'))
+192.168.68.210: Fail - HTTPConnectionPool(host='192.168.68.210', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f3cb0>, 'Connection to 192.168.68.210 timed out. (connect timeout=25)'))
+192.168.68.211: Fail - HTTPConnectionPool(host='192.168.68.211', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f2c60>, 'Connection to 192.168.68.211 timed out. (connect timeout=25)'))
+192.168.68.212: Fail - HTTPConnectionPool(host='192.168.68.212', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322c740>, 'Connection to 192.168.68.212 timed out. (connect timeout=25)'))
+192.168.68.213: Success - OK
+192.168.68.214: Success - OK
+192.168.68.215: Fail - HTTPConnectionPool(host='192.168.68.215', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322d250>, 'Connection to 192.168.68.215 timed out. (connect timeout=25)'))
+192.168.68.216: Fail - HTTPConnectionPool(host='192.168.68.216', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322fc50>, 'Connection to 192.168.68.216 timed out. (connect timeout=25)'))
+192.168.68.217: Success - OK
+192.168.68.218: Fail - HTTPConnectionPool(host='192.168.68.218', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322ce30>, 'Connection to 192.168.68.218 timed out. (connect timeout=25)'))
+192.168.68.219: Fail - HTTPConnectionPool(host='192.168.68.219', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322fbc0>, 'Connection to 192.168.68.219 timed out. (connect timeout=25)'))
+192.168.68.220: Fail - HTTPConnectionPool(host='192.168.68.220', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x10322e6c0>: Failed to establish a new connection: [Errno 61] Connection refused'))
+192.168.68.221: Fail - HTTPConnectionPool(host='192.168.68.221', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x10322ecc0>: Failed to establish a new connection: [Errno 61] Connection refused'))
+192.168.68.222: Fail - HTTPConnectionPool(host='192.168.68.222', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322de50>, 'Connection to 192.168.68.222 timed out. (connect timeout=25)'))
+192.168.68.223: Fail - HTTPConnectionPool(host='192.168.68.223', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322eba0>, 'Connection to 192.168.68.223 timed out. (connect timeout=25)'))
+192.168.68.224: Fail - HTTPConnectionPool(host='192.168.68.224', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x10322ef60>: Failed to establish a new connection: [Errno 61] Connection refused'))
+192.168.68.225: Fail - HTTPSConnectionPool(host='192.168.68.225', port=443): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate (_ssl.c:1000)')))
+192.168.68.226: Fail - Status: 404, Odpowiedź: 404 Not Found
+
+192.168.68.227: Fail - Status: 401, Odpowiedź: <?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+ <head>
+  <title>401 - Unauthorized</title>
+ </head>
+ <body>
+  <h1>401 - Unauthorized</h1>
+ </body>
+</html>
+
+192.168.68.228: Fail - HTTPConnectionPool(host='192.168.68.228', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322d220>, 'Connection to 192.168.68.228 timed out. (connect timeout=25)'))
+192.168.68.229: Fail - HTTPConnectionPool(host='192.168.68.229', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322f950>, 'Connection to 192.168.68.229 timed out. (connect timeout=25)'))
+192.168.68.230: Fail - HTTPConnectionPool(host='192.168.68.230', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322de50>, 'Connection to 192.168.68.230 timed out. (connect timeout=25)'))
+192.168.68.231: Fail - HTTPConnectionPool(host='192.168.68.231', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322f8c0>, 'Connection to 192.168.68.231 timed out. (connect timeout=25)'))
+192.168.68.232: Fail - HTTPConnectionPool(host='192.168.68.232', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322fdd0>, 'Connection to 192.168.68.232 timed out. (connect timeout=25)'))
+192.168.68.233: Fail - HTTPConnectionPool(host='192.168.68.233', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x1031f3fb0>, 'Connection to 192.168.68.233 timed out. (connect timeout=25)'))
+192.168.68.234: Fail - HTTPConnectionPool(host='192.168.68.234', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322e0f0>, 'Connection to 192.168.68.234 timed out. (connect timeout=25)'))
+192.168.68.235: Fail - HTTPConnectionPool(host='192.168.68.235', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322c650>, 'Connection to 192.168.68.235 timed out. (connect timeout=25)'))
+192.168.68.236: Fail - HTTPConnectionPool(host='192.168.68.236', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322d4c0>, 'Connection to 192.168.68.236 timed out. (connect timeout=25)'))
+192.168.68.237: Fail - HTTPConnectionPool(host='192.168.68.237', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x10322d100>: Failed to establish a new connection: [Errno 61] Connection refused'))
+192.168.68.238: Fail - HTTPConnectionPool(host='192.168.68.238', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322e7e0>, 'Connection to 192.168.68.238 timed out. (connect timeout=25)'))
+192.168.68.239: Fail - HTTPSConnectionPool(host='192.168.68.239', port=443): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by SSLError(SSLCertVerificationError(1, "[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: IP address mismatch, certificate is not valid for '192.168.68.239'. (_ssl.c:1000)")))
+192.168.68.240: Fail - Status: 404, Odpowiedź: 404 Not Found
+
+192.168.68.241: Fail - Status: 404, Odpowiedź: 404 Not Found
+
+192.168.68.242: Success - OK
+192.168.68.243: Fail - HTTPConnectionPool(host='192.168.68.243', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322e600>, 'Connection to 192.168.68.243 timed out. (connect timeout=25)'))
+192.168.68.244: Fail - HTTPConnectionPool(host='192.168.68.244', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322deb0>, 'Connection to 192.168.68.244 timed out. (connect timeout=25)'))
+192.168.68.245: Success - OK
+192.168.68.246: Fail - HTTPConnectionPool(host='192.168.68.246', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x10322ddc0>: Failed to establish a new connection: [Errno 61] Connection refused'))
+192.168.68.247: Fail - HTTPConnectionPool(host='192.168.68.247', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322cd10>, 'Connection to 192.168.68.247 timed out. (connect timeout=25)'))
+192.168.68.248: Fail - HTTPConnectionPool(host='192.168.68.248', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322c260>, 'Connection to 192.168.68.248 timed out. (connect timeout=25)'))
+192.168.68.249: Fail - HTTPConnectionPool(host='192.168.68.249', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x10322c0b0>: Failed to establish a new connection: [Errno 61] Connection refused'))
+192.168.68.250: Success - OK
+192.168.68.251: Fail - HTTPConnectionPool(host='192.168.68.251', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322d670>, 'Connection to 192.168.68.251 timed out. (connect timeout=25)'))
+192.168.68.252: Fail - HTTPConnectionPool(host='192.168.68.252', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322fa40>, 'Connection to 192.168.68.252 timed out. (connect timeout=25)'))
+192.168.68.253: Fail - HTTPConnectionPool(host='192.168.68.253', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322d760>, 'Connection to 192.168.68.253 timed out. (connect timeout=25)'))
+192.168.68.254: Fail - HTTPConnectionPool(host='192.168.68.254', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x10322e930>, 'Connection to 192.168.68.254 timed out. (connect timeout=25)'))
+192.168.68.255: Fail - HTTPConnectionPool(host='192.168.68.255', port=80): Max retries exceeded with url: /control?action=clearspace&sign=sign (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x10322e8a0>: Failed to establish a new connection: [Errno 13] Permission denied'))

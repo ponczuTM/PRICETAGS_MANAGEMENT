@@ -7,7 +7,7 @@ import time
 
 # Konfiguracja
 # LOCATION_ID = "685003cbf071eb1bb4304cd2"
-LOCATION_ID = "68c95e497b40e5d906e1caa7"
+LOCATION_ID = "685003cbf071eb1bb4304cd2"
 API_BASE = "http://localhost:8000/api/locations"
 IMAGE_FOLDER = "."  # Folder z plikami PNG, MP4 i JS
 
@@ -77,7 +77,7 @@ def main():
         print("❌ Brak urządzeń do przetworzenia.")
         return
     for device in devices:
-        time.sleep(2)
+        # time.sleep(2)
         clientid = device.get("clientId")
         clientname = device.get("clientName")
         ip = device.get("ip")
@@ -166,7 +166,7 @@ def main():
 
         if trigger_device(ip, f"{clientid}.js"):
             print(f"🚀 Uruchomiono task na {ip}")
-            time.sleep(3)
+            time.sleep(5)
 
             try:
                 if os.path.exists(js_path):
