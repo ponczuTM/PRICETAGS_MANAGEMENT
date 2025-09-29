@@ -51,6 +51,15 @@ function MainPage() {
   const [editInputValue, setEditInputValue] = useState("");
   const [originalValue, setOriginalValue] = useState("");
 
+  useEffect(() => {
+    const videos = document.querySelectorAll("video");
+    videos.forEach((v) => {
+      v.muted = true;
+      v.volume = 0;
+    });
+  }, [selectedDevices]);
+  
+
   // === GUARD: brak użytkownika albo brak lokalizacji -> do logowania ===
   useEffect(() => {
     if (!parsedUser) {
@@ -467,7 +476,8 @@ function MainPage() {
                       }
                       autoPlay
                       loop
-                      muted
+                      muted={true}
+                      volume={0}
                       className={styles.deviceImage}
                       onError={(e) => {
                         e.target.onerror = null;
@@ -630,7 +640,7 @@ function MainPage() {
                       {activeTab === "photo" ? (
                         <img src={previewUrl} alt="Preview" className={styles.previewImage} />
                       ) : (
-                        <video src={previewUrl} controls ref={videoRef} className={styles.previewImage} />
+                        <video src={previewUrl} controls ref={videoRef} className={styles.previewImage} muted={true} volume={0}/>
                       )}
                       <div className={styles.fileInfo}>
                         <span className={styles.fileName}>{file?.name}</span>
@@ -686,7 +696,8 @@ function MainPage() {
                                   src={fileUrl}
                                   autoPlay
                                   loop
-                                  muted
+                                  muted={true}
+                                  volume={0}
                                   playsInline
                                   className={styles.galleryMedia}
                                   onError={(e) => {

@@ -1420,8 +1420,9 @@ export default function Settings() {
   if (!user) return null;
 
   return (
+    <>
+    {hasAnyLocation && <Navbar />}
     <div className={styles.container}>
-      {hasAnyLocation && <Navbar />}
 
       <div className={styles.inner}>
         <h1>Ustawienia konta</h1>
@@ -1891,5 +1892,6 @@ export default function Settings() {
         </div>
       )}
     </div>
+    </>
   );
 }

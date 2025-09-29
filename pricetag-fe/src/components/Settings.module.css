@@ -1,6 +1,3 @@
-/* ===============================
-   Settings.module.css — CLEAN + RESPONSIVE
-   =============================== */
 
 /* --------- Design tokens --------- */
 :root {
@@ -30,6 +27,9 @@
   min-height: 80vh;
   margin-top: 100px;
   color: var(--c-text);
+  width: 70%;
+  margin: auto;
+  
 }
 
 .inner {
@@ -335,18 +335,6 @@ select:focus {
 
 
 
-/*  */
-/*  */
-/*  */
-/*  */
-/*  */
-
-
-
-/* ===============================
-   RESPONSYWNOŚĆ (DODAĆ NA KOŃCU)
-   =============================== */
-
 /* Bazowo – bardziej płynne „płótno” w % */
 .inner {
   width: 94%;
@@ -358,143 +346,192 @@ select:focus {
 /* Obrazy/filmy nigdy nie wyjdą poza kontener */
 img, video { max-width: 100%; height: auto; }
 
-/* --- GRID formularza w procentach (desktop/tablet/mobile) --- */
+/* --------- Fixes dla szerokości elementów --------- */
 
-/* Duże ekrany: ~30/70 */
-@media (min-width: 1024px) {
-  .row { grid-template-columns: 30% 70%; }
+/* Inputy, selecty, textarea – max-width zamiast width: 100% */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea,
+select {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box; /* WAŻNE – padding nie zwiększa szerokości */
 }
 
-/* Tablety: ~35/65 + delikatne oddechy */
-@media (min-width: 768px) and (max-width: 1023px) {
-  .row { grid-template-columns: 35% 65%; gap: 12px; }
-  .card { padding: 18px; }
+/* Row – mniejszy gap i lepsze dopasowanie */
+.row {
+  grid-template-columns: 180px 1fr;
+  gap: 10px;
 }
 
-/* Telefony: label nad polem, pełna szerokość elementów */
-@media (max-width: 767px) {
-  .container { margin-top: 72px; }
-  .inner { width: 92%; }
+/* GrowRow – mniejszy gap */
+.growRow {
+  gap: 8px;
+}
 
+/* Tabela input – realistyczna szerokość */
+.table input[type="text"] {
+  min-width: 180px;
+  max-width: 100%;
+}
+
+/* URI block – lepsze łamanie */
+.uri {
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+/* Responsive breakpoints --------- */
+
+/* Tablet i mniejsze (≤ 1024px) */
+@media (max-width: 1024px) {
+  .container {
+    width: 90%;
+  }
+  
+  .row {
+    grid-template-columns: 160px 1fr;
+    gap: 8px;
+  }
+  
+  .table input[type="text"] {
+    min-width: 160px;
+  }
+}
+
+/* Mobile (≤ 768px) */
+@media (max-width: 768px) {
+  .container {
+    width: 95%;
+    margin-top: 60px;
+  }
+  
+  .inner {
+    width: 100%;
+    padding: 0 8px;
+  }
+  
+  /* Formularze – zamiast grid, pionowy układ */
   .row {
     grid-template-columns: 1fr;
-    gap: 8px;
+    gap: 6px;
+  }
+  
+  .noteLine {
+    grid-column: 1 / -1;
+  }
+  
+  /* Card padding mniejszy */
+  .card {
+    padding: 14px;
+    border-radius: var(--radius-lg);
+  }
+  
+  .card h2 {
+    font-size: 18px;
+  }
+  
+  .card h3 {
+    font-size: 16px;
+  }
+  
+  /* QR Code mniejszy */
+  .qr {
+    width: 180px;
+    height: 180px;
+  }
+  
+  /* Akcje w tabeli pionowo */
+  .actions {
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  .actions .primary,
+  .actions .secondary,
+  .actions .danger {
+    width: 100%;
+    text-align: center;
+  }
+  
+  /* Tabela – min-width mniejszy */
+  .table {
+    min-width: 600px;
+  }
+}
+
+/* Small mobile (≤ 480px) */
+@media (max-width: 480px) {
+  .container {
+    width: 100%;
+    margin-top: 40px;
+  }
+  
+  .inner {
+    padding: 0 6px;
+  }
+  
+  .card {
+    padding: 12px;
     margin-bottom: 14px;
   }
-
-  .row label {
-    font-size: 13px;
-    color: var(--c-muted);
+  
+  .card h2 {
+    font-size: 16px;
+    margin-bottom: 10px;
   }
-
-  .growRow {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-  }
-
-  /* wszystkie elementy „rosną” do 100% */
-  .growRow > * { flex: 1 1 90%; width: 90%; }
-
-  /* przyciski pełną szerokością (łatwiejsze kliknięcie) */
+  
+  /* Przyciski pełnej szerokości */
   .primary,
   .secondary,
   .danger,
   .copyBtn {
-    width: 90%;
+    width: 100%;
+    padding: 12px 14px;
   }
-
-  .card { padding: 16px; }
-  .card h2 { font-size: 18px; }
-  .card h3 { font-size: 16px; }
-
-  .messages { font-size: 14px; }
-}
-
-/* --- Inputy w tabeli nie wymuszają min-szerokości na mobile --- */
-@media (max-width: 767px) {
-  .table input[type="text"] { min-width: 0; width: 100%; }
-}
-
-/* --- QR obrazek dopasowany procentowo na małych ekranach --- */
-@media (max-width: 480px) {
-  .qr { width: 70vw; height: 70vw; }
-  .secret { word-break: break-all; }
-}
-
-/* ===============================
-   Tabela -> „karty” na smartfonach
-   =============================== */
-@media (max-width: 720px) {
-  /* rozbijamy klasyczną tabelę na bloki */
-  .table,
-  .table thead,
-  .table tbody,
-  .table th,
-  .table td,
-  .table tr { display: block; }
-
-  .table { border: 0; min-width: 0; }
-
-  /* nagłówek znika, bo etykiety damy w :before */
-  .table thead { display: none; }
-
-  .table tr {
-    background: #fff;
-    border: 1px solid var(--c-border-soft);
-    border-radius: 12px;
-    margin-bottom: 12px;
-    padding: 10px;
+  
+  .growRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
   }
-
-  .table td {
-    display: grid;
-    grid-template-columns: 40% 60%; /* procentowo */
-    gap: 8px;
-    padding: 8px 6px;
-    border: 0;
-    align-items: center;
+  
+  /* QR jeszcze mniejszy */
+  .qr {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto;
+    display: block;
   }
-
-  /* etykiety kolumn przez :before (dopasowane do obecnego układu) */
-  .table td:nth-child(1)::before { content: "ID"; font-weight: 600; color: var(--c-muted); }
-  .table td:nth-child(2)::before { content: "Nazwa"; font-weight: 600; color: var(--c-muted); }
-  .table td:nth-child(3)::before { content: "Adres"; font-weight: 600; color: var(--c-muted); }
-  .table td:nth-child(4)::before { content: "Akcje"; font-weight: 600; color: var(--c-muted); }
-
-  /* akcje pionowo + 100% */
-  .actions {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 8px;
-    width: 90%;
+  
+  .secretRow {
+    flex-direction: column;
+    align-items: stretch;
   }
-  .actions .primary,
-  .actions .secondary,
-  .actions .danger {
-    width: 90%;
-    font-size: 14px;
-    padding: 10px 12px;
+  
+  /* Tabela – zmniejszamy padding */
+  .table thead th,
+  .table tbody td {
+    padding: 8px;
+    font-size: 12px;
   }
-
-  /* ładniejszy kod ID w kartach */
-  .table code {
-    display: inline-block;
-    width: 90%;
-    overflow-wrap: anywhere;
-    text-align: left;
+  
+  /* Input w tabeli mniejszy min-width */
+  .table input[type="text"] {
+    min-width: 140px;
+  }
+  
+  /* Tabela jeszcze węższa */
+  .table {
+    min-width: 500px;
   }
 }
 
-/* ===============================
-   Drobne dopieszczenia tabletowe
-   =============================== */
-@media (min-width: 721px) and (max-width: 1023px) {
-  .table { min-width: 90%; }   /* procentowo, bez sztywnego progu */
-  .actions { gap: 10px; }
-}
-
-/* Ruch ograniczony dla osób z ograniczeniami – lepsza dostępność */
-@media (prefers-reduced-motion: reduce) {
-  * { transition: none !important; animation: none !important; }
+/* Landscape mobile fix */
+@media (max-height: 500px) and (orientation: landscape) {
+  .container {
+    margin-top: 20px;
+  }
 }
