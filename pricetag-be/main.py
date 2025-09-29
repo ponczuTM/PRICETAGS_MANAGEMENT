@@ -6,6 +6,7 @@ from api import users, locations
 from api import groups
 from api import schedules
 from api import priceusers
+from api import ai
 
 import logging
 
@@ -56,6 +57,7 @@ app.include_router(locations.router, prefix="/api/locations", tags=["locations"]
 app.include_router(groups.router, prefix="/api", tags=["groups"])
 app.include_router(schedules.router, prefix="/api")
 app.include_router(priceusers.router, prefix="/api/priceusers", tags=["priceusers"])
+app.include_router(ai.router, prefix="/api/ai", tags=["AI"])
 
 @app.get("/")
 async def root():

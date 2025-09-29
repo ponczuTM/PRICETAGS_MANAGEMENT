@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import styles from "./MainPage.module.css";
 import Navbar from "./Navbar";
+import Chatbot from "./Chatbot";
 import edit from "./../assets/images/edit.png";
 import { useNavigate } from "react-router-dom";
 
@@ -400,6 +401,7 @@ function MainPage() {
   return (
     <>
       <Navbar />
+      <Chatbot/>
       <div className={styles.container}>
         {/* === SWITCHER LOKALIZACJI (proste przyciski nad wszystkim) === */}
         <div style={{ marginBottom: 12 }}>

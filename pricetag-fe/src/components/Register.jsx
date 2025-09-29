@@ -165,7 +165,7 @@ const Register = () => {
         {errorMsg && <p className={styles.errorMessage}>{errorMsg}</p>}
 
         <p className={styles.smallNote}>
-          Masz już konto? <Link to="/login">Zaloguj się</Link>
+          Masz już konto? <Link to="/">Zaloguj się</Link>
         </p>
       </form>
     </div>
