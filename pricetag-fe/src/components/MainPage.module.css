@@ -275,8 +275,8 @@
   transition: all 0.3s ease;
   opacity: 0;
   transform: translateX(-5px);
-  width: 24px;
-  height: 24px;
+  width: auto;
+  height: auto;
   display: flex;
   align-items: center;
   justify-content: center;

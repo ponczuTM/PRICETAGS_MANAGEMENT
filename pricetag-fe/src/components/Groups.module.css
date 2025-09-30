@@ -387,8 +387,8 @@
   transition: all 0.3s ease;
   opacity: 0;
   transform: translateX(-5px);
-  width: 24px;
-  height: 24px;
+  width: auto;
+  height: auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1546,180 +1546,6 @@
   box-shadow: var(--shadow-primary-hover);
 }
 
-/* --- Responsywność --- */
-
-/* Responsive design dla edytowania nazw na mniejszych ekranach */
-@media (max-width: 768px) {
-  .deviceNameEditWrapper {
-    flex-wrap: wrap;
-    gap: 0.4rem;
-  }
-  
-  .editInput {
-    width: 100%;
-    margin-bottom: 0.4rem;
-  }
-  
-  .saveButton,
-  .resetButton,
-  .cancelButton {
-    flex: 1;
-    min-width: 60px;
-    font-size: 0.75rem;
-    padding: 0.35rem 0.6rem;
-    margin-top: 0.2rem;
-  }
-
-  .fileGrid {
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-      gap: 0.75rem;
-      max-height: 300px;
-  }
-
-  /* Dostosowanie dla responsywności nowej klasy */
-  .galleryMediaWrapper {
-      width: 80px;
-      height: 80px;
-  }
-
-  .galleryFileName {
-      font-size: 0.7rem;
-  }
-
-  .fileIcon {
-      font-size: 1.5rem;
-  }
-
-  .container {
-      padding: 1rem;
-  }
-
-  .header {
-      flex-direction: column;
-      align-items: flex-start;
-  }
-
-  .title {
-      font-size: 2rem;
-  }
-
-  .deviceCount {
-      margin-top: 10px;
-  }
-
-  .modalContent, .groupModalContent {
-      padding: 1.5rem;
-  }
-
-  .modalTitle, .groupModalTitle {
-      font-size: 1.25rem;
-  }
-
-  .uploadButton, .modalActions .cancelButton, .createGroupButton {
-      padding: 0.6rem 1.2rem;
-      font-size: 0.9rem;
-  }
-
-  .groupHeader {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .groupActions {
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  .groupName {
-    font-size: 1.5rem;
-  }
-
-  .groupListItem {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-
-  .groupDescriptionInList {
-    text-align: left;
-    margin-left: 0;
-    width: 100%;
-    white-space: normal;
-  }
-
-  .groupListItemActions {
-    width: 100%;
-    justify-content: flex-start;
-  }
-  
-  .groupListContainer h4 {
-    font-size: 1rem;
-  }
-
-  .removeGroupButton,
-  .addGroupButton {
-    font-size: 0.75rem;
-    padding: 0.3rem 0.6rem;
-  }
-
-  .newGroupInput,
-  .newGroupTextarea {
-    font-size: 0.9rem;
-    padding: 0.6rem 0.8rem;
-  }
-
-  .createGroupButton {
-    align-self: stretch; /* Rozciągnij na całą szerokość */
-    width: 100%;
-  }
-}
-
-@media (max-width: 480px) {
-  .deviceNameEditWrapper:has(.editInput) {
-    padding: 0.4rem;
-    margin: -0.4rem;
-  }
-  
-  .saveButton,
-  .resetButton,
-  .cancelButton {
-    font-size: 0.7rem;
-    padding: 0.3rem 0.5rem;
-    min-width: 50px;
-  }
-
-  .fileGrid {
-      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-      gap: 0.5rem;
-  }
-
-  /* Dostosowanie dla responsywności nowej klasy */
-  .galleryMediaWrapper {
-      width: 70px;
-      height: 70px;
-  }
-
-  .manageButton {
-      padding: 0.8rem 2rem;
-      font-size: 1rem;
-  }
-
-  .selectGroupButton, .deleteGroupButton {
-    padding: 0.5rem 0.8rem;
-    font-size: 0.8rem;
-  }
-
-  .groupName {
-    font-size: 1.3rem;
-  }
-}
-.groupListItemActions {
-  display: flex;
-  gap: 0.5rem;
-  flex-shrink: 0;
-}
-
-
 .groupDescriptionInList {
   display: none;
   font-weight: normal;
@@ -1731,15 +1557,15 @@
   display: inline;
 }
 
-
 .editIcon {
-  width: 40px;
-  height: 40px;
+  width: auto;
+  height: auto;
   margin-right: 50px;
 }
 .editIcon2 {
-  width: 40px;
-  height: 40px;
+  background-color: red;
+  width: auto;
+  height: auto;
 }
 
 
@@ -1748,47 +1574,50 @@
 }
 
 /* Kontener na ikony – niewidoczny kontener tylko logiczny */
+/* Kontener ikon w karcie urządzenia */
 .deviceIcons {
   position: absolute;
-  top: 0;
-  right: 0;
-  z-index: 5;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 10px;
+  z-index: 10; /* wyższy niż hover effects */
 }
 
-/* Ikona ✏️ (edytuj nazwę) */
-.editButton {
-  position: absolute;
-  top: 30px;
-  right: 50px;
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  z-index: 6;
-}
-
-/* Ikona 👥 (zarządzaj grupą) */
+/* Ikona edycji nazwy */
+.editButton,
 .editGroupButton {
-  position: absolute;
-  top: 30px;
-  right: 20px;
-  background: none;
-  border: none;
+  width: 50px;
+  height: 50px;
   padding: 0;
+  border: none;
+  background: none;
   cursor: pointer;
-  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.3s ease;
 }
 
-.editIcon {
-  width: 40px;
-  height: 40px;
+/* Pokaż ikonki przy hover na karcie */
+.deviceCard:hover .editButton,
+.deviceCard:hover .editGroupButton {
+  opacity: 1;
 }
 
+/* Właściwe wymiary ikon */
+.editIcon,
 .editIcon2 {
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
 }
 
+/* Zabezpieczenie kliknięć: ikonka zawsze odbiera event */
+.editButton,
+.editGroupButton {
+  z-index: 20;
+}
 
 
 .offline {
