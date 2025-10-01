@@ -11,10 +11,15 @@
   },
   "dependencies": {
     "date-fns": "^4.1.0",
+    "fabric": "^4.6.0",
+    "konva": "^10.0.2",
     "react": "^19.1.0",
     "react-datepicker": "^8.4.0",
     "react-datetime": "^3.3.1",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "react-konva": "^19.0.10",
+    "react-rnd": "^10.5.2",
+    "use-image": "^1.1.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",

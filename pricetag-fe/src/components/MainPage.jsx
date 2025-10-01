@@ -655,7 +655,12 @@ function MainPage() {
                       <p className={styles.dropText}>
                         Przeciągnij i upuść plik {activeTab === "photo" ? "graficzny" : "wideo"} tutaj
                       </p>
-                      <p className={styles.dropSubtext}>lub</p>
+                      <p className={styles.dropText}>
+                        lub
+                      </p>
+                      <p className={styles.dropText}>
+                        kliknij i wybierz plik
+                      </p>
                     </div>
                   )}
 

@@ -36,6 +36,7 @@ const Navbar = ({ logoText = 'ZARZĄDZANIE PRICETAGAMI' }) => {
         <Link to="/schedule" className={styles.navLink} onClick={() => setIsMenuOpen(false)}>Harmonogram</Link>
         <Link to="/gallery" className={styles.navLink} onClick={() => setIsMenuOpen(false)}>Galeria plików</Link>
         <Link to="/settings" className={styles.navLink} onClick={() => setIsMenuOpen(false)}>Ustawienia</Link>
+        <Link to="/editor" className={styles.navLink} onClick={() => setIsMenuOpen(false)}>Edytor</Link>
         <button onClick={handleLogout} className={styles.logoutButton}>Wyloguj się</button>
       </div>
     </nav>

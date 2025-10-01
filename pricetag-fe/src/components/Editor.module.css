@@ -1,0 +1,254 @@
+/* --------- Design tokens --------- */
+:root {
+    --c-bg: #fff;
+    --c-text: #111827;
+    --c-muted: #6b7280;
+    --c-note: #4b5563;
+  
+    --c-border: #ddd;
+    --c-border-soft: #eee;
+  
+    --c-primary: #2563eb;
+    --c-primary-ghost: rgba(37,99,235,0.12);
+    --c-danger: #ef4444;
+    --c-success: #065f46;
+  
+    --radius-md: 10px;
+    --radius-lg: 12px;
+    --radius-xl: 14px;
+    --shadow-1: 0 6px 18px rgba(0,0,0,0.06);
+  }
+  
+  /* --------- Layout --------- */
+  .container {
+    max-width: 1400px;
+    margin: 100px auto 0;
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--c-text);
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .title {
+    text-align: center;
+    color: var(--c-text);
+    margin-bottom: 30px;
+    font-size: 28px;
+  }
+
+  .fileInput {
+    border: 2px solid var(--c-primary);
+  }
+  
+  /* --------- Panel edycji --------- */
+  .editTextPanel {
+    position: fixed;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--c-bg);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+    padding: 20px;
+    box-shadow: var(--shadow-1);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 200px;
+  }
+  
+  .editTextPanel input[type="text"],
+  .editTextPanel input[type="number"],
+  .editTextPanel input[type="color"] {
+    padding: 10px;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    width: 100%;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s, background-color .15s;
+  }
+  
+  .editTextPanel input:focus {
+    border-color: var(--c-primary);
+    box-shadow: 0 0 0 3px var(--c-primary-ghost);
+  }
+  
+  .editTextPanel button {
+    padding: 10px;
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .05s ease, opacity .15s ease, background-color .15s ease;
+  }
+  
+  .addButton {
+    background: var(--c-success);
+    color: #fff;
+  }
+  
+  .addButton:hover {
+    background: #047857;
+  }
+  
+  .saveButton {
+    background: var(--c-primary);
+    color: #fff;
+  }
+  
+  .saveButton:hover:not(:disabled) {
+    background: #1d4ed8;
+  }
+  
+  .saveButton:disabled {
+    background: #6b7280;
+    cursor: not-allowed;
+  }
+  
+  .errorMessage {
+    padding: 12px;
+    background: #fef2f2;
+    color: var(--c-danger);
+    border: 1px solid #fecaca;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+  }
+  
+  /* --------- Content / Editor --------- */
+  .contentWrapper {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+  }
+  
+  .editorControls {
+    flex: 0 0 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .controlGroup {
+    background: var(--c-bg);
+    padding: 15px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--c-border-soft);
+    box-shadow: var(--shadow-1);
+  }
+  
+  .controlGroup h4 {
+    margin: 0 0 15px 0;
+    color: var(--c-muted);
+    font-size: 16px;
+  }
+  
+  .shapeButtons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .shapeButton {
+    flex: 1;
+    padding: 10px;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    background: var(--c-primary);
+    color: #fff;
+    transition: background .15s ease;
+  }
+  
+  .shapeButtons button:hover {
+    background: #1d4ed8;
+  }
+  
+  .textInput {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--c-border);
+  }
+  
+  .editorArea {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 600px;
+    background: #f9fafb;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--c-border-soft);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .placeholder {
+    color: var(--c-muted);
+    font-size: 18px;
+    text-align: center;
+  }
+  
+  .editorCanvas {
+    position: relative;
+    max-width: 800px;
+    max-height: 800px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .mediaElement {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    user-select: none;
+  }
+  
+  /* Wybór elementu */
+  .selectedShape {
+    outline: 2px dashed var(--c-primary);
+    position: relative;
+  }
+  
+  .selectedShape::after,
+  .selectedShape::before {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: var(--c-bg);
+    border: 1px solid var(--c-primary);
+    border-radius: 50%;
+  }
+  
+  .selectedShape::after { top: -5px; left: -5px; }
+  .selectedShape::before { bottom: -5px; right: -5px; }
+  
+  /* --------- Responsywność --------- */
+  @media (max-width: 1024px) {
+    .contentWrapper { flex-direction: column; }
+    .editorControls { flex: 1; width: 100%; }
+    .editTextPanel { right: 10px; min-width: 180px; }
+  }
+  
+  @media (max-width: 768px) {
+    .container { padding: 10px; }
+    .title { font-size: 22px; }
+    .editTextPanel { right: 0; min-width: 160px; padding: 15px; }
+    .editorCanvas { max-width: 100%; }
+  }
+  
+  @media (max-width: 480px) {
+    .container { padding: 6px; }
+    .title { font-size: 18px; }
+    .editTextPanel { min-width: 140px; padding: 12px; }
+  }
+  

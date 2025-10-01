@@ -7,6 +7,7 @@ import Gallery from "./components/Gallery";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Settings from "./components/Settings";
+import Editor from "./components/Editor";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
       <Route path="/gallery" element={<Gallery />} />
       <Route path="/register" element={<Register />} />
       <Route path="/settings" element={<Settings />} />
+      <Route path="/editor" element={<Editor />} />
       </Routes>
     </Router>
   );
