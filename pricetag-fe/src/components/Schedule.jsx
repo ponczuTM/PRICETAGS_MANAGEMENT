@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import styles from "./Schedule.module.css";
 import Navbar from "./Navbar";
-import editIcon from "./../assets/images/edit.png";
 import DatePicker, { registerLocale } from "react-datepicker";
 import pl from "date-fns/locale/pl";
 import "react-datepicker/dist/react-datepicker.css";
@@ -480,17 +479,6 @@ function Schedule() {
                       }`}
                       onClick={() => device.isOnline && handleDeviceSelectToggle(device)}
                     >
-                      <div className={styles.deviceIcons}>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEditClick(device);
-                          }}
-                          className={styles.editButton}
-                        >
-                          <img src={editIcon} alt="Edytuj" className={styles.editIcon} />
-                        </button>
-                      </div>
 
                       <div className={styles.deviceImageContainer}>
                         <div className={styles.hangingWrapper}>
@@ -592,17 +580,6 @@ function Schedule() {
                   }`}
                   onClick={() => device.isOnline && handleDeviceSelectToggle(device)}
                 >
-                  <div className={styles.deviceIcons}>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEditClick(device);
-                      }}
-                      className={styles.editButton}
-                    >
-                      <img src={editIcon} alt="Edytuj" className={styles.editIcon} />
-                    </button>
-                  </div>
 
                   <div className={styles.deviceImageContainer}>
                     <div className={styles.hangingWrapper}>

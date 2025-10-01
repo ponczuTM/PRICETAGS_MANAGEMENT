@@ -146,53 +146,32 @@ async def add_device_to_location(location_id: str, device: Device, db=Depends(ge
 # Endpoint to get all locations
 @router.get("/", response_model=List[LocationResponse])
 async def get_locations(db=Depends(get_database)):
-    """
-    Get all location documents
-    """
-    try:
-        locations = []
-        async for location in db["locations"].find():
-            locations.append(LocationResponse(**location))
-        return locations
-    except Exception as e:
-        logger.error(f"Error fetching locations: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error fetching locations: {str(e)}"
-        )
+    locations = []
+    async for location in db["locations"].find():
+        # Zamiana ObjectId na string
+        location["_id"] = str(location["_id"])
+        # Zamiana ObjectId w urządzeniach jeśli istnieją
+        for device in location.get("devices", []):
+            if "_id" in device and isinstance(device["_id"], ObjectId):
+                device["_id"] = str(device["_id"])
+        locations.append(LocationResponse(**location))
+    return locations
+
 
 # Endpoint to get a specific location by ID
 @router.get("/{location_id}", response_model=LocationResponse)
 async def get_location(location_id: str, db=Depends(get_database)):
-    """
-    Get location by ID
-    """
-    try:
-        # Convert string ID to ObjectId
-        if not ObjectId.is_valid(location_id):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid location ID format"
-            )
+    location = await db["locations"].find_one({"_id": ObjectId(location_id)})
+    if not location:
+        raise HTTPException(status_code=404, detail="Location not found")
+    
+    location["_id"] = str(location["_id"])
+    for device in location.get("devices", []):
+        if "_id" in device and isinstance(device["_id"], ObjectId):
+            device["_id"] = str(device["_id"])
+    
+    return LocationResponse(**location)
 
-        location = await db["locations"].find_one({"_id": ObjectId(location_id)})
-        if not location:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Location not found"
-            )
-
-        # Convert _id (ObjectId) to string before returning as a response
-        location["_id"] = str(location["_id"])
-
-        return LocationResponse(**location)
-
-    except Exception as e:
-        logger.error(f"Error fetching location: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error fetching location: {str(e)}"
-        )
 
 
 @router.delete("/delete-all", status_code=status.HTTP_204_NO_CONTENT)
