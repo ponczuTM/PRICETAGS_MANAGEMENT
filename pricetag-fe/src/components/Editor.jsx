@@ -42,6 +42,7 @@ function Editor() {
   const [isShiftPressed, setIsShiftPressed] = useState(false);
 
   const editorRef = useRef(null);
+  const colorInputRef = useRef(null);
   const currentLocationId = getCurrentLocationId();
 
   const getFileType = (filename) => {
@@ -97,26 +98,12 @@ function Editor() {
     ]);
   };
 
-  const drawText = (ctx, text, x, y, maxWidth, fontSize, color) => {
+  // --- WAŻNE: Rysujemy tekst w jednej linii ---
+  const drawText = (ctx, text, x, y, fontSize, color) => {
     ctx.fillStyle = color;
     ctx.font = `${fontSize}px sans-serif`;
     ctx.textBaseline = "top";
-    const words = text.split(' ');
-    let line = '';
-    const lineHeight = fontSize * 1.2;
-    for (let n = 0; n < words.length; n++) {
-      const testLine = line + (line ? ' ' : '') + words[n];
-      const metrics = ctx.measureText(testLine);
-      const testWidth = metrics.width;
-      if (testWidth > maxWidth && n > 0) {
-        ctx.fillText(line, x, y);
-        line = words[n];
-        y += lineHeight;
-      } else {
-        line = testLine;
-      }
-    }
-    ctx.fillText(line, x, y);
+    ctx.fillText(text, x, y);
   };
 
   const handleSaveAndUpload = async () => {
@@ -124,10 +111,10 @@ function Editor() {
       setErrorMsg("Brak pliku, lokalizacji lub nazwy.");
       return;
     }
-
+  
     const fileType = getFileType(file.name);
-    if (fileType === "video") { return; }
-
+    if (fileType === "video") return;
+  
     const img = new Image();
     img.src = previewUrl;
     img.crossOrigin = "anonymous";
@@ -138,42 +125,37 @@ function Editor() {
       const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
+      // Odwzorowanie pozycji elementów z Rnd
       const displayedImg = editorRef.current.querySelector("img");
-      if (!displayedImg) return;
+      const scaleX = img.naturalWidth / displayedImg.width;
+      const scaleY = img.naturalHeight / displayedImg.height;
 
-      const editorRect = editorRef.current.getBoundingClientRect();
-      const imgRect = displayedImg.getBoundingClientRect();
-      const scaleX = img.naturalWidth / imgRect.width;
-      const scaleY = img.naturalHeight / imgRect.height;
-      
       elements.forEach(el => {
-        // Pozycja elementu względem samego img w edytorze
-        const x = (el.x) * scaleX;
-        const y = (el.y) * scaleY;
+        const x = el.x * scaleX;
+        const y = el.y * scaleY;
         const w = el.width * scaleX;
         const h = el.height * scaleY;
-      
+
         if (el.type === "text") {
-          drawText(ctx, el.content, x, y, w, el.fontSize * scaleX, el.color);
+          // rysujemy dokładnie w jednej linii
+          drawText(ctx, el.content, x, y, el.fontSize * scaleX, el.color);
         } else if (el.type === "shape") {
           ctx.fillStyle = el.color;
-          let size = el.shape === "circle" || el.shape === "square" ? Math.min(w,h) : null;
           switch (el.shape) {
-            case "circle":
+            case "circle": {
+              const radius = Math.min(w, h) / 2;
               ctx.beginPath();
-              ctx.arc(x + size/2, y + size/2, size/2, 0, 2*Math.PI);
+              ctx.arc(x + radius, y + radius, radius, 0, 2 * Math.PI);
               ctx.fill();
               break;
-            case "square":
-              ctx.fillRect(x, y, size, size);
+            }
+            case "square": {
+              ctx.fillRect(x, y, w, h);
               break;
-            case "star":
-              drawStar(ctx, x + w/2, y + h/2, 5, w/2, w/4, el.color);
-              break;
+            }
           }
         }
       });
-      
 
       canvas.toBlob(async blob => {
         const formData = new FormData();
@@ -198,7 +180,6 @@ function Editor() {
 
   const isImage = file && getFileType(file.name) === "image";
 
-  // Shift detection
   React.useEffect(() => {
     const down = (e) => e.key === "Shift" && setIsShiftPressed(true);
     const up = (e) => e.key === "Shift" && setIsShiftPressed(false);
@@ -245,18 +226,45 @@ function Editor() {
                 />
               </>
             )}
-            <input
-              type="color"
-              value={elements.find(e => e.id === editingElementId)?.color || "#ff0000"}
-              onChange={e =>
-                setElements(elements.map(el =>
-                  el.id === editingElementId
-                    ? { ...el, color: e.target.value }
-                    : el
-                ))
-              }
-            />
-            <button onClick={() => setElements(elements.filter(e => e.id !== editingElementId))} style={{ backgroundColor: "#dc3545" }}>Usuń</button>
+
+            <div style={{ position: "relative", marginBottom: "8px" }}>
+              <button
+                style={{
+                  backgroundColor: elements.find(e => e.id === editingElementId)?.color || "#ff0000",
+                  color: "#fff",
+                  padding: "6px 12px",
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                  border: "none",
+                  borderRadius: "4px",
+                  width: "100%"
+                }}
+                onClick={() => colorInputRef.current?.click()}
+              >
+                WYBIERZ KOLOR
+              </button>
+              <input
+                ref={colorInputRef}
+                type="color"
+                value={elements.find(e => e.id === editingElementId)?.color || "#ff0000"}
+                onChange={e =>
+                  setElements(elements.map(el =>
+                    el.id === editingElementId ? { ...el, color: e.target.value } : el
+                  ))
+                }
+                style={{
+                  position: "absolute",
+                  top: "100%",
+                  left: 0,
+                  opacity: 0,
+                  width: 0,
+                  height: 0,
+                  pointerEvents: "none"
+                }}
+              />
+            </div>
+
+            <button onClick={() => setElements(elements.filter(e => e.id !== editingElementId))}>Usuń</button>
           </div>
         )}
 
@@ -276,14 +284,12 @@ function Editor() {
                     <button onClick={() => handleAddShape("circle")} className={styles.shapeButton}>Koło</button>
                     <button onClick={() => handleAddShape("square")} className={styles.shapeButton}>Kwadrat</button>
                   </div>
-                  {/* <input type="color" value={newColor} onChange={e => setNewColor(e.target.value)} /> */}
                 </div>
 
                 <div className={styles.controlGroup}>
                   <h4>3. Dodaj Tekst</h4>
                   <input type="text" value={newText} onChange={e => setNewText(e.target.value)} placeholder="Tekst..." className={styles.textInput} />
                   <input type="number" value={newFontSize} onChange={e => setNewFontSize(Number(e.target.value))} placeholder="Rozmiar fontu" className={styles.textInput} />
-                  {/* <input type="color" value={newColor} onChange={e => setNewColor(e.target.value)} /> */}
                   <button onClick={handleAddText} className={styles.shapeButton}>Dodaj Tekst</button>
                 </div>
               </>
@@ -320,7 +326,6 @@ function Editor() {
                   const isSelected = el.id === editingElementId;
                   const lockRatio = isShiftPressed && (el.shape === "circle" || el.shape === "square");
                   const onResizeStart = () => {
-                    // Jeśli Shift, natychmiast ustaw wymiary na idealne
                     if (lockRatio) {
                       const size = Math.min(el.width, el.height);
                       setElements(elements.map(e2 => e2.id === el.id ? { ...e2, width: size, height: size } : e2));
@@ -360,7 +365,7 @@ function Editor() {
                     >
                       {el.type === "text" ? (
                         <div
-                          style={{ color: el.color, fontSize: el.fontSize, fontWeight: "bold", cursor: "move", width: "100%", height: "100%", whiteSpace: "pre-wrap" }}
+                          style={{ color: el.color, fontSize: el.fontSize, fontWeight: "bold", cursor: "move", width: "100%", height: "100%", whiteSpace: "pre" }}
                         >
                           {el.content}
                         </div>
