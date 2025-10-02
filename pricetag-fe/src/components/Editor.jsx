@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Rnd } from "react-rnd";
 import styles from "./Editor.module.css";
 import Navbar from "./Navbar";
@@ -64,7 +64,16 @@ function Editor() {
   };
 
   const handleAddText = () => {
-    if (!newText.trim() || !newFontSize) return;
+    if (!newText.trim()) return;
+
+    const editor = editorRef.current;
+    if (!editor) return;
+    const img = editor.querySelector("img");
+    if (!img) return;
+
+    const centerX = img.width / 2;
+    const centerY = img.height / 2;
+
     setElements([
       ...elements,
       {
@@ -74,8 +83,8 @@ function Editor() {
         color: newColor,
         width: 5,
         height: 5,
-        x: 10,
-        y: 10,
+        x: centerX,
+        y: centerY,
         fontSize: newFontSize,
       },
     ]);
@@ -98,7 +107,6 @@ function Editor() {
     ]);
   };
 
-  // --- WAŻNE: Rysujemy tekst w jednej linii ---
   const drawText = (ctx, text, x, y, fontSize, color) => {
     ctx.fillStyle = color;
     ctx.font = `${fontSize}px sans-serif`;
@@ -125,7 +133,6 @@ function Editor() {
       const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-      // Odwzorowanie pozycji elementów z Rnd
       const displayedImg = editorRef.current.querySelector("img");
       const scaleX = img.naturalWidth / displayedImg.width;
       const scaleY = img.naturalHeight / displayedImg.height;
@@ -137,7 +144,6 @@ function Editor() {
         const h = el.height * scaleY;
 
         if (el.type === "text") {
-          // rysujemy dokładnie w jednej linii
           drawText(ctx, el.content, x, y, el.fontSize * scaleX, el.color);
         } else if (el.type === "shape") {
           ctx.fillStyle = el.color;
@@ -180,7 +186,7 @@ function Editor() {
 
   const isImage = file && getFileType(file.name) === "image";
 
-  React.useEffect(() => {
+  useEffect(() => {
     const down = (e) => e.key === "Shift" && setIsShiftPressed(true);
     const up = (e) => e.key === "Shift" && setIsShiftPressed(false);
     window.addEventListener("keydown", down);
@@ -190,6 +196,11 @@ function Editor() {
       window.removeEventListener("keyup", up);
     };
   }, []);
+
+  const handleDuplicateElement = (el) => {
+    const duplicate = { ...el, id: Date.now(), x: el.x + 20, y: el.y + 20 };
+    setElements([...elements, duplicate]);
+  };
 
   return (
     <>
@@ -215,14 +226,18 @@ function Editor() {
                 />
                 <input
                   type="number"
+                  min={0}
                   value={elements.find(e => e.id === editingElementId)?.fontSize || 0}
-                  onChange={e =>
+                  onChange={e => {
+                    let val = e.target.value;
+                    // usuń wiodące zera jeśli więcej niż jedna cyfra
+                    if (val.length > 1) val = val.replace(/^0+/, "");
                     setElements(elements.map(el =>
                       el.id === editingElementId
-                        ? { ...el, fontSize: Number(e.target.value) }
+                        ? { ...el, fontSize: val === "" ? 0 : Number(val) }
                         : el
-                    ))
-                  }
+                    ));
+                  }}
                 />
               </>
             )}
@@ -265,6 +280,7 @@ function Editor() {
             </div>
 
             <button onClick={() => setElements(elements.filter(e => e.id !== editingElementId))}>Usuń</button>
+            <button onClick={() => handleDuplicateElement(elements.find(e => e.id === editingElementId))}>Duplikuj</button>
           </div>
         )}
 
@@ -289,7 +305,7 @@ function Editor() {
                 <div className={styles.controlGroup}>
                   <h4>3. Dodaj Tekst</h4>
                   <input type="text" value={newText} onChange={e => setNewText(e.target.value)} placeholder="Tekst..." className={styles.textInput} />
-                  <input type="number" value={newFontSize} onChange={e => setNewFontSize(Number(e.target.value))} placeholder="Rozmiar fontu" className={styles.textInput} />
+                  <input type="number" min={0} value={newFontSize} onChange={e => setNewFontSize(Number(e.target.value))} placeholder="Rozmiar fontu" className={styles.textInput} />
                   <button onClick={handleAddText} className={styles.shapeButton}>Dodaj Tekst</button>
                 </div>
               </>
