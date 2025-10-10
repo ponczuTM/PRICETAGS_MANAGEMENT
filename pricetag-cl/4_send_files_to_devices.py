@@ -5,7 +5,6 @@ import hashlib
 from typing import List
 import time
 
-# Konfiguracja
 # LOCATION_ID = "685003cbf071eb1bb4304cd2"
 LOCATION_ID = "685003cbf071eb1bb4304cd2"
 API_BASE = "http://localhost:8000/api/locations"

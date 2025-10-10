@@ -196,8 +196,6 @@
   
   .editorCanvas {
     position: relative;
-    max-width: 800px;
-    max-height: 800px;
     width: 100%;
     height: 100%;
     display: flex;
@@ -212,22 +210,30 @@
     user-select: none;
   }
   
-  /* Wybór elementu */
-  .selectedShape {
-    outline: 2px dashed var(--c-primary);
-    position: relative;
-  }
-  
-  .selectedShape::after,
-  .selectedShape::before {
-    content: '';
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    background: var(--c-bg);
-    border: 1px solid var(--c-primary);
-    border-radius: 50%;
-  }
+/* --------- Wybór elementu --------- */
+.selectedShape {
+  outline: 2px dashed var(--c-primary);
+  position: relative;
+}
+
+/* Wyłącz pseudo-elementy, bo używamy span */
+.selectedShape::after,
+.selectedShape::before {
+  content: none;
+}
+
+/* Punkty kontrolne */
+.handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: var(--c-bg);
+  border: 1px solid var(--c-primary);
+  border-radius: 50%;
+  z-index: 10;
+  pointer-events: none
+}
+
   
   .selectedShape::after { top: -5px; left: -5px; }
   .selectedShape::before { bottom: -5px; right: -5px; }

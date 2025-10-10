@@ -173,7 +173,7 @@ function Editor() {
             body: formData,
           });
           if (!res.ok) throw new Error("Błąd uploadu pliku");
-          alert("Plik zapisany w galerii z elementami!");
+        //   alert("Plik zapisany w galerii z elementami!");
           navigate("/gallery");
         } catch (err) {
           setErrorMsg(err.message);
@@ -230,7 +230,6 @@ function Editor() {
                   value={elements.find(e => e.id === editingElementId)?.fontSize || 0}
                   onChange={e => {
                     let val = e.target.value;
-                    // usuń wiodące zera jeśli więcej niż jedna cyfra
                     if (val.length > 1) val = val.replace(/^0+/, "");
                     setElements(elements.map(el =>
                       el.id === editingElementId
@@ -394,6 +393,18 @@ function Editor() {
                             cursor: "move"
                           }}
                         />
+                      )}
+                      {isSelected && (
+                        <>
+                          <span className={styles.handle} style={{ top: "-7px", left: "-7px" }} />
+                          <span className={styles.handle} style={{ top: "-7px", right: "-7px" }} />
+                          <span className={styles.handle} style={{ bottom: "-7px", left: "-7px" }} />
+                          <span className={styles.handle} style={{ bottom: "-7px", right: "-7px" }} />
+                          <span className={styles.handle} style={{ top: "-8px", left: "50%", transform: "translateX(-50%)" }} />
+                          <span className={styles.handle} style={{ bottom: "-8px", left: "50%", transform: "translateX(-50%)" }} />
+                          <span className={styles.handle} style={{ top: "50%", left: "-8px", transform: "translateY(-50%)" }} />
+                          <span className={styles.handle} style={{ top: "50%", right: "-8px", transform: "translateY(-50%)" }} />
+                        </>
                       )}
                     </Rnd>
                   );
