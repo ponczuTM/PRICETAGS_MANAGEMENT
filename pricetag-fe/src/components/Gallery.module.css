@@ -267,3 +267,43 @@
 .red {
   background-color: #d50000; /* Czerwona */
 }
+
+
+/* Download FAB (lewy górny róg) */
+.downloadButton {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  background: #34d399;           /* jasnozielone tło */
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+  box-shadow: var(--shadow-md);
+}
+
+.downloadButton:hover {
+  background: #10b981;           /* ciemniejszy zielony */
+  transform: translateY(-1px);
+}
+
+.downloadButton:active {
+  transform: translateY(0);
+}
+
+/* Ikona download (strzałka + belka) */
+.downloadIcon {
+  width: 18px;
+  height: 18px;
+  stroke: #ffffff;
+  fill: none;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;          /* klik idzie w przycisk */
+}

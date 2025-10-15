@@ -144,6 +144,36 @@ function Gallery() {
     }
   };
 
+  // === NOWE: pobieranie pliku ===
+  const handleDownload = async (filename) => {
+    if (!currentLocationId || !filename) return;
+    const fileUrl = `${API_BASE_URL}/${currentLocationId}/files/${filename}`;
+    try {
+      // Bezpieczny wariant: pobieramy blob i wymuszamy nazwę pliku
+      const res = await fetch(fileUrl);
+      if (!res.ok) throw new Error("Błąd pobierania pliku");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename; // podpowiedz nazwy pliku
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Download error:", err);
+      // Fallback: spróbuj bezpośredniego otwarcia, przeglądarka może zainicjować download
+      const a = document.createElement("a");
+      a.href = fileUrl;
+      a.download = filename;
+      a.target = "_self";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+  };
+
   return (
     <>
       <Navbar />
@@ -170,12 +200,7 @@ function Gallery() {
         </div>
 
         <div className={styles.header}>
-          {/* <h2 className={styles.title}>
-            Galeria plików {currentLocationId ? `– ${currentLocationId}` : ""}
-          </h2> */}
-          <h2 className={styles.title}>
-            Galeria plików
-          </h2>
+          <h2 className={styles.title}>Galeria plików</h2>
           <div className={styles.deviceCount}>{galleryFiles.length} plików</div>
         </div>
 
@@ -191,13 +216,35 @@ function Gallery() {
 
               return (
                 <div key={filename} className={styles.galleryItem}>
+                  {/* NOWE: przycisk pobierania (lewy górny róg) */}
+                  <button
+                    className={styles.downloadButton}
+                    onClick={() => handleDownload(filename)}
+                    title="Pobierz plik"
+                    aria-label={`Pobierz ${filename}`}
+                  >
+                    <svg
+                      className={styles.downloadIcon}
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
+                      <path d="M12 3v10" />
+                      <path d="M8 11l4 4 4-4" />
+                      <path d="M6 19h12" />
+                    </svg>
+                  </button>
+
+
+                  {/* Istniejący przycisk usuwania (prawy górny róg) */}
                   <button
                     className={styles.deleteButton}
                     onClick={() => confirmDelete(filename)}
                     title="Usuń plik"
+                    aria-label={`Usuń ${filename}`}
                   >
                     ×
                   </button>
+
                   <div className={styles.galleryMediaWrapper}>
                     {fileType === "image" ? (
                       <img src={fileUrl} alt={filename} className={styles.galleryMedia} />
