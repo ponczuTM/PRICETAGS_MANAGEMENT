@@ -1,0 +1,36 @@
+./convert_py_to_deb.sh 1-test.py
+sudo dpkg -i 1-test.deb
+1-test
+
+
+usunięcie:
+dpkg -l | grep test
+ii  py-1-test    1.0.0    ...
+sudo dpkg -r py-1-test 
+
+lub
+
+sudo dpkg -r 1-test
+
+
+
+
+================================
+
+
+mkdir /usr/local/bin/files/
+
+./convert_py_to_deb.sh 1_scan_and_save_devices.py && sudo dpkg -i 1_scan_and_save_devices.deb && \
+./convert_py_to_deb.sh 2_download_devices_files.py && sudo dpkg -i 2_download_devices_files.deb && \
+./convert_py_to_deb.sh 3_modify_file_for_upload.py && sudo dpkg -i 3_modify_file_for_upload.deb && \
+./convert_py_to_deb.sh 4_send_files_to_devices.py && sudo dpkg -i 4_send_files_to_devices.deb
+
+
+which 1_scan_and_save_devices
+which 2_download_devices_files
+which 3_modify_file_for_upload
+which 4_send_files_to_devices
+/usr/local/bin/1_scan_and_save_devices
+/usr/local/bin/2_download_devices_files
+/usr/local/bin/3_modify_file_for_upload
+/usr/local/bin/4_send_files_to_devices

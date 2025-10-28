@@ -1,25 +1,20 @@
 #!/bin/bash
 set -euo pipefail
 
-# ==============================================================================
-# Skrypt instalacyjny dla środowiska deweloperskiego (Python + FFmpeg + WebDev)
-# ==============================================================================
-
 # === Konfiguracja ===
 PYTHON_VERSION="3.12.8"
 PY_SHORT="3.12"
-# Ustawienie ścieżek do nowo skompilowanego Pythona (altinstall)
 PY_BIN="/usr/local/bin/python${PY_SHORT}"
 PIP_BIN="/usr/local/bin/pip${PY_SHORT}"
 
 # === Helpery ===
 err() { echo "❌ $*" >&2; }
-log() { echo -e "\n\033[1;34m>>>\033[0m \033[1m$*\033[0m"; }
+log() { echo -e "$*"; }
 trap 'err "Błąd w linii $LINENO — przerwano."' ERR
 
 # === Wymagania wstępne ===
 if ! command -v apt >/dev/null 2>&1; then
-  err "Ten skrypt jest przeznaczony dla systemów opartych na Debianie/Ubuntu (APT)."
+  err "Ten skrypt jest dla Debian/Ubuntu (APT)."
   exit 1
 fi
 
@@ -33,7 +28,6 @@ sudo add-apt-repository -y multiverse
 sudo apt update -y
 
 log "📦 Instalacja narzędzi i bibliotek buildowych (Python/Pillow/FFmpeg)..."
-# Dodano większość zależności potrzebnych do kompilacji Pythona, Pillow oraz kodeków FFmpeg
 sudo apt install -y \
   build-essential \
   libssl-dev \
@@ -69,7 +63,7 @@ sudo apt install -y \
   libmp3lame-dev \
   libopus-dev
 
-log "🎧 (Opcjonalnie) Instalacja libfdk-aac-dev (dla FFmpeg)..."
+log "🎧 (Opcjonalnie) Instalacja libfdk-aac-dev..."
 FDK_FLAGS=""
 if sudo apt install -y libfdk-aac-dev; then
   FDK_FLAGS="--enable-libfdk-aac --enable-nonfree"
@@ -96,11 +90,7 @@ sudo make altinstall
 log "🐍 Konfiguracja pip i instalacja zależności PyPI..."
 ${PY_BIN} -m ensurepip --upgrade
 ${PIP_BIN} install --upgrade pip setuptools wheel
-
-# NOWE PAKIETY DODANE TUTAJ: fastapi, motor, pydantic-settings, pydantic[email], passlib, python-multipart, pyotp, qrcode, uvicorn
-${PIP_BIN} install \
-  requests Pillow pytz schedule \
-  fastapi motor pydantic-settings "pydantic[email]" passlib python-multipart pyotp qrcode uvicorn
+${PIP_BIN} install requests Pillow pytz schedule
 
 # === FFmpeg (z gita) ===
 log "⬇️ Pobieranie i kompilacja FFmpeg..."
@@ -125,49 +115,29 @@ sudo make install
 hash -r || true
 
 # === Weryfikacja ===
-log "🧪 Weryfikacja instalacji modułów Pythona i FFmpeg..."
+log "🧪 Weryfikacja instalacji..."
 set +e
 ${PY_BIN} - <<'PY'
 import sys
-
-# Lista modułów do weryfikacji (w tym nowo dodane: fastapi, motor, pydantic_settings, etc.)
-mods = [
-    "requests", "PIL", "pytz", "schedule",
-    "fastapi", "motor", "pydantic_settings",
-    "passlib", "pyotp", "qrcode", "uvicorn",
-    "concurrent.futures", "base64", "binascii", "re", "json", "pathlib",
-    "datetime", "glob", "subprocess", "shlex", "hashlib", "typing", "logging", "os", "time"
-]
-
+mods = ["requests", "PIL", "pytz", "schedule", "concurrent.futures", "base64", "binascii", "re", "json", "pathlib", "datetime", "glob", "subprocess", "shlex", "hashlib", "typing", "logging", "os", "time"]
 ok = True
 for m in mods:
     try:
-        # Próba zaimportowania modułu (użycie m.split('.')[0] jest bezpieczne)
         __import__(m.split('.')[0])
     except Exception as e:
-        # Pillow jest importowane jako PIL, ale nowsze wersje mogą mieć problemy, sprawdzamy to
-        if m == "PIL":
-            try:
-                import PIL
-            except:
-                ok = False
-                print(f"❌ Import failed: {m} (Pillow): {e}")
-        else:
-            ok = False
-            print(f"❌ Import failed: {m}: {e}")
-
-print("✅ Python Version:", sys.version)
+        ok = False
+        print(f"❌ Import failed: {m}: {e}")
+print("✅ Python:", sys.version)
 sys.exit(0 if ok else 1)
 PY
 PY_OK=$?
 
-# Weryfikacja FFmpeg
 ffmpeg -version >/dev/null 2>&1
 FF_OK=$?
 
 set -e
 if [ "$PY_OK" -ne 0 ]; then
-  err "Błąd: nie wszystkie moduły Pythona dały się zaimportować (zweryfikuj komunikaty powyżej)."
+  err "Błąd: nie wszystkie moduły Pythona dały się zaimportować."
   exit 1
 fi
 if [ "$FF_OK" -ne 0 ]; then
@@ -176,7 +146,9 @@ if [ "$FF_OK" -ne 0 ]; then
 fi
 
 log "🎉 GOTOWE!"
-log "➡️ Python: $(${PY_BIN} --version) (dostępny jako \033[32m${PY_BIN}\033[0m)"
-log "➡️ pip:    $(${PIP_BIN} --version | head -n1) (dostępny jako \033[32m${PIP_BIN}\033[0m)"
+log "➡️ Python: $(${PY_BIN} --version)"
+log "➡️ pip:    $(${PIP_BIN} --version)"
 log "➡️ FFmpeg: $(ffmpeg -version | head -n1)"
 # exec "$SHELL" -l  # odkomentuj, jeśli chcesz odświeżyć środowisko w tej samej sesji
+
+#DODAĆ: fastapi, motor, pydantic_settings, pydantic[email], passlib, python-multipart, pyotp, qrcode, uvicorn

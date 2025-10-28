@@ -1,0 +1,17 @@
+# Core z Twoich importów
+requests
+pytz
+Pillow
+bleak
+
+# Z Twojego skryptu instalacyjnego (dev/web stack)
+schedule
+fastapi
+motor
+pydantic-settings
+pydantic[email]
+passlib
+python-multipart
+pyotp
+qrcode
+uvicorn

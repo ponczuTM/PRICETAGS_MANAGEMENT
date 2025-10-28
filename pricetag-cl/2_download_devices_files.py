@@ -4,11 +4,14 @@ import json
 from datetime import datetime
 import pytz
 from pathlib import Path
+import json
 
-# LOCATION_ID = "685003cbf071eb1bb4304cd2"
-LOCATION_ID = "685003cbf071eb1bb4304cd2"
+config_path = "/usr/local/bin/config.json"
+with open(config_path, "r") as f:
+    config = json.load(f)
+LOCATION_ID = config["locationId"]
 API_BASE = "http://localhost:8000/api/locations"
-script_dir = os.path.dirname(os.path.abspath(__file__))
+script_dir = "/usr/local/bin/files"
 LAST_CHECK_PATH = os.path.join(script_dir, "lastHourCheck.txt")
 
 def set_thumbnail_from_schedule(location_id: str, device_id: str, filename: str, media_type: str):

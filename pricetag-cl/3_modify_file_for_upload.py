@@ -5,6 +5,11 @@ import glob
 import shlex
 import json
 
+WORK_DIR = "/usr/local/bin/files"
+os.chdir(WORK_DIR)
+print(f"📂 Pracuję w katalogu: {WORK_DIR}")
+
+
 # ------------------ KONFIG ------------------
 TARGET_W, TARGET_H = 720, 1280         # docelowa pionowa rozdzielczość
 FPS = 24                               # stałe 24 fps

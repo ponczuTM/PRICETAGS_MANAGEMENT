@@ -4,9 +4,15 @@ import base64
 from concurrent.futures import ThreadPoolExecutor
 import re
 from binascii import Error as B64Error
+import json
 
 # === KONFIG ===
-LOCATION_ID = "685003cbf071eb1bb4304cd2"
+
+config_path = "/usr/local/bin/config.json"
+with open(config_path, "r") as f:
+    config = json.load(f)
+LOCATION_ID = config["locationId"]
+
 API_BASE = "http://localhost:8000/api/locations"
 BASE_IP = "192.168.68."
 
@@ -116,7 +122,7 @@ def check_device(args):
     print(f"🔍 Próba {index + 1}: Sprawdzam IP {BASE_IP}{ip}")
     url = f"http://{BASE_IP}{ip}/Iotags"
     try:
-        response = requests.get(url, timeout=10)
+        response = requests.get(url, timeout=20)
         if response.status_code == 200:
             data = response.json()
             if data.get("STATE") == "SUCCEED" and "name" in data and "clientid" in data:
