@@ -14,9 +14,12 @@ print(f"📂 Pracuję w katalogu: {WORK_DIR}")
 TARGET_W, TARGET_H = 720, 1280         # docelowa pionowa rozdzielczość
 FPS = 24                               # stałe 24 fps
 GOP = FPS * 2                          # keyframe co ~2 sek
-VIDEO_BR = "1200k"                     # średni bitrate
-MAXRATE = "1200k"                      # max bitrate (VBV)
-BUFSIZE = "2400k"                      # bufor (2x maxrate)
+
+# Zamiast sztywnego b:v używamy limitów i dynamicznego wyliczania
+MAX_VIDEO_BR_K = 1200                  # maksymalny docelowy bitrate wideo (kbps)
+MIN_VIDEO_BR_K = 300                   # minimalny sensowny bitrate (żeby nie zrobić kaszy)
+DEFAULT_VIDEO_BR_K = 800               # fallback, gdy nie znamy bitrate wejściowego
+
 AUDIO_BR = "128k"
 AUDIO_SR = "44100"
 PIX_FMT = "yuv420p"
@@ -28,12 +31,14 @@ IMG_DURATION = 1                       # ile sekund ma trwać MP4 z PNG
 # Rozszerzenia wideo do przeróbki (możesz dopisać inne)
 VIDEO_EXTS = {".mp4", ".mov", ".mkv", ".webm", ".avi", ".m4v", ".ts"}
 
+
 # ------------------ POMOCNICZE ------------------
 
 def run(cmd: list):
     # Ładne logowanie
     print("▶", " ".join(shlex.quote(c) for c in cmd))
     return subprocess.run(cmd, check=True)
+
 
 def ffprobe_json(path: str):
     try:
@@ -45,6 +50,7 @@ def ffprobe_json(path: str):
     except Exception:
         return {}
 
+
 def has_audio_stream(path: str) -> bool:
     meta = ffprobe_json(path)
     for st in meta.get("streams", []):
@@ -52,9 +58,60 @@ def has_audio_stream(path: str) -> bool:
             return True
     return False
 
+
+def get_input_bitrate_kbps(path: str) -> int | None:
+    """
+    Zwraca bitrate wejściowy w kbps na podstawie ffprobe.
+    Jeśli nie da się odczytać, zwraca None.
+    """
+    meta = ffprobe_json(path)
+    fmt = meta.get("format", {})
+    br_str = fmt.get("bit_rate")
+    try:
+        if br_str:
+            br = int(br_str)          # bit/s
+            return max(1, br // 1000) # kbps
+    except Exception:
+        pass
+    return None
+
+
+def calc_target_video_bitrate_kbps(input_path: str) -> int:
+    """
+    Dobiera bitrate wyjściowy tak, żeby:
+    - nigdy nie przekraczać bitrate źródła,
+    - nie przekraczać MAX_VIDEO_BR_K,
+    - nie spaść poniżej MIN_VIDEO_BR_K,
+    - domyślnie być ~DEFAULT_VIDEO_BR_K, jeśli nie znamy bitrate wejścia.
+    Dodatkowo tniemy odrobinę bitrate (np. 80% źródła), żeby faktycznie kompresować.
+    """
+    src_kbps = get_input_bitrate_kbps(input_path)
+    if src_kbps is None or src_kbps <= 0:
+        # Brak danych → używamy domyślnego, ale ograniczonego przez MAX/MIN
+        target = max(MIN_VIDEO_BR_K, min(MAX_VIDEO_BR_K, DEFAULT_VIDEO_BR_K))
+        print(f"ℹ️ {input_path}: nie udało się odczytać bitrate źródła, "
+              f"używam domyślnego {target} kbps.")
+        return target
+
+    # Celujemy w ~80% bitrate źródła, ale w ramach widełek
+    target = int(src_kbps * 0.8)
+
+    # Zabezpieczenia widełkami
+    target = max(MIN_VIDEO_BR_K, min(target, MAX_VIDEO_BR_K))
+
+    # Dodatkowy bezpiecznik: jeśli mimo wszystko wyliczony target >= źródło,
+    # to tniemy do (źródło * 0.8) jeszcze raz.
+    if target >= src_kbps:
+        target = max(MIN_VIDEO_BR_K, int(src_kbps * 0.8))
+
+    print(f"ℹ️ {input_path}: bitrate źródła ~{src_kbps} kbps, docelowy ~{target} kbps.")
+    return target
+
+
 def ensure_dirsafe_name(name: str) -> str:
     # Bez zmian, ale możesz dodać sanitizację jeśli trzeba
     return name
+
 
 # ------------------ PNG -> MP4 ------------------
 
@@ -72,6 +129,12 @@ def png_to_mp4(png_path: str):
     except Exception as e:
         print(f"❌ Błąd obróbki PNG {png_path}: {e}")
         return
+
+    # PNG → krótkie MP4: tu możemy spokojnie użyć domyślnego bitrate
+    v_br_kbps = max(MIN_VIDEO_BR_K, min(MAX_VIDEO_BR_K, DEFAULT_VIDEO_BR_K))
+    v_br = f"{v_br_kbps}k"
+    maxrate = v_br
+    bufsize = f"{v_br_kbps * 2}k"
 
     # Dodajemy cichy dźwięk (żeby player się nie wywracał przy braku audio)
     # Wejście 0: PNG loopowane; Wejście 1: anullsrc (audio)
@@ -91,7 +154,7 @@ def png_to_mp4(png_path: str):
         "-c:v", "libx264",
         "-pix_fmt", PIX_FMT,
         "-profile:v", PROFILE, "-level", LEVEL,
-        "-b:v", VIDEO_BR, "-maxrate", MAXRATE, "-bufsize", BUFSIZE,
+        "-b:v", v_br, "-maxrate", maxrate, "-bufsize", bufsize,
         "-g", str(GOP), "-keyint_min", str(GOP), "-sc_threshold", "0",
         "-map", "0:v:0", "-map", "1:a:0",
         "-c:a", "aac", "-b:a", AUDIO_BR, "-ar", AUDIO_SR,
@@ -105,13 +168,18 @@ def png_to_mp4(png_path: str):
         print(f"✅ Utworzono MP4 z PNG: {out_mp4}")
     finally:
         # sprzątaj
-        try: os.remove(temp_png)
-        except: pass
+        try:
+            os.remove(temp_png)
+        except Exception:
+            pass
         if not KEEP_ORIGINALS:
-            try: os.remove(png_path)
-            except: pass
+            try:
+                os.remove(png_path)
+            except Exception:
+                pass
 
-# ------------------ WIDEO -> WIDEO (profil zgodny) ------------------
+
+# ------------------ WIDEO -> WIDEO (profil zgodny + KOMPresja) ------------------
 
 def transcode_video(input_path: str):
     # Wyjściowy plik tymczasowy
@@ -128,6 +196,12 @@ def transcode_video(input_path: str):
         f"setsar=1:1,setdar=9/16"
     )
 
+    # Dobierz bitrate pod konkretny plik, żeby go realnie skompresować
+    v_br_kbps = calc_target_video_bitrate_kbps(input_path)
+    v_br = f"{v_br_kbps}k"
+    maxrate = v_br
+    bufsize = f"{v_br_kbps * 2}k"
+
     # Strategia mapowania:
     # - Zawsze bierzemy 0:v:0
     # - Jeśli brak audio → dokładamy anullsrc jako drugie wejście i mapujemy 1:a:0
@@ -141,7 +215,7 @@ def transcode_video(input_path: str):
             "-c:v", "libx264",
             "-pix_fmt", PIX_FMT,
             "-profile:v", PROFILE, "-level", LEVEL,
-            "-b:v", VIDEO_BR, "-maxrate", MAXRATE, "-bufsize", BUFSIZE,
+            "-b:v", v_br, "-maxrate", maxrate, "-bufsize", bufsize,
             "-g", str(GOP), "-keyint_min", str(GOP), "-sc_threshold", "0",
             "-map", "0:v:0", "-map", "0:a:0",
             "-c:a", "aac", "-b:a", AUDIO_BR, "-ar", AUDIO_SR,
@@ -155,14 +229,14 @@ def transcode_video(input_path: str):
         cmd = [
             "ffmpeg", "-y",
             "-i", input_path,                                # [0] video
-            "-f", "lavfi", "-t", "9999", "-i",               # [1] audio (długo i tak przytnie -shortest)
+            "-f", "lavfi", "-t", "9999", "-i",               # [1] audio (długo, i tak przytnie -shortest)
             f"anullsrc=channel_layout=stereo:sample_rate={AUDIO_SR}",
             "-filter:v", vf,
             "-r", str(FPS), "-vsync", "cfr",
             "-c:v", "libx264",
             "-pix_fmt", PIX_FMT,
             "-profile:v", PROFILE, "-level", LEVEL,
-            "-b:v", VIDEO_BR, "-maxrate", MAXRATE, "-bufsize", BUFSIZE,
+            "-b:v", v_br, "-maxrate", maxrate, "-bufsize", bufsize,
             "-g", str(GOP), "-keyint_min", str(GOP), "-sc_threshold", "0",
             "-map", "0:v:0", "-map", "1:a:0",
             "-c:a", "aac", "-b:a", AUDIO_BR, "-ar", AUDIO_SR,
@@ -178,20 +252,23 @@ def transcode_video(input_path: str):
         run(cmd)
         # Podmień oryginał
         if not KEEP_ORIGINALS:
-            try: os.remove(input_path)
-            except: pass
+            try:
+                os.remove(input_path)
+            except Exception:
+                pass
             os.rename(tmp_out, input_path)
-            print(f"✅ Zgodne wideo: {input_path}")
+            print(f"✅ Zgodne (i skompresowane) wideo: {input_path}")
         else:
-            print(f"✅ Zgodne wideo zapisane jako: {tmp_out}")
+            print(f"✅ Zgodne (i skompresowane) wideo zapisane jako: {tmp_out}")
     except Exception as e:
         print(f"❌ Błąd transkodowania {input_path}: {e}")
         # posprzątaj tymczasowe
         try:
             if os.path.exists(tmp_out):
                 os.remove(tmp_out)
-        except:
+        except Exception:
             pass
+
 
 # ------------------ MAIN ------------------
 
@@ -210,7 +287,7 @@ if __name__ == "__main__":
         if lower.endswith(".png"):
             png_to_mp4(filename)
 
-    # 3) WIDEO -> WIDEO (zgodny profil)
+    # 3) WIDEO -> WIDEO (zgodny profil + kompresja)
     for filename in os.listdir("."):
         lower = filename.lower()
         ext = os.path.splitext(lower)[1]

@@ -544,6 +544,7 @@ function MainPage() {
                 </div>
 
                 <p className={styles.deviceId}>Client: {device.clientId}</p>
+                <p className={styles.deviceId}>IP: {device.ip}</p>
               </div>
             </div>
           ))}

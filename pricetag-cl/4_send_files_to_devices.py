@@ -26,7 +26,7 @@ API_BASE = "http://localhost:8000/api/locations"
 def get_devices_from_database() -> List[dict]:
     """Pobiera listę urządzeń z bazy."""
     try:
-        response = requests.get(f"{API_BASE}/{LOCATION_ID}/devices", timeout=15)
+        response = requests.get(f"{API_BASE}/{LOCATION_ID}/devices", timeout=20)
         if response.status_code == 200:
             return response.json()
         else:
@@ -48,7 +48,7 @@ def clear_device_space(ip):
     """Czyści pamięć urządzenia przez endpoint HTTP."""
     url = f"http://{ip}/control?action=clearspace&sign=sign"
     try:
-        response = requests.get(url, timeout=25)
+        response = requests.get(url, timeout=250)
         if response.status_code == 200:
             return True, "OK"
         else:
@@ -65,7 +65,7 @@ def upload_file_to_device(ip, file_path, remote_path):
                 f"http://{ip}/upload?file_path={remote_path}&sign={md5}",
                 data=f,
                 headers={"Content-Type": "application/octet-stream"},
-                timeout=60
+                timeout=20
             )
         return response.status_code == 200
     except Exception as e:
@@ -78,7 +78,7 @@ def trigger_device(ip, js_name):
     sign = calculate_md5(js_name)
     url = f"http://{ip}/replay?task={js_path}&sign={sign}"
     try:
-        response = requests.get(url, timeout=25)
+        response = requests.get(url, timeout=250)
         return response.status_code == 200
     except Exception as e:
         print(f"❌ trigger error {ip}: {e}")

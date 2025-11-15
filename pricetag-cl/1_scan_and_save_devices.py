@@ -14,7 +14,7 @@ with open(config_path, "r") as f:
 LOCATION_ID = config["locationId"]
 
 API_BASE = "http://localhost:8000/api/locations"
-BASE_IP = "192.168.68."
+BASE_IP = "192.168.77."
 
 # === Normalizacja clientId ===
 # Standaryzujemy do: UPPERCASE, tylko [0-9A-F]
